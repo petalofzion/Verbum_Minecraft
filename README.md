@@ -1,5 +1,5 @@
 # Verbum Minecraft
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/your-github-username/verbum-minecraft/actions) <!-- Update 'your-github-username' with the actual repository owner -->
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/petalofzion/Verbum_Minecraft/actions) <!-- Update 'your-github-username' with the actual repository owner -->
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-21-red)](https://openjdk.java.net/)
 [![Loader](https://img.shields.io/badge/loader-Fabric-orange)](https://fabricmc.net/)
@@ -206,7 +206,7 @@ If you are an AI agent contributing code:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/verbum-minecraft.git
+git clone https://github.com/petalofzion/Verbum_Minecraft.git
 cd verbum-minecraft
 
 # Build the unified Jar
@@ -252,7 +252,7 @@ Verbum Minecraft is designed to be a seamless, performance-first total conversio
 ### Installation
 1.  **Install Fabric Loader:** Download and run the [Fabric Installer](https://fabricmc.net/use/). Make sure to select the correct Minecraft version (e.g., 1.20.1) and Fabric Loader version (e.g., 0.15.11).
 2.  **Install Fabric API:** Download the appropriate [Fabric API](https://modrinth.com/mod/fabric-api) version (e.g., 0.91.4) for your Minecraft version and place it in your `mods` folder.
-3.  **Download Verbum:** Get the latest release of `verbum-minecraft-X.X.X.jar` from our [releases page](https://github.com/your-username/verbum-minecraft/releases) and place it in your `mods` folder.
+3.  **Download Verbum:** Get the latest release of `verbum-minecraft-X.X.X.jar` from our [releases page](https://github.com/petalofzion/Verbum_Minecraft/releases) and place it in your `mods` folder.
 
 ### Usage
 *   **Client & Server Support:** Verbum is designed to work seamlessly on both single-player clients and dedicated servers.
