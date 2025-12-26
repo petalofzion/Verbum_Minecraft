@@ -1,0 +1,31 @@
+// build.gradle (modules/ux-framework)
+// This is the build file for the 'modules/ux-framework' module.
+// It defines the module's dependencies, specific tasks, and any
+// module-specific configurations. This module is client-only.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+// }
+//
+// dependencies {
+//     implementation project(':modules:api')
+//     implementation project(':modules:spi')
+//     implementation project(':modules:runtime')
+//     // Client-side specific dependencies
+//     // include 'fabric-api-client' or similar
+// }
+//
+// // Enforce client-only code by configuring source sets
+// sourceSets {
+//     main {
+//         java {
+//             srcDirs = ['src/client/java']
+//         }
+//         resources {
+//             srcDirs = ['src/client/resources']
+//         }
+//     }
+// }

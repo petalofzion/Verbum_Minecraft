@@ -1,0 +1,13 @@
+// build.gradle (build-logic root)
+// This is the root build file for the 'build-logic' composite build.
+// It can be used to define common configurations, repositories, or dependencies
+// that apply to all convention plugin subprojects within 'build-logic'.
+
+// Example:
+// allprojects {
+//     group = 'com.verbum_minecraft.buildlogic'
+//     version = '1.0-SNAPSHOT'
+//     repositories {
+//         mavenCentral()
+//     }
+// }

@@ -1,0 +1,12 @@
+// settings.gradle (build-logic)
+// This file defines the convention plugins that make up the 'build-logic' composite build.
+// Each 'include' statement specifies a Gradle module that provides custom build logic.
+
+// Example:
+// rootProject.name = "verbum-minecraft-build-logic"
+//
+// include(
+//     "verbum-minecraft.java-conventions",
+//     "verbum-minecraft.no-alloc-checks",
+//     "verbum-minecraft.module-boundaries"
+// )

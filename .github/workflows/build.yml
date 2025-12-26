@@ -1,0 +1,44 @@
+# .github/workflows/build.yml
+# This GitHub Actions workflow defines the Continuous Integration (CI) pipeline
+# for the Verbum Minecraft project.
+
+# It will typically include:
+# - **Triggers:** When the workflow should run (e.g., on push to main, pull requests).
+# - **Jobs:** A set of jobs to be executed (e.g., build, test, lint, run benchmarks).
+# - **Steps:** Individual commands or actions within each job.
+
+# This workflow is crucial for:
+# - Ensuring the project builds successfully.
+# - Running unit, integration, and performance tests.
+# - Enforcing architectural rules (e.g., via custom Gradle build-logic plugins).
+# - Maintaining code quality and consistency.
+
+# Example structure:
+# name: CI Build
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - name: Set up JDK 17
+#         uses: actions/setup-java@v4
+#         with:
+#           java-version: '17'
+#           distribution: 'temurin'
+#       - name: Grant execute permission for gradlew
+#         run: chmod +x gradlew
+#       - name: Build with Gradle
+#         run: ./gradlew build
+#       # - name: Run Tests
+#       #   run: ./gradlew test
+#       # - name: Run Architecture Checks
+#       #   run: ./gradlew enforceModuleBoundaries checkNoAllocations
+#       # - name: Run Benchmarks
+#       #   run: ./gradlew :tools:benchmarks:micro:jmh

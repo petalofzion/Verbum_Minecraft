@@ -1,0 +1,15 @@
+// build.gradle (modules/spi)
+// This is the build file for the 'modules/spi' module.
+// It defines the module's dependencies, specific tasks, and any
+// module-specific configurations.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+// }
+//
+// dependencies {
+//     implementation project(':modules:api') // May depend on public APIs
+// }

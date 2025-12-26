@@ -1,0 +1,34 @@
+# Architecture Map
+
+This document serves as a routing guide and constraint definition for all modules within Verbum Minecraft. It aims to reduce "Where do I put this?" ambiguity and prevent accidental architectural violations, especially by automated agents.
+
+## Module Concerns and Dependency Rules
+
+| Concern/Feature Area       | Module(s)                                                  | Allowed Dependencies                                     | Forbidden Patterns/Rules                                                                            | Enforcement Mechanism (Examples)             |
+| :------------------------- | :--------------------------------------------------------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------- |
+| Public API Contracts       | `modules/api`                                              | None (pure interfaces/enums)                             | Any logic, implementation details, concrete classes.                                                | Build-logic: `verbum-minecraft.no-logic-api`      |
+| Internal SPI/Contracts     | `modules/spi`                                              | `modules/api`                                            | Any logic, implementation details, concrete classes. Direct dependency on other `features/*` modules. | Build-logic: `verbum-minecraft.no-logic-spi`      |
+| Hot Path Engine (Core Logic) | `modules/sim-kernel`                                       | `modules/api`, `modules/spi`, `modules/runtime`          | Minecraft classes (except specific data types), any direct rendering. All allocations forbidden in hot loops. | Build-logic: `verbum-minecraft.no-alloc-checks`, `forbidden-apis` plugin |
+| Shared Runtime Utilities   | `modules/runtime`                                          | None (pure utilities), Java standard library             | Minecraft classes, any allocations in core utilities.                                               | `verbum-minecraft.no-alloc-checks`                |
+| Unified Client Rendering   | `modules/ux-framework` (client-only)                       | `modules/api`, `modules/spi`, `modules/runtime`          | Server-side logic, direct access to `sim-kernel` internals.                                         | Client source set enforcement, `verbum-minecraft.module-boundaries` |
+| Tech Content/Registration  | `modules/features/tech`                                    | `modules/api`, `modules/spi`, `modules/runtime`          | `BlockEntity.tick()`, `Entity.tick()`, direct calls to other `features/*` modules.                  | `forbidden-apis` plugin                      |
+| Magic Content/Registration | `modules/features/magic`                                   | `modules/api`, `modules/spi`, `modules/runtime`          | Direct calls to other `features/*` modules.                                                         | `verbum-minecraft.module-boundaries`                          |
+| World Gen Content/Registration | `modules/features/world`                                   | `modules/api`, `modules/spi`, `modules/runtime`          | Direct calls to other `features/*` modules.                                                         | `verbum-minecraft.module-boundaries`                          |
+| Core Content/Registration  | `modules/features/core`                                    | `modules/api`, `modules/spi`, `modules/runtime`          | Direct calls to other `features/*` modules.                                                         | `verbum-minecraft.module-boundaries`                          |
+| Resource Data (JSON, Assets) | `modules/content-data`                                     | None                                                     | Code, logic.                                                                                        | N/A (resource-only module)                   |
+| Code Registrations Only    | `modules/content-code`                                     | `modules/api`, `modules/spi`, `modules/runtime`          | Complex logic, assets.                                                                              | `verbum-minecraft.module-boundaries`                          |
+| Mod Product Assembly       | `modules/assembly`                                         | All other `modules/*`                                    | None (integrates everything)                                                                        | N/A                                          |
+| Build Logic/Conventions    | `build-logic/*`                                            | Gradle API                                               | Any project-specific logic.                                                                         | N/A                                          |
+| Data Generation            | `tools/datagen`                                            | All `modules/*`                                          | Runtime logic.                                                                                      | N/A                                          |
+| Integration Tests          | `tools/gametest`                                           | All `modules/*`, Minecraft Testing API                   | Microbenchmarking logic.                                                                            | N/A                                          |
+| Performance Benchmarks     | `tools/benchmarks/micro`, `tools/benchmarks/macro`         | Targeted modules for benchmarking, JMH                   | Production code.                                                                                    | CI gates, `verbum-minecraft.no-alloc-checks`      |
+
+---
+
+**General Principles for AI Agents:**
+
+*   **When in doubt, use `api` or `spi`:** If you need to communicate between modules, always refer to interfaces defined in `api` or `spi`. Never create direct dependencies between `features/*` modules.
+*   **Performance First:** Prioritize data locality, batching, and monomorphic calls. If introducing new logic to a hot path (`sim-kernel`), ensure it passes allocation checks and performance benchmarks.
+*   **Client vs. Server:** Clearly separate client-side (UI, rendering) code from common or server-side logic. Avoid leaking client classes into shared modules.
+*   **Registries are king:** Content modules (`features/*`, `content-code`) primarily perform registration of components, blocks, items, etc., into systems managed by `sim-kernel`. Avoid complex logic within content modules themselves.
+*   **Build-time enforcement:** Trust the Gradle build system to enforce architectural rules. If a build fails due to a dependency violation or forbidden API usage, refactor the code to comply.

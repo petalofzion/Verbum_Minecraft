@@ -1,0 +1,24 @@
+{
+  // fabric.mod.json
+  // This file contains metadata for the Verbum Minecraft mod,
+  // used by the Fabric Mod Loader. It defines the mod's ID, version,
+  // description, authors, entrypoints, dependencies, and more.
+
+  // Example fields:
+  // "schemaVersion": 1,
+  // "id": "verbum_minecraft",
+  // "version": "${version}",
+  // "name": "Verbum Minecraft",
+  // "description": "A total conversion Minecraft mod...",
+  // "authors": [ "Your Name Here" ],
+  // "entrypoints": {
+  //   "main": [ "com.verbum_minecraft.VerbumMinecraft" ]
+  // },
+  // "mixins": [
+  //   "verbum_minecraft.mixins.json"
+  // ],
+  // "depends": {
+  //   "fabricloader": ">=0.15.11",
+  //   "minecraft": "~1.20.1"
+  // }
+}

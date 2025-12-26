@@ -1,0 +1,31 @@
+// build.gradle (modules/assembly)
+// This is the build file for the 'modules/assembly' module.
+// This module acts as the final product assembler, combining all other
+// modules into the deployable mod.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+// }
+//
+// dependencies {
+//     // Implement all other modules to assemble the final product
+//     implementation project(':modules:api')
+//     implementation project(':modules:spi')
+//     implementation project(':modules:sim-kernel')
+//     implementation project(':modules:runtime')
+//     implementation project(':modules:ux-framework')
+//     implementation project(':modules:features:tech')
+//     implementation project(':modules:features:magic')
+//     implementation project(':modules:features:world')
+//     implementation project(':modules:features:core')
+//     implementation project(':modules:content-data')
+//     implementation project(':modules:content-code')
+// }
+//
+// // Configure fabric.mod.json processing if needed
+// processResources {
+//     // ...
+// }

@@ -1,0 +1,24 @@
+# CODEOWNERS
+# This file specifies individuals or teams that own certain patterns of code in the repository.
+# When someone opens a pull request that modifies code owned by a CODEOWNERS entry,
+# those code owners are automatically requested as reviewers.
+
+# Format: <file-pattern>    <@username_or_team>
+
+# Example Owners:
+# Global owner for all code
+# * @your-github-username
+
+# Docs folder owner
+# docs/ @your-docs-team
+
+# Hot path modules (requires special attention)
+# modules/sim-kernel/ @performance-engineers
+# modules/runtime/     @performance-engineers
+
+# Specific feature owners
+# modules/features/tech/ @tech-team
+# modules/features/magic/ @magic-developers
+
+# Build logic owner
+# build-logic/ @gradle-experts

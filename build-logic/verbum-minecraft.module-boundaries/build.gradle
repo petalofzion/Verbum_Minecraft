@@ -1,0 +1,29 @@
+// build.gradle (verbum-minecraft.module-boundaries)
+// This file defines a Gradle convention plugin responsible for enforcing
+// architectural module boundaries and dependency rules.
+
+// This plugin would typically:
+// - Integrate with a dependency analysis tool (e.g., ArchUnit, Forbidden-APIs).
+// - Define custom tasks to verify that modules adhere to the rules outlined in ARCHITECTURE_MAP.md.
+// - Prevent forbidden dependencies (e.g., features/* depending on each other directly)
+//   or usage of disallowed APIs (e.g., BlockEntity.tick() in features/*).
+// - Fail the build if any module boundary violations are detected.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     // id 'com.your.module.boundary.check.plugin' // Placeholder for a module boundary check plugin
+// }
+//
+// task enforceModuleBoundaries {
+//     doLast {
+//         println "Placeholder: Running module boundary enforcement checks..."
+//         // Logic here to analyze project dependencies and compare against rules
+//         // if (forbiddenDependencyFound) {
+//         //     throw new GradleException("Forbidden module dependency detected!")
+//         // }
+//     }
+// }
+//
+// // Attach this task to appropriate build lifecycle phases, e.g., 'check' or 'jar'
+// // tasks.named('jar') { dependsOn enforceModuleBoundaries }

@@ -1,0 +1,53 @@
+# .gitignore
+# This file specifies intentionally untracked files that Git should ignore.
+# It helps keep the repository clean from build outputs, temporary files,
+# and IDE-specific configurations.
+
+# Gradle files
+.gradle/
+build/
+**/*.jar
+**/*.war
+**/*.nar
+**/*.ear
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.rar
+
+# IDE files
+.idea/
+.project
+.classpath
+.settings/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Build outputs
+bin/
+out/
+target/
+
+# Log files
+*.log
+log/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Fabric Loom generated files
+.fabric/
+.gradle/loom-cache/
+run/
+.idea/runConfigurations/
+*.launch
+local.properties
+.vscode/launch.json
+
+# Development assets
+# You might want to ignore large assets, local data, etc.
+# assets/temp/
+# data/local/

@@ -1,0 +1,27 @@
+// build.gradle (verbum-minecraft.no-alloc-checks)
+// This file defines a Gradle convention plugin responsible for enforcing
+// "no allocation" rules in performance-critical code paths.
+
+// This plugin would typically:
+// - Integrate with a bytecode analysis tool or an allocation profiler.
+// - Define custom tasks to check for allocations in designated "hot" modules (e.g., sim-kernel).
+// - Fail the build if unwanted allocations are detected in specified methods or classes.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     // id 'com.your.allocation.check.plugin' // Placeholder for an allocation check plugin
+// }
+//
+// task checkNoAllocations {
+//     doLast {
+//         println "Placeholder: Running no-allocation checks..."
+//         // Logic here to analyze bytecode or profiler results
+//         // if (allocationsFoundInHotPath) {
+//         //     throw new GradleException("Allocation detected in critical path!")
+//         // }
+//     }
+// }
+//
+// // Attach this task to appropriate build lifecycle phases, e.g., 'check' or 'jar'
+// // tasks.named('jar') { dependsOn checkNoAllocations }

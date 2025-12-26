@@ -1,0 +1,22 @@
+// settings.gradle
+// This file defines the modules that make up the Verbum Minecraft project.
+// Each 'include' statement specifies a Gradle module (subproject) that is part of the build.
+
+// Example:
+// include(
+//     "modules:api",
+//     "modules:sim-kernel",
+//     // ... other modules
+// )
+
+// pluginManagement block configures how Gradle resolves plugins.
+// It can also include composite builds, such as custom build-logic.
+// Example:
+// pluginManagement {
+//     repositories {
+//         gradlePluginPortal()
+//         maven { url 'https://maven.fabricmc.net/' }
+//         mavenCentral()
+//     }
+//     includeBuild('build-logic') // Include custom build logic
+// }

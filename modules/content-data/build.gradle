@@ -1,0 +1,21 @@
+// build.gradle (modules/content-data)
+// This is the build file for the 'modules/content-data' module.
+// This module is primarily for resource data (JSON, assets, data packs)
+// and typically does not contain Java source code.
+
+// Example:
+// plugins {
+//     id 'java-library' // Still use java-library to handle resources, but no java sources
+//     id 'fabric-loom'
+// }
+//
+// sourceSets {
+//     main {
+//         java {
+//             srcDirs = [] // No Java source files
+//         }
+//         resources {
+//             srcDirs = ['src/main/resources'] // Only resources
+//         }
+//     }
+// }

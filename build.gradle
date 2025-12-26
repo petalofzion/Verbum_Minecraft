@@ -1,0 +1,31 @@
+// build.gradle (Root Project)
+// This is the master build file for the Verbum Minecraft project.
+// It defines global configurations, applies common plugins, and sets up
+// repositories and dependencies that are shared across all subprojects.
+
+// This file often includes:
+// - buildscript block: for defining plugins needed for the build itself (e.g., Fabric Loom)
+// - plugins block: applying top-level plugins
+// - version and group: general project metadata
+// - repositories: where dependencies are downloaded from
+// - dependencies: common dependencies (like Minecraft, Fabric Loader, Fabric API)
+// - tasks: general build tasks, resource processing, Java compatibility settings
+// - loom block: specific configurations for Fabric Loom.
+
+// Example:
+// plugins {
+//     id 'fabric-loom' version '1.6-SNAPSHOT'
+// }
+//
+// version = project.mod_version
+// group = project.maven_group
+//
+// repositories {
+//     mavenCentral()
+//     maven { url 'https://maven.fabricmc.net/' }
+// }
+//
+// dependencies {
+//     minecraft "net.minecraft:minecraft:${project.minecraft_version}"
+//     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+// }

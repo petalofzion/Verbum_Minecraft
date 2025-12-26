@@ -1,0 +1,17 @@
+// build.gradle (modules/runtime)
+// This is the build file for the 'modules/runtime' module.
+// It defines the module's dependencies, specific tasks, and any
+// module-specific configurations.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+//     id 'com.verbum_minecraft.buildlogic.no-alloc-checks' // Apply allocation checks
+// }
+//
+// dependencies {
+//     // This module should remain lean, focusing on data structures and tight utilities.
+//     // It should avoid dependencies on Minecraft classes.
+// }

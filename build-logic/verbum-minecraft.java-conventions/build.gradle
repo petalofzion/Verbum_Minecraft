@@ -1,0 +1,23 @@
+// build.gradle (verbum-minecraft.java-conventions)
+// This file defines a Gradle convention plugin that applies common Java-related
+// configurations to all subprojects that use this plugin.
+
+// It typically applies the 'java-library' plugin and sets up:
+// - Java version compatibility (sourceCompatibility, targetCompatibility)
+// - Common repositories (e.g., mavenCentral())
+// - Default dependencies that all Java projects might need.
+
+// Example:
+// plugins {
+//     id 'java-library'
+// }
+//
+// java {
+//     sourceCompatibility = JavaVersion.VERSION_17
+//     targetCompatibility = JavaVersion.VERSION_17
+// }
+//
+// dependencies {
+//     // Common dependencies for all Java projects
+//     // implementation 'com.google.guava:guava:31.1-jre'
+// }

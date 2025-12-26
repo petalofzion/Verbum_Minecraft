@@ -1,0 +1,20 @@
+// build.gradle (modules/sim-kernel)
+// This is the build file for the 'modules/sim-kernel' module.
+// It defines the module's dependencies, specific tasks, and any
+// module-specific configurations.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+//     id 'com.verbum_minecraft.buildlogic.no-alloc-checks' // Apply allocation checks
+// }
+//
+// dependencies {
+//     implementation project(':modules:api')
+//     implementation project(':modules:spi')
+//     implementation project(':modules:runtime')
+//     // Minecraft and Fabric dependencies are typically applied via convention plugins
+//     // modImplementation 'net.fabricmc.fabric-api:fabric-api'
+// }

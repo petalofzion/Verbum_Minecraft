@@ -1,0 +1,16 @@
+// build.gradle (modules/api)
+// This is the build file for the 'modules/api' module.
+// It defines the module's dependencies, specific tasks, and any
+// module-specific configurations.
+
+// Example:
+// plugins {
+//     id 'java-library'
+//     id 'fabric-loom'
+//     id 'com.verbum_minecraft.buildlogic.java-conventions'
+// }
+//
+// dependencies {
+//     // This module should typically have no dependencies on other project modules
+//     // as it defines pure interfaces.
+// }
