@@ -1,0 +1,9 @@
+// build.gradle (modules/core/api)
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+dependencies {
+    // Pure API - no project dependencies
+}

@@ -1,0 +1,10 @@
+{
+  "id": "core-sim-kernel",
+  "domain": "core",
+  "edition": "vanilla-plus",
+  "providesFeature": false,
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

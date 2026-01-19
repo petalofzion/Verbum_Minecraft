@@ -1,0 +1,82 @@
+// build.gradle (assemblies/visions)
+// This module assembles the 'Verbum: Visions' JAR file (Total Conversion).
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+    id 'fabric-loom'
+}
+
+dependencies {
+    // Loom Dependencies (Scoped to this assembly)
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Inherit everything from Vanilla Plus (via projects)
+    implementation project(':modules:core:api')
+    implementation project(':modules:core:spi')
+    implementation project(':modules:core:sim-kernel')
+    implementation project(':modules:core:runtime')
+    implementation project(':modules:core:ux-framework')
+
+    // Baseline Features
+    implementation project(':modules:core:baseline:vanilla-core')
+    implementation project(':modules:core:baseline:feature-core')
+    implementation project(':modules:world:baseline:world-base')
+    implementation project(':modules:core:baseline:content-data')
+    implementation project(':modules:core:baseline:content-code')
+    implementation project(':modules:features:library:bible')
+
+    // Visions-only Features
+    implementation project(':modules:tech:visions-only:tech-base')
+    implementation project(':modules:magic:visions-only:magic-base')
+
+    // Bundle module outputs into the final mod jar
+    include project(':modules:core:api')
+    include project(':modules:core:spi')
+    include project(':modules:core:sim-kernel')
+    include project(':modules:core:runtime')
+    include project(':modules:core:ux-framework')
+    include project(':modules:core:baseline:vanilla-core')
+    include project(':modules:core:baseline:feature-core')
+    include project(':modules:world:baseline:world-base')
+    include project(':modules:core:baseline:content-data')
+    include project(':modules:core:baseline:content-code')
+    include project(':modules:features:library:bible')
+    include project(':modules:tech:visions-only:tech-base')
+    include project(':modules:magic:visions-only:magic-base')
+}
+
+def modVersion = project.version.toString()
+def resourceModulePaths = [
+    ':modules:core:api',
+    ':modules:core:spi',
+    ':modules:core:sim-kernel',
+    ':modules:core:runtime',
+    ':modules:core:ux-framework',
+    ':modules:core:baseline:vanilla-core',
+    ':modules:core:baseline:feature-core',
+    ':modules:world:baseline:world-base',
+    ':modules:core:baseline:content-data',
+    ':modules:core:baseline:content-code',
+    ':modules:features:library:bible',
+    ':modules:tech:visions-only:tech-base',
+    ':modules:magic:visions-only:magic-base'
+]
+
+processResources {
+    inputs.property "version", modVersion
+    filesMatching("fabric.mod.json") {
+        expand "version": modVersion
+    }
+    resourceModulePaths.each { path ->
+        from(project(path).file("src/main/resources")) {
+            exclude("META-INF/services/**")
+        }
+    }
+}
+
+base {
+    archivesName = 'verbum-visions'
+}

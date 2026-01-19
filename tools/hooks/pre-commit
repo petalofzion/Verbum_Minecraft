@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+"${repo_root}/tools/scripts/update_todo_index.sh"
+"${repo_root}/tools/scripts/update_contract_index.sh"
+git add "${repo_root}/docs/TODO_INDEX.md"
+git add "${repo_root}/docs/contracts/CONTRACT_INDEX.md"

@@ -1,0 +1,220 @@
+plugins {
+    id 'fabric-loom' version '1.14.7' apply false
+    id 'com.verbum_minecraft.java-conventions' apply false
+}
+
+allprojects {
+    group = "com.verbum_minecraft"
+    version = "0.0.1-SNAPSHOT"
+}
+
+tasks.register('verifyNoMinecraftImports') {
+    group = 'verification'
+    description = 'Enforces that modules remain pure logic by forbidding platform-specific imports.'
+    doLast {
+        def forbiddenPackages = ['net.minecraft', 'net.fabricmc', 'com.mojang', 'io.netty']
+        def errors = []
+        fileTree(dir: 'modules', include: '**/src/**/*.java').each { file ->
+            def text = file.text
+            forbiddenPackages.each { pkg ->
+                if (text.contains("import ${pkg}") || text.contains("${pkg}.")) {
+                    errors.add("Forbidden import '${pkg}' in ${file.path}")
+                }
+            }
+        }
+        if (!errors.isEmpty()) {
+            throw new GradleException("Pure-Logic Violation:\n" + errors.join("\n"))
+        }
+        println "Verified: No Minecraft/Fabric imports found in modules."
+    }
+}
+
+tasks.register('verifyModuleMetadata') {
+    group = 'verification'
+    description = 'Validates module.json integrity and uniqueness.'
+    doLast {
+        def ids = [:]
+        def errors = []
+        def allowedDomains = ['core', 'feature', 'library', 'world', 'magic', 'tech', 'assembly', 'tool']
+        
+        fileTree(dir: '.', include: '**/module.json').each { file ->
+            def json = new groovy.json.JsonSlurper().parse(file)
+            def path = file.path
+            
+            // Required fields
+            if (!json.id) errors.add("Missing 'id' in ${path}")
+            if (!json.domain) errors.add("Missing 'domain' in ${path}")
+            if (!allowedDomains.contains(json.domain)) errors.add("Invalid 'domain' [${json.domain}] in ${path}. Allowed: ${allowedDomains}")
+            if (json.providesFeature == null) errors.add("Missing 'providesFeature' in ${path}")
+            
+            // Uniqueness
+            if (ids.containsKey(json.id)) {
+                errors.add("Duplicate module id [${json.id}] found in ${path} and ${ids[json.id]}")
+            } else {
+                ids[json.id] = path
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            throw new GradleException("Module Metadata Validation Failed:\n" + errors.join("\n"))
+        }
+        println "Verified: Module metadata is valid and unique."
+    }
+}
+
+tasks.register('verifyNoNamedElements') {
+    group = 'verification'
+    description = 'Fails if any build.gradle uses namedElements configuration.'
+    doLast {
+        def forbiddenPattern = /configuration:\s*['"]namedElements['"]/
+        def errors = []
+        fileTree(dir: '.', include: '**/*.gradle', exclude: 'buildSrc/**').each { file ->
+            if (file.text =~ forbiddenPattern) {
+                errors.add(file.path)
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            throw new GradleException("Found forbidden 'namedElements' usage in build files:\n" + errors.join("\n"))
+        }
+        println "Verified: No 'namedElements' usage found."
+    }
+}
+
+tasks.register('verifySpiRegistration') {
+    group = 'verification'
+    description = 'Verifies that modules with providesFeature: true have correct SPI registration.'
+    doLast {
+        def errors = []
+        fileTree(dir: 'modules', include: '**/module.json').each { metadataFile ->
+            def json = new groovy.json.JsonSlurper().parse(metadataFile)
+            if (json.providesFeature) {
+                def moduleDir = metadataFile.parentFile
+                def spiFile = new File(moduleDir, "src/main/resources/META-INF/services/com.verbum_minecraft.spi.FeatureEntrypoint")
+                if (!spiFile.exists()) {
+                    errors.add("Module ${json.id} (at ${moduleDir.path}) claims to provide a feature but is missing ServiceLoader file.")
+                } else {
+                    def entrypointClass = json.entrypointClass
+                    if (!entrypointClass) {
+                        errors.add("Module ${json.id} is missing 'entrypointClass' in module.json.")
+                    } else if (!spiFile.text.contains(entrypointClass)) {
+                        errors.add("Module ${json.id} ServiceLoader file does not contain entrypoint class ${entrypointClass}.")
+                    }
+                }
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            throw new GradleException("SPI verification failed:\n" + errors.join("\n"))
+        }
+        println "Verified: SPI registrations are correct."
+    }
+}
+
+def buildTodoIndexContent() {
+    def todos = []
+    def featuresDir = new File(rootDir, "modules/features")
+    if (featuresDir.exists()) {
+        featuresDir.eachFileRecurse { file ->
+            if (file.isFile() && file.name == "TODO.md" && file.path.contains("${File.separator}docs${File.separator}")) {
+                def relativePath = rootDir.toPath().relativize(file.toPath()).toString().replace(File.separator, "/")
+                todos.add(relativePath)
+            }
+        }
+    }
+    todos.sort()
+    def sb = new StringBuilder()
+    sb << "# TODO Index (Repo Agent)\n\n"
+    sb << "This file is auto-generated by `tools/scripts/update_todo_index.sh`.\n"
+    sb << "Do not edit by hand.\n\n"
+    sb << "## Root TODO\n"
+    sb << "- `TODO.md` (repo-level orchestration and wiring tasks)\n\n"
+    sb << "## Capsule TODOs\n"
+    if (todos.isEmpty()) {
+        sb << "- (none found)\n"
+    } else {
+        todos.each { todo ->
+            sb << "- `${todo}`\n"
+        }
+    }
+    sb << "\n## How to Maintain\n"
+    sb << "- Repo agents run `tools/scripts/update_todo_index.sh` when a capsule is added or removed.\n"
+    sb << "- Commit hook (if installed) updates this file automatically.\n"
+    sb << "- Capsule agents never edit this file.\n"
+    return sb.toString()
+}
+
+tasks.register('verifyTodoIndex') {
+    group = 'verification'
+    description = 'Ensures docs/TODO_INDEX.md matches current capsule TODOs.'
+    doLast {
+        def indexFile = file('docs/TODO_INDEX.md')
+        if (!indexFile.exists()) {
+            throw new GradleException("Missing docs/TODO_INDEX.md. Run tools/scripts/update_todo_index.sh")
+        }
+        def expected = buildTodoIndexContent()
+        def actual = indexFile.text
+        if (actual != expected) {
+            throw new GradleException("docs/TODO_INDEX.md is out of date. Run tools/scripts/update_todo_index.sh")
+        }
+    }
+}
+
+tasks.register('verifyContractIndex', Exec) {
+    group = 'verification'
+    description = 'Ensures docs/contracts/CONTRACT_INDEX.md matches current contract sources.'
+    commandLine "${rootDir}/tools/scripts/update_contract_index.sh", "--check"
+}
+
+def rootCheck = tasks.findByName('check')
+if (rootCheck == null) {
+    tasks.register('check') {
+        dependsOn tasks.named('verifyTodoIndex')
+        dependsOn tasks.named('verifyContractIndex')
+    }
+} else {
+    rootCheck.dependsOn tasks.named('verifyTodoIndex')
+    rootCheck.dependsOn tasks.named('verifyContractIndex')
+}
+
+tasks.register('printTargets') {
+    group = 'help'
+    description = 'Prints the pinned versions for the project.'
+    doLast {
+        println "Verbum Minecraft Targets:"
+        println "Minecraft: ${project.minecraft_version}"
+        println "Loader: ${project.loader_version}"
+        println "Fabric API: ${project.fabric_version}"
+        println "Loom: ${project.loom_version}"
+        println "Mappings: Mojang (official)"
+        println "Java: ${project.java_version}"
+    }
+}
+
+tasks.register('updateTargetsDoc') {
+    group = 'documentation'
+    description = 'Updates docs/TARGETS.md from gradle.properties.'
+    doLast {
+        def targetsFile = file('docs/TARGETS.md')
+        targetsFile.text = """# Verbum Minecraft Targets (Pinned)
+
+This is the single source of truth for the project's technical targets and dependencies.
+Generated from gradle.properties via `./gradlew updateTargetsDoc`.
+
+| Component | Target Version |
+|---|---|
+| Minecraft | ${project.minecraft_version} |
+| Mappings | Mojang (official) |
+| Loader | Fabric ${project.loader_version} |
+| Fabric API | ${project.fabric_version} |
+| Java | ${project.java_version} |
+| Loom | ${project.loom_version} |
+
+## Compatibility Status
+- **Client:** ✅ Supported
+- **Dedicated Server:** ✅ Supported
+- **Rendering:** Sodium-compatible, Iris-compatible (Indium recommended for FRAPI support)
+"""
+        println "Updated docs/TARGETS.md"
+    }
+}

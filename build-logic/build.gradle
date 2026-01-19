@@ -1,0 +1,10 @@
+allprojects {
+    group = 'com.verbum_minecraft.buildlogic'
+    version = '1.0-SNAPSHOT'
+    
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+    }
+}

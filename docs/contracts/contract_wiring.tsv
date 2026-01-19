@@ -1,0 +1,13 @@
+# fqn|status|wiring_paths|notes
+# status: wired|not_wired|partial|unknown
+# wiring_paths: semicolon-separated repo-relative paths
+# After edits, run: tools/scripts/update_contract_index.sh
+com.verbum_minecraft.spi.FeatureEntrypoint|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/VerbumVanilla.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/VerbumVisions.java|ServiceLoader discovery and lifecycle calls
+com.verbum_minecraft.api.content.FeatureContext|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/AssemblyFeatureContext.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/AssemblyFeatureContext.java|Assembly provides context to features
+com.verbum_minecraft.api.content.ContentSink|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java|Item and book registration into Minecraft registries
+com.verbum_minecraft.api.content.ItemDef|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java|ItemDef mapped to Item.Properties and Registry.register
+com.verbum_minecraft.api.content.BookDef|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java|WrittenBookItem with WRITTEN_BOOK_CONTENT; vanilla page limits apply
+com.verbum_minecraft.api.content.VerbumId|wired|assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java;assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java|VerbumId mapped to Identifier
+com.verbum_minecraft.api.content.ContentType|not_wired||No assembly binding yet
+com.verbum_minecraft.api.energy.Energy|not_wired||No assembly binding yet
+com.verbum_minecraft.api.fluid.Fluid|not_wired||No assembly binding yet

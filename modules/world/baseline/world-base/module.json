@@ -1,0 +1,7 @@
+{
+  "id": "world-base",
+  "domain": "world",
+  "edition": "vanilla-plus",
+  "providesFeature": false,
+  "dependsOn": []
+}

@@ -1,0 +1,11 @@
+// build.gradle (modules/core/baseline/content-code)
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+dependencies {
+    implementation project(':modules:core:api')
+    implementation project(':modules:core:spi')
+    implementation project(':modules:core:runtime')
+}

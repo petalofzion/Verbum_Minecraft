@@ -1,0 +1,7 @@
+{
+  "id": "tech-base",
+  "domain": "tech",
+  "edition": "visions",
+  "providesFeature": false,
+  "dependsOn": []
+}

@@ -1,0 +1,7 @@
+{
+  "id": "magic-base",
+  "domain": "magic",
+  "edition": "visions",
+  "providesFeature": false,
+  "dependsOn": []
+}

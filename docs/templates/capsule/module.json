@@ -1,0 +1,11 @@
+{
+  "id": "feature-<slug>",
+  "domain": "<domain>",
+  "edition": "vanilla-plus",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.<domain>.<feature>.<FeatureEntrypoint>",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

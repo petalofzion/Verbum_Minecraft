@@ -1,0 +1,19 @@
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+    id 'me.champeau.jmh' version '0.7.2'
+}
+
+dependencies {
+    implementation project(':modules:core:api')
+    implementation project(':modules:core:spi')
+    implementation project(':modules:core:runtime')
+}
+
+// JMH Configuration
+jmh {
+    fork = 1
+    warmupIterations = 3
+    iterations = 5
+    benchmarkMode = ['thrpt']
+    timeUnit = 's'
+}

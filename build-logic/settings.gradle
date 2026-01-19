@@ -1,0 +1,13 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = 'https://maven.fabricmc.net/' }
+    }
+}
+
+rootProject.name = "verbum-minecraft-build-logic"
+
+include("verbum-minecraft.java-conventions")
+include("verbum-minecraft.module-boundaries")
+include("verbum-minecraft.no-alloc-checks")

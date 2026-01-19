@@ -1,0 +1,9 @@
+// build.gradle (modules/core/spi)
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+dependencies {
+    implementation project(':modules:core:api')
+}

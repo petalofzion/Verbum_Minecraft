@@ -1,0 +1,13 @@
+// build.gradle (modules/core/baseline/content-data)
+// This is the build file for the 'modules/core/baseline/content-data' module.
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+sourceSets {
+    main {
+        java { srcDirs = [] }
+        resources { srcDirs = ['src/main/resources'] }
+    }
+}

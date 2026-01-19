@@ -1,0 +1,11 @@
+{
+  "id": "core-ux-framework",
+  "domain": "core",
+  "edition": "vanilla-plus",
+  "providesFeature": false,
+  "dependsOn": [
+    "core-api",
+    "core-spi",
+    "core-runtime"
+  ]
+}

@@ -1,0 +1,9 @@
+// build.gradle (modules/core/runtime)
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+dependencies {
+    // Runtime utilities - no internal project dependencies
+}

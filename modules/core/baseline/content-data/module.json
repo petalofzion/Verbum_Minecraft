@@ -1,0 +1,7 @@
+{
+  "id": "core-content-data",
+  "domain": "core",
+  "edition": "vanilla-plus",
+  "providesFeature": false,
+  "dependsOn": []
+}

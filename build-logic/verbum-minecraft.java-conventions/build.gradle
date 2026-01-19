@@ -1,0 +1,17 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+maven { url = "https://maven.fabricmc.net/" }
+}
+
+gradlePlugin {
+    plugins {
+        javaConventions {
+            id = 'com.verbum_minecraft.java-conventions'
+            implementationClass = 'com.verbum_minecraft.buildlogic.JavaConventionsPlugin'
+        }
+    }
+}

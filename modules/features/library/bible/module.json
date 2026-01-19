@@ -1,0 +1,11 @@
+{
+  "id": "feature-bible",
+  "domain": "library",
+  "edition": "vanilla-plus",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.library.bible.BibleFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

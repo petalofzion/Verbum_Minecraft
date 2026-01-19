@@ -1,0 +1,11 @@
+{
+  "id": "core-feature-core",
+  "domain": "core",
+  "edition": "vanilla-plus",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.feature_core.CoreFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

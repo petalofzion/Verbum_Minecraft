@@ -1,0 +1,17 @@
+{
+  "id": "assembly-visions",
+  "domain": "assembly",
+  "edition": "visions",
+  "providesFeature": false,
+  "dependsOn": [
+    "core-api",
+    "core-spi",
+    "core-sim-kernel",
+    "core-runtime",
+    "core-ux-framework",
+    "core-vanilla-core",
+    "feature-bible",
+    "magic-base",
+    "tech-base"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "verbum_visions",
+  "version": "${version}",
+  "name": "Verbum: Visions",
+  "description": "The total conversion experience of Verbum Minecraft.",
+  "authors": [ "Auriella" ],
+  "contact": {
+    "email": "support@verbum-minecraft.org"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [ "com.verbum_minecraft.visions.VerbumVisions" ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

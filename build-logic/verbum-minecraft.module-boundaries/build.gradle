@@ -1,0 +1,12 @@
+plugins {
+    id 'java-gradle-plugin'
+}
+
+gradlePlugin {
+    plugins {
+        moduleBoundaries {
+            id = 'com.verbum_minecraft.module-boundaries'
+            implementationClass = 'com.verbum_minecraft.buildlogic.ModuleBoundariesPlugin'
+        }
+    }
+}

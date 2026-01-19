@@ -1,0 +1,17 @@
+# CODEOWNERS
+# Global owner
+* @petalofzion
+
+# Hot path and Core modules
+modules/core/sim-kernel/ @petalofzion
+modules/core/api/        @petalofzion
+modules/core/spi/        @petalofzion
+modules/core/runtime/    @petalofzion
+build-logic/             @petalofzion
+
+# Assemblies
+assemblies/              @petalofzion
+
+# Documentation
+docs/runtime-constitution @petalofzion
+docs/ARCHITECTURE_MAP.md  @petalofzion

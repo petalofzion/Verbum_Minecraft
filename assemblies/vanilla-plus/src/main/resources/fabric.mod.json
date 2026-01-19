@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "verbum_vanilla",
+  "version": "${version}",
+  "name": "Verbum: Vanilla",
+  "description": "The Vanilla+ core experience of Verbum Minecraft.",
+  "authors": [ "Auriella" ],
+  "contact": {
+    "email": "support@verbum-minecraft.org"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [ "com.verbum_minecraft.vanilla.VerbumVanilla" ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

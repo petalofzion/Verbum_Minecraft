@@ -1,0 +1,7 @@
+{
+  "id": "core-vanilla-core",
+  "domain": "core",
+  "edition": "vanilla-plus",
+  "providesFeature": false,
+  "dependsOn": []
+}

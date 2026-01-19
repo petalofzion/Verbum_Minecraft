@@ -1,0 +1,80 @@
+# Verbum Module Manifest
+# This file tracks module metadata for the Verbum Minecraft modular monolith.
+
+[modules."modules:core:api"]
+name = "Core API"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["api", "contract"]
+
+[modules."modules:core:spi"]
+name = "Core SPI"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["spi", "discovery"]
+
+[modules."modules:core:sim-kernel"]
+name = "Simulation Kernel"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["kernel", "performance"]
+
+[modules."modules:core:runtime"]
+name = "Core Runtime"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["runtime", "utilities"]
+
+[modules."modules:core:ux-framework"]
+name = "UX Framework"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["client", "rendering"]
+
+[modules."modules:core:baseline:vanilla-core"]
+name = "Vanilla Core"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["vanilla", "baseline"]
+
+[modules."modules:core:baseline:feature-core"]
+name = "Feature Core"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["feature", "baseline"]
+
+[modules."modules:core:baseline:content-data"]
+name = "Content Data"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["data", "resources"]
+
+[modules."modules:core:baseline:content-code"]
+name = "Content Code"
+edition = ["vanilla-plus", "visions"]
+category = "core"
+tags = ["registration", "content"]
+
+[modules."modules:tech:visions-only:tech-base"]
+name = "Tech Base"
+edition = ["visions"]
+category = "tech"
+tags = ["tech", "machinery"]
+
+[modules."modules:magic:visions-only:magic-base"]
+name = "Magic Base"
+edition = ["visions"]
+category = "magic"
+tags = ["magic", "arcane"]
+
+[modules."modules:world:baseline:world-base"]
+name = "World Base"
+edition = ["vanilla-plus", "visions"]
+category = "world"
+tags = ["worldgen", "biomes"]
+
+[modules."modules:features:library:bible"]
+name = "Bible"
+edition = ["vanilla-plus", "visions"]
+category = "library"
+tags = ["library", "books", "feature"]

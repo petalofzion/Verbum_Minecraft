@@ -1,0 +1,40 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    includeBuild('build-logic')
+}
+
+rootProject.name = "Verbum_Minecraft"
+
+/**
+ * Recursive auto-discovery for all modules and assemblies.
+ * Tightened rule: A module is only included if it contains both a build.gradle
+ * AND a machine-readable metadata file (module.json or module.yaml).
+ */
+def discoverModules(File dir) {
+    dir.eachDir { subDir ->
+        boolean hasBuildScript = new File(subDir, "build.gradle").exists() || new File(subDir, "build.gradle.kts").exists()
+        boolean hasMetadata = new File(subDir, "module.json").exists() || new File(subDir, "module.yaml").exists()
+        
+        if (hasBuildScript && hasMetadata) {
+            def relativePath = rootDir.toPath().relativize(subDir.toPath()).toString().replace(File.separator, ':')
+            include(relativePath)
+        } else {
+            discoverModules(subDir)
+        }
+    }
+}
+
+discoverModules(new File(rootDir, "modules"))
+discoverModules(new File(rootDir, "assemblies"))
+
+// Note: Tools are currently standalone utilities or datagen projects.
+// They are not yet migrated to the unified module.json discovery system.
+// To enable discovery for a tool, add a module.json and build.gradle to its folder.
+// discoverModules(new File(rootDir, "tools")) 
