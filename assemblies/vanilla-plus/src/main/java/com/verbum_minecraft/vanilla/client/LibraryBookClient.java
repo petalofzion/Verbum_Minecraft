@@ -28,19 +28,19 @@ public final class LibraryBookClient {
             pages = LibraryBookSupport.library().load(bookId);
         } catch (IOException e) {
             LOGGER.warn("Failed to load library book {}", bookId.compactId(), e);
-            openError("Failed to load book content.");
+            openError(bookId, "Failed to load book content.");
             return;
         }
 
         List<Component> formattedPages = paginateForBookView(pages, Minecraft.getInstance().font);
         BookViewScreen.BookAccess access = new BookViewScreen.BookAccess(formattedPages);
-        Minecraft.getInstance().setScreen(new LibraryBookView(access));
+        Minecraft.getInstance().setScreen(new LibraryBookView(bookId, access));
     }
 
-    private static void openError(String message) {
+    private static void openError(BookId bookId, String message) {
         List<Component> pages = List.of(Component.literal(message));
         BookViewScreen.BookAccess access = new BookViewScreen.BookAccess(pages);
-        Minecraft.getInstance().setScreen(new LibraryBookView(access));
+        Minecraft.getInstance().setScreen(new LibraryBookView(bookId, access));
     }
 
     private static List<Component> paginateForBookView(BookPages pages, Font font) {
