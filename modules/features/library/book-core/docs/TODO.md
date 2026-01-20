@@ -9,8 +9,11 @@ This file tracks **capsule-local** work only. It is maintained by capsule agents
 - If you identify cross-module work (API/SPI/assemblies), log it in `docs/agent-logs/` and stop.
 
 ## Tasks
-- [ ] Define book identity schema (book_id, edition, bookmark).
-- [ ] Draft packaged library layout (manifest + text locations).
-- [ ] Implement pagination cache utilities (pure logic).
-- [ ] Add BookCoreFeature entrypoint stub.
+- [x] Define book identity schema (book_id, edition, bookmark).
+- [x] Draft packaged library layout (manifest + text locations).
+- [x] Implement pagination cache utilities (pure logic).
+- [x] Add BookCoreFeature entrypoint stub.
 - [x] Log capability sweep for required core contracts and assembly hooks.
+- [x] Stage 2: Add BookBookmark record for bookId + page tracking.
+- [x] Stage 2: Add BookChapter record with title and startPage.
+- [x] Stage 2: Add BookTableOfContents validation and page lookup.

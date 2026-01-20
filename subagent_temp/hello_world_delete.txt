@@ -1,5 +1,0 @@
-Removed `hello_world.py`.
-
-No tests run (not applicable).
-
-If you want, I can run `git status` to confirm the deletion.

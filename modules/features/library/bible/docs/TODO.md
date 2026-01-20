@@ -9,6 +9,6 @@ This file tracks **capsule-local** work only. It is maintained by capsule agents
 - If you identify cross-module work (API/SPI/assemblies), log it in `docs/agent-logs/` and stop.
 
 ## Tasks
-- [ ] Verify Bible item appears in creative inventory once creative tab wiring exists.
+- [ ] Verify Bible item appears in creative inventory (creative tab wiring implemented; runtime verification pending).
 - [x] Register Bible as a written book via `BookDef`.
 - [x] Add placeholder Bible book content asset.

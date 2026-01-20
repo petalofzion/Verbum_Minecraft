@@ -1,0 +1,8 @@
+Added the stage-2 offline UX utilities in pure Java with validation and page lookup, and marked the stage-2 tasks complete in the capsule TODO. Implemented new immutable data records/classes under the book-core package to keep everything capsule-local and pure logic/data.
+
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookBookmark.java` adds book/page tracking with validation and a start helper.
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookChapter.java` adds title/startPage validation for chapter entries.
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookTableOfContents.java` provides an immutable chapter list, order validation, and page lookup.
+- `modules/features/library/book-core/docs/TODO.md` adds and marks the stage-2 tasks complete.
+
+Tests not run (per instruction).

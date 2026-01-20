@@ -1,0 +1,36 @@
+**Stage-1 Status**
+- Implemented core logic pieces: `BookId` parsing/formatting + resource path mapping in `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookId.java`, pagination with explicit break support and hard page/char limits in `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookPages.java`, and limit constants in `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookPageLimits.java`.
+- Implemented offline library loader + cache with raw-byte cap and per-book pagination keying in `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookLibrary.java`.
+- Feature entrypoint stub is registered but does no content registration yet in `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookCoreFeature.java` and `modules/features/library/book-core/src/main/resources/META-INF/services/com.verbum_minecraft.spi.FeatureEntrypoint`.
+- Capsule TODO marks all items done in `modules/features/library/book-core/docs/TODO.md`, but Stage-1 acceptance in `modules/features/library/book-core/docs/MVP.md` is only partially satisfied by current code.
+
+**Gaps**
+- No core API/SPI contracts for book handle/library resolver/pagination cache; this is already logged as an open issue in `modules/features/library/book-core/docs/agent-logs/2026-01-19_issue_book-library-contracts.md`.
+- No Bible item or BookDef registration; entrypoint register() is empty, so Stage-1 “Bible item uses a book handle” is not implemented.
+- No packaged book content resources (e.g., `assets/verbum/books/*.txt`) or manifest layout present under `modules/features/library/book-core/src/main/resources/`.
+- No assembly wiring hooks to attach `book_id` metadata or intercept book open; required by Stage-1 but outside capsule scope.
+- No attribution/license entry for Bible text per PRD.
+
+**Files Read**
+- `AGENTS.md`
+- `FUNNELING.md`
+- `docs/agents/CAPSULE_AGENT.md`
+- `docs/ARCHITECTURE_MAP.md`
+- `docs/runtime-constitution.md`
+- `docs/contracts/CORE_API.md`
+- `docs/contracts/CONTRACT_INDEX.md`
+- `docs/GOTCHAS.md`
+- `modules/features/library/book-core/AGENTS.md`
+- `modules/features/library/book-core/README.md`
+- `modules/features/library/book-core/docs/PRD.md`
+- `modules/features/library/book-core/docs/MVP.md`
+- `modules/features/library/book-core/docs/TODO.md`
+- `modules/features/library/book-core/docs/agent-logs/README.md`
+- `modules/features/library/book-core/docs/agent-logs/2026-01-19_issue_book-library-contracts.md`
+- `modules/features/library/book-core/module.json`
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookCoreFeature.java`
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookPageLimits.java`
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookId.java`
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookPages.java`
+- `modules/features/library/book-core/src/main/java/com/verbum_minecraft/features/library/bookcore/BookLibrary.java`
+- `modules/features/library/book-core/src/main/resources/META-INF/services/com.verbum_minecraft.spi.FeatureEntrypoint`

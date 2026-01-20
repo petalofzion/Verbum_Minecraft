@@ -1,0 +1,9 @@
+Updated the Bible capsule TODO to reflect that creative-tab wiring is already implemented and that runtime verification is still pending, leaving PRD/MVP unchanged because they are consistent with the current state.
+
+Details
+- Updated `modules/features/library/bible/docs/TODO.md` to clarify creative-tab wiring status and pending runtime verification.
+- Reviewed `modules/features/library/bible/docs/PRD.md` and `modules/features/library/bible/docs/MVP.md`; no inconsistencies found, so no edits.
+
+Tests not run (per instructions).
+
+If you want, I can log the pending runtime verification or perform the manual in-game check next.
