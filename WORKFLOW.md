@@ -309,7 +309,7 @@ Why:
 - later book features (manuals, grimoires, indexing, shelves) extend the same domain without new scaffolding
 
 If “book overhaul” becomes large, split within the domain by capsules:
-- `library/book-core/` (shared book engine)
+- `library/book-enhancement/` (shared book engine)
 - `library/bible/`
 - `library/manuals/`
 - `library/library-blocks/`

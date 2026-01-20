@@ -18,10 +18,10 @@ Provide a Bible item that registers a library-backed book entry so players can r
 
 ## Performance Notes
 - Hot path: no.
-- Content is loaded once and cached by the book-core library.
+- Content is loaded once and cached by the book-enhancement library.
 
 ## Edition Target
-- Vanilla+ (baseline; included in Visions assembly).
+- Both editions (vanilla-plus and visions).
 
 ## API / SPI Needs
 - Uses `LibraryBookDef` to register the library-backed Bible.

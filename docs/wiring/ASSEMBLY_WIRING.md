@@ -28,7 +28,7 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
   - Supported keys: `books`, `tools`, `ingredients`, `combat`, `food`, `building`, `functional`, `redstone`, `spawn_eggs`
   - Mapping uses vanilla creative tabs (e.g., `books` → `TOOLS_AND_UTILITIES`).
 - `BookDef` → `WrittenBookItem` + `DataComponents.WRITTEN_BOOK_CONTENT` (vanilla book limits apply).
-- `LibraryBookDef` → library-backed `WrittenBookItem` that opens `BookViewScreen` with pages loaded from the Book Core library (offline, classpath resources). Item content uses a tiny placeholder page to avoid large NBT payloads. The client paginates text to `BookViewScreen` text width/height so pages are not truncated.
+- `LibraryBookDef` → library-backed `WrittenBookItem` that opens `BookViewScreen` with pages loaded from the Book Enhancement library (offline, classpath resources). Item content uses a tiny placeholder page to avoid large NBT payloads. The client paginates text to `BookViewScreen` text width/height so pages are not truncated.
 
 ## Resource Expectations (Items)
 Capsule resources must exist for any item:
@@ -51,7 +51,7 @@ Written books also require:
 - `assets/<namespace>/books/<path>.txt` (UTF‑8; pages split by `---PAGE---`)
 
 `BookDef` wiring enforces vanilla limits (`WrittenBookContent.PAGE_LENGTH`, `WritableBookContent.MAX_PAGES`).
-`LibraryBookDef` uses Book Core limits (`BookPageLimits`) instead.
+`LibraryBookDef` uses Book Enhancement limits (`BookPageLimits`) instead.
 
 ## When Adding New Contracts
 If you introduce new contracts in `modules/core/api` or `modules/core/spi`:

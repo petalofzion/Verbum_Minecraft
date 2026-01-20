@@ -1,6 +1,6 @@
 package com.verbum_minecraft.visions.registry;
 
-import com.verbum_minecraft.features.library.bookcore.BookId;
+import com.verbum_minecraft.features.library.bookenhancement.BookId;
 import java.lang.reflect.Method;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

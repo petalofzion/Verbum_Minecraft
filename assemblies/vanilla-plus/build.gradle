@@ -24,7 +24,7 @@ dependencies {
     implementation project(':modules:core:baseline:content-data')
     implementation project(':modules:core:baseline:content-code')
     implementation project(':modules:features:library:bible')
-    implementation project(':modules:features:library:book-core')
+    implementation project(':modules:features:library:book-enhancement')
 
     // Bundle module outputs into the final mod jar
     include project(':modules:core:api')
@@ -38,7 +38,7 @@ dependencies {
     include project(':modules:core:baseline:content-data')
     include project(':modules:core:baseline:content-code')
     include project(':modules:features:library:bible')
-    include project(':modules:features:library:book-core')
+    include project(':modules:features:library:book-enhancement')
 }
 
 def modVersion = project.version.toString()
@@ -54,7 +54,7 @@ def resourceModulePaths = [
     ':modules:core:baseline:content-data',
     ':modules:core:baseline:content-code',
     ':modules:features:library:bible',
-    ':modules:features:library:book-core'
+    ':modules:features:library:book-enhancement'
 ]
 
 sourceSets {

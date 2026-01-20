@@ -3,7 +3,8 @@ package com.verbum_minecraft.vanilla.client;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import com.verbum_minecraft.features.library.bookcore.BookId;
+import com.verbum_minecraft.features.library.bookenhancement.BookBookmarkStore;
+import com.verbum_minecraft.features.library.bookenhancement.BookId;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -20,24 +21,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Environment(EnvType.CLIENT)
-final class LibraryBookBookmarks {
+final class LibraryBookBookmarks implements BookBookmarkStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibraryBookBookmarks.class);
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type MAP_TYPE = new TypeToken<Map<String, Integer>>() { }.getType();
     private static final Object LOCK = new Object();
 
+    private static final LibraryBookBookmarks INSTANCE = new LibraryBookBookmarks();
     private static Map<String, Integer> bookmarks = new HashMap<>();
     private static boolean loaded;
 
     private LibraryBookBookmarks() {
     }
 
-    static int get(BookId bookId) {
+    static BookBookmarkStore store() {
+        return INSTANCE;
+    }
+
+    @Override
+    public int get(BookId bookId) {
         ensureLoaded();
         return bookmarks.getOrDefault(bookId.compactId(), -1);
     }
 
-    static void set(BookId bookId, int page) {
+    @Override
+    public void set(BookId bookId, int page) {
         ensureLoaded();
         String key = bookId.compactId();
         if (page <= 0) {

@@ -35,6 +35,7 @@ You have broader scope and must read broader context.
 - **Mojang mappings** only (no Yarn names).
 - Preserve module boundaries in `docs/ARCHITECTURE_MAP.md`.
 - Keep assemblies as the only place for Fabric/Minecraft classes and config/IO.
+- **Logic ownership:** Feature/module logic lives in capsules under `modules/*`. Repo agents should only wire and integrate. If capsule logic is needed, spawn a capsule subagent using `docs/agents/subagent_orchestration.md`.
 
 ## Common Pitfalls
 - Adding feature logic to assemblies.

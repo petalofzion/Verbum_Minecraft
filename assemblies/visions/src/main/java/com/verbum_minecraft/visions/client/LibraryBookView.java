@@ -1,6 +1,8 @@
 package com.verbum_minecraft.visions.client;
 
-import com.verbum_minecraft.features.library.bookcore.BookId;
+import com.verbum_minecraft.features.library.bookenhancement.BookBookmarkStore;
+import com.verbum_minecraft.features.library.bookenhancement.BookId;
+import com.verbum_minecraft.features.library.bookenhancement.BookNavigation;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
@@ -20,11 +22,13 @@ final class LibraryBookView extends BookViewScreen {
     private EditBox pageBox;
     private int currentPageIndex;
     private int bookmarkPage;
+    private final BookBookmarkStore bookmarkStore;
 
     LibraryBookView(BookId bookId, BookAccess access) {
         super(access);
         this.bookId = bookId;
         this.access = access;
+        this.bookmarkStore = LibraryBookBookmarks.store();
     }
 
     static int textWidth() {
@@ -50,7 +54,7 @@ final class LibraryBookView extends BookViewScreen {
         int x = left + IMAGE_WIDTH - totalWidth;
         int y = top + 8;
 
-        bookmarkPage = LibraryBookBookmarks.get(bookId);
+        bookmarkPage = bookmarkStore.get(bookId);
 
         pageBox = new EditBox(font, x, y, PAGE_BOX_WIDTH, CONTROL_HEIGHT, Component.literal("Page"));
         pageBox.setMaxLength(6);
@@ -80,25 +84,19 @@ final class LibraryBookView extends BookViewScreen {
         if (pageBox == null) {
             return;
         }
-        String value = pageBox.getValue().trim();
-        if (value.isEmpty()) {
-            if (bookmarkPage > 0) {
-                setPage(bookmarkPage - 1);
-            }
-            return;
-        }
-        try {
-            int page = Integer.parseInt(value);
-            if (page > 0) {
-                setPage(page - 1);
-            }
-        } catch (NumberFormatException ignored) {
+        int targetIndex = BookNavigation.resolvePageIndex(
+            pageBox.getValue(),
+            bookmarkPage,
+            access.getPageCount()
+        );
+        if (targetIndex >= 0) {
+            setPage(targetIndex);
         }
     }
 
     private void saveBookmark() {
-        bookmarkPage = currentPageIndex + 1;
-        LibraryBookBookmarks.set(bookId, bookmarkPage);
+        bookmarkPage = BookNavigation.toPageNumber(currentPageIndex);
+        bookmarkStore.set(bookId, bookmarkPage);
         updatePageHint();
     }
 

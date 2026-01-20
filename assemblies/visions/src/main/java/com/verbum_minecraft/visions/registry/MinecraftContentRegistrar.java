@@ -5,7 +5,7 @@ import com.verbum_minecraft.api.content.ContentSink;
 import com.verbum_minecraft.api.content.ItemDef;
 import com.verbum_minecraft.api.content.LibraryBookDef;
 import com.verbum_minecraft.api.content.VerbumId;
-import com.verbum_minecraft.features.library.bookcore.BookId;
+import com.verbum_minecraft.features.library.bookenhancement.BookId;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
