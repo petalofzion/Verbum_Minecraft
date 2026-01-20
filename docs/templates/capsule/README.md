@@ -25,3 +25,6 @@ Describe the feature in 2-3 sentences: what it provides and what it does not do.
 - `src/main/resources/assets/<namespace>/models/item/<path>.json`
 - `src/main/resources/assets/<namespace>/textures/item/<path>.png`
 - `src/main/resources/assets/<namespace>/lang/en_us.json`
+
+**1.21.11 note:** The `items/<path>.json` definition is required to map the
+item to its model. Older versions did not require this extra step.

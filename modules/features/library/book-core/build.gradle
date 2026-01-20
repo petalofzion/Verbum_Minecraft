@@ -1,0 +1,10 @@
+// build.gradle (modules/features/library/bible)
+
+plugins {
+    id 'com.verbum_minecraft.java-conventions'
+}
+
+dependencies {
+    implementation project(':modules:core:api')
+    implementation project(':modules:core:spi')
+}

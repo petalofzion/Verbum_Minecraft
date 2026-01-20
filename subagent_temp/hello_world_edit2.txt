@@ -1,0 +1,4 @@
+Updated the greeting to use a module-level constant and print “Hello, Verbum!” while keeping the test note in `hello_world.py`.
+
+Details:
+- Added `GREETING` at module scope and used it in `main` in `hello_world.py`.

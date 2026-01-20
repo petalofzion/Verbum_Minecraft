@@ -11,7 +11,8 @@ Stay siloed. Do not touch wiring or cross-module code.
 5. `docs/runtime-constitution.md`
 6. `docs/contracts/CORE_API.md`
 7. `docs/contracts/CONTRACT_INDEX.md`
-8. Capsule docs: `README.md`, `docs/PRD.md`, `docs/MVP.md`, `docs/TODO.md`, `docs/agent-logs/`
+8. `docs/GOTCHAS.md` (version-specific pitfalls that affect assets and data)
+9. Capsule docs: `README.md`, `docs/PRD.md`, `docs/MVP.md`, `docs/TODO.md`, `docs/agent-logs/`
 
 ## Allowed Paths
 - Only your capsule folder (example: `modules/features/library/bible/**`)

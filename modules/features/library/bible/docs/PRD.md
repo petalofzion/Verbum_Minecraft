@@ -21,7 +21,7 @@ Provide a dedicated Bible item in Verbum that is discoverable in-game and serves
 - The capsule only registers data definitions.
 
 ## Edition Target
-- Vanilla+ and Visions.
+- Vanilla+ (baseline; included in Visions assembly).
 
 ## API / SPI Needs
 - None for MVP.

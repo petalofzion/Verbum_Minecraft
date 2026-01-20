@@ -12,10 +12,11 @@ You have broader scope and must read broader context.
 6. `docs/contracts/CORE_API.md`
 7. `docs/contracts/CONTRACT_INDEX.md`
 8. `docs/wiring/ASSEMBLY_WIRING.md`
-9. `docs/CONTRIBUTING.md`
-10. `CODEOWNERS`
-11. `TODO.md` and `docs/TODO_INDEX.md`
-12. Nearest `AGENTS.md` for any module you touch
+9. `docs/GOTCHAS.md` (version-specific pitfalls that affect wiring and assets)
+10. `docs/CONTRIBUTING.md`
+11. `CODEOWNERS`
+12. `TODO.md` and `docs/TODO_INDEX.md`
+13. Nearest `AGENTS.md` for any module you touch
 
 ## Typical Duties
 - Assembly wiring and Fabric/Minecraft integration (`assemblies/*`).

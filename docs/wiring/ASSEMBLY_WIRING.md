@@ -24,7 +24,9 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 **Current mapping:**
 - `ItemDef` → `Item.Properties` → `Registry.register(BuiltInRegistries.ITEM, id, item)`
 - `maxStackSize`, `fireproof`, `rarityOrdinal` are mapped directly.
-- `creativeTabKey` is **not wired yet** (TODO).
+- `creativeTabKey` is wired via Fabric ItemGroupEvents.
+  - Supported keys: `books`, `tools`, `ingredients`, `combat`, `food`, `building`, `functional`, `redstone`, `spawn_eggs`
+  - Mapping uses vanilla creative tabs (e.g., `books` → `TOOLS_AND_UTILITIES`).
 - `BookDef` → `WrittenBookItem` + `DataComponents.WRITTEN_BOOK_CONTENT` (vanilla book limits apply).
 
 ## Resource Expectations (Items)
@@ -35,6 +37,10 @@ Capsule resources must exist for any item:
 - `assets/<namespace>/lang/en_us.json`
 
 Missing assets result in the purple/black missing‑texture cube.
+
+**1.21.11 note:** The `items/<path>.json` file is required to map the item to
+its model. Missing it will show the missing-texture cube even if the model and
+texture files exist.
 
 **Resource loading:** Assemblies merge capsule `src/main/resources` into the final mod jar so client resource packs can see feature assets (excluding `META-INF/services/**`, which stays in module jars). If assets are missing in-game, this is the first wiring check.
 **Dev runs:** Assemblies also add module `src/main/resources` as resource roots for `runClient`/`runServer`, excluding `META-INF/services/**` to avoid duplicate `ServiceLoader` entries.

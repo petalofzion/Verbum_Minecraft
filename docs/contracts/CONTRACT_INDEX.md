@@ -30,7 +30,7 @@ Do not edit by hand.
 
 ### com.verbum_minecraft.api.content.ItemDef (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/ItemDef.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`; notes=ItemDef mapped to Item.Properties and Registry.register
+- Capabilities Matrix: wiring=wired; paths=`assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`; notes=ItemDef mapped to Item.Properties, Registry.register, and creativeTabKey → creative tab entries
 
 ### com.verbum_minecraft.api.content.VerbumId (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/VerbumId.java`

@@ -12,14 +12,17 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.network.Filterable;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.WrittenBookItem;
@@ -34,6 +37,7 @@ public class MinecraftContentRegistrar implements ContentSink {
 
         Item item = new Item(settings);
         Registry.register(BuiltInRegistries.ITEM, id, item);
+        registerCreativeTab(def, item);
     }
 
     @Override
@@ -47,6 +51,7 @@ public class MinecraftContentRegistrar implements ContentSink {
 
         Item item = new WrittenBookItem(settings);
         Registry.register(BuiltInRegistries.ITEM, id, item);
+        registerCreativeTab(itemDef, item);
     }
 
     private static Identifier toIdentifier(VerbumId id) {
@@ -70,9 +75,32 @@ public class MinecraftContentRegistrar implements ContentSink {
         };
         settings = settings.rarity(rarity);
 
-        // TODO: Map creativeTabKey to actual ItemGroups
-
         return settings;
+    }
+
+    private static void registerCreativeTab(ItemDef def, Item item) {
+        String key = def.creativeTabKey();
+        if (key == null || key.isBlank()) {
+            return;
+        }
+
+        ResourceKey<CreativeModeTab> tabKey = switch (key) {
+            case "books", "tools" -> CreativeModeTabs.TOOLS_AND_UTILITIES;
+            case "ingredients" -> CreativeModeTabs.INGREDIENTS;
+            case "combat" -> CreativeModeTabs.COMBAT;
+            case "food" -> CreativeModeTabs.FOOD_AND_DRINKS;
+            case "building" -> CreativeModeTabs.BUILDING_BLOCKS;
+            case "functional" -> CreativeModeTabs.FUNCTIONAL_BLOCKS;
+            case "redstone" -> CreativeModeTabs.REDSTONE_BLOCKS;
+            case "spawn_eggs" -> CreativeModeTabs.SPAWN_EGGS;
+            default -> null;
+        };
+
+        if (tabKey == null) {
+            return;
+        }
+
+        ItemGroupEvents.modifyEntriesEvent(tabKey).register(entries -> entries.accept(item));
     }
 
     private static WrittenBookContent buildWrittenBookContent(BookDef def) {

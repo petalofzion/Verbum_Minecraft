@@ -3,7 +3,7 @@
 ## Must-Have
 - Bible item registered via `FeatureEntrypoint`.
 - Human-readable name via language entry.
-- Placeholder icon/model using vanilla book texture.
+- Custom Bible icon/model asset.
 
 ## Out of Scope (for MVP)
 - Custom Bible UI or multi-page reading system.

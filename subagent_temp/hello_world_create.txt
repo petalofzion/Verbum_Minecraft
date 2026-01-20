@@ -1,0 +1,5 @@
+Created `hello_world.py` with a simple, structured greeting script and the required note.
+
+Path: `hello_world.py`
+
+If you want changes to the greeting text or structure, tell me.

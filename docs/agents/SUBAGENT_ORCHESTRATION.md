@@ -8,9 +8,11 @@ capture their final output, and validate their work without manual TUI interacti
 - Capture a **single final report** to a file.
 - Keep subagents siloed to their task scope.
 - Verify changes independently (do not trust stdout).
+- **Do not kill subagents.** Properly prompted `codex exec` runs do not hang; they may take time.
 
 ## Non-Interactive Spawn (Required)
-Use `codex exec` with `--output-last-message` and a prompt that ends with “stop”.
+Use `codex exec` with `--output-last-message` and a prompt that explicitly instructs:
+“End immediately after task completion and report.”
 
 ```bash
 codex exec --sandbox workspace-write --color never \
@@ -28,6 +30,11 @@ All subagent outputs must go in `subagent_temp/` at repo root.
 
 ```bash
 mkdir -p subagent_temp
+```
+
+If the folder already exists, **do not delete it**. Clear only the files inside:
+```bash
+rm -f subagent_temp/*
 ```
 
 All `--output-last-message` files **must** be written under `subagent_temp/`.
@@ -102,7 +109,7 @@ You are a capsule agent. Start at AGENTS.md and follow the funnel.
 Your scope is only modules/features/<domain>/<feature>/**.
 Task: review the capsule state (code, resources, docs, TODO, agent logs).
 Do not modify files. Do not run build/tests. Report findings and files read.
-End immediately after the report.
+End immediately after task completion and report.
 ```
 
 ### Capsule task (changes allowed)
@@ -111,15 +118,15 @@ You are a capsule agent. Start at AGENTS.md and follow the funnel.
 Your scope is only modules/features/<domain>/<feature>/**.
 Task: <describe changes>. Use only contracts in docs/contracts/CORE_API.md.
 If a capability is missing, do a capability sweep, log it in docs/agent-logs/,
-then stop. Run capsule commands listed in the capsule AGENTS.md.
-End immediately after the final report.
+then end immediately. Run capsule commands listed in the capsule AGENTS.md.
+End immediately after task completion and report.
 ```
 
 ### Repo task (wiring/integration)
 ```text
 You are a repo agent. Follow the repo agent read order in AGENTS.md.
 Task: <describe wiring work>. Respect restricted areas and architecture rules.
-Do not modify files outside the task scope. End immediately after the report.
+Do not modify files outside the task scope. End immediately after task completion and report.
 ```
 
 ## Output Capture (Required)
@@ -145,12 +152,12 @@ Never run parallel subagents that might edit the same file or shared index.
 codex exec -m gpt-5.2-codex -c model_reasoning_effort="low" \
   --sandbox workspace-write --color never \
   --output-last-message subagent_temp/readme_summary.txt \
-  "Summarize README.md in 5 concise bullets. Do not modify files. End immediately." &
+  "Summarize README.md in 5 concise bullets. Do not modify files. End immediately after task completion and report." &
 
 codex exec -m gpt-5.2-codex -c model_reasoning_effort="low" \
   --sandbox workspace-write --color never \
   --output-last-message subagent_temp/todo_summary.txt \
-  "Summarize TODO.md in 5 concise bullets. Do not modify files. End immediately." &
+  "Summarize TODO.md in 5 concise bullets. Do not modify files. End immediately after task completion and report." &
 
 wait
 ```
@@ -170,21 +177,10 @@ rg -n "" THROWAWAY.py
 python3 -m py_compile THROWAWAY.py
 ```
 
-## Timeouts and Stuck Sessions
-If `codex exec` does not exit, terminate it.
-
-Example timeout:
-```bash
-timeout 120s codex exec --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
-  "YOUR PROMPT HERE"
-```
-
-If needed, kill by PID:
-```bash
-ps -ax | rg "codex exec"
-kill <PID>
-```
+## Long-Running Sessions
+Do not kill subagents. We have validated that properly prompted `codex exec`
+sessions do not hang; they may take time to complete. If a report file is not
+created, re-check the prompt and output path, then re-run with the same scope.
 
 ## Optional Structured Output
 For machine parsing, provide a JSON schema and use `--output-schema`.
@@ -218,9 +214,11 @@ codex exec -m gpt-5.2-codex -c model_reasoning_effort="medium" \
 - **No final report file:** verify `--output-last-message` path.
 - **Incorrect file content:** always validate output before accepting.
 - **Scope drift:** enforce scope in the prompt and verify file paths touched.
+- **Assuming hangs:** do not kill subagents; re-check prompt and output path and wait.
 
 ## Clean-Up (Recommended)
 If the task was a test, remove artifacts after validation:
 ```bash
 rm -f THROWAWAY.py
+rm -f subagent_temp/*
 ```

@@ -39,7 +39,7 @@ Repo agents maintain wiring notes in `docs/contracts/contract_wiring.tsv` and re
 - `int maxStackSize`
 - `boolean fireproof`
 - `int rarityOrdinal` (`RARITY_*` constants)
-- `String creativeTabKey` (**not wired yet**; see repo wiring doc)
+- `String creativeTabKey` (wired in assemblies; see `docs/wiring/ASSEMBLY_WIRING.md`)
 
 **Example:**
 ```java
@@ -109,6 +109,11 @@ Item registration requires assets in the capsule resources:
 - `src/main/resources/assets/<namespace>/lang/en_us.json`
 
 **Lang entry:** `item.<namespace>.<path>` → display name
+
+**1.21.11 note:** The `items/<path>.json` file is required in 1.21.11 to map
+the item to its model. In older versions the `models/item/<path>.json` alone
+was sufficient. Missing the `items/<path>.json` file produces missing-texture
+items even when the model and PNG exist.
 
 ## Asset Checklist (for BookDef)
 Book registration also requires:

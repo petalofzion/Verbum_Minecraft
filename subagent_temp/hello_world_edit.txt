@@ -1,0 +1,4 @@
+Reviewed `hello_world.py`; it already meets the requirements (clean/idiomatic, test note intact, single string literal greeting). No changes needed.
+
+Next steps (if you want changes anyway):
+1. Tell me what style tweak you’d like (docstring, structure, etc.).

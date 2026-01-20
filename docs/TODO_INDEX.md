@@ -8,6 +8,7 @@ Do not edit by hand.
 
 ## Capsule TODOs
 - `modules/features/library/bible/docs/TODO.md`
+- `modules/features/library/book-core/docs/TODO.md`
 
 ## How to Maintain
 - Repo agents run `tools/scripts/update_todo_index.sh` when a capsule is added or removed.

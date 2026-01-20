@@ -1,0 +1,5 @@
+- Mission: single cohesive codebase with a unified object model and data-oriented design to hit 20 TPS at high render distance, plus a “data pledge” for backward-compatible saves and migrations.
+- Architecture: strict modular monolith with core API/SPI/sim-kernel, feature modules for content only, and assemblies as the only Minecraft/Fabric wiring layer; no cross-feature imports.
+- Editions: two build outputs—Vanilla+ (conservative) and Visions (full total conversion)—sharing core foundations with clear dependency boundaries.
+- Performance contract: five runtime laws, benchmark-gated hot paths (JMH + scenarios), and CI checks for build, style, tests, and benchmarks.
+- Contributor/agent rules: clean-room policy, ADR/attribution requirements, and explicit “do not” constraints (no per-block ticking, no unbenchmarked hot paths, no Forge support).
