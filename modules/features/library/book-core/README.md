@@ -21,4 +21,5 @@ Provide a library-backed book system that allows very large books (e.g., the ful
 - `docs/agent-logs/`
 
 ## Content Assets (Stage 1)
-- `src/main/resources/assets/verbum/books/` (packaged book text, UTF-8)
+- Content lives in feature capsules (e.g., `modules/features/library/bible`).
+- Book Core loads packaged resources from the runtime classpath.

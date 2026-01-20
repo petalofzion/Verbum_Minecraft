@@ -1,32 +1,32 @@
 # PRD: Bible Feature
 
 ## Purpose
-Provide a dedicated Bible item in Verbum that is discoverable in-game and serves as the foundation for future scripture reading systems.
+Provide a Bible item that registers a library-backed book entry so players can read the full Bible offline without storing megabytes in item data.
 
 ## Non-Goals
-- Custom UI or text rendering beyond vanilla item behavior (for now).
-- Custom simulation logic or ticking systems.
-- Cross-feature dependencies.
+- Custom reader UI beyond the library-backed book view.
+- Multiplayer sync or server-streaming behavior.
+- World-save mutations or player-written mega-books.
 
 ## User Stories
 - As a player, I can find a Bible item in creative inventory.
-- As a player, the Bible item has a distinct name and icon (even if placeholder).
+- As a player, I can open the Bible item and read the full text offline.
 
 ## Data Model
-- No new saved data in MVP.
-- No migrations required.
+- Bible item registers a `book_id` handle via core contracts.
+- Book content is packaged as a resource in this capsule.
 
 ## Performance Notes
 - Hot path: no.
-- The capsule only registers data definitions.
+- Content is loaded once and cached by the book-core library.
 
 ## Edition Target
 - Vanilla+ (baseline; included in Visions assembly).
 
 ## API / SPI Needs
-- None for MVP.
+- Uses `LibraryBookDef` to register the library-backed Bible.
 
 ## Test Plan
 - `./gradlew build`
 - `./gradlew check`
-- Manual: `./gradlew runClient`, confirm the Bible item is present in creative inventory.
+- Manual: `./gradlew runClient`, open the Bible item and verify full text loads.

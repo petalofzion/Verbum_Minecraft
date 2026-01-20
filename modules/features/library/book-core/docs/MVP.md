@@ -17,4 +17,4 @@
 - Build and check pass.
 
 ## Risks / Open Questions
-- Final translation and license selection (must add attribution + license).
+- Translation selected (Douay-Rheims via Project Gutenberg) with attribution and license recorded.

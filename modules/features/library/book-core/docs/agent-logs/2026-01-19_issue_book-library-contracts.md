@@ -2,7 +2,7 @@
 title: "Book library contracts and assembly hooks needed"
 date: 2026-01-19
 type: issue
-status: open
+status: resolved
 owner: codex
 capsule: library/book-core
 related: [modules/core/api, modules/core/spi, assemblies/vanilla-plus, assemblies/visions, modules/features/library/bible]
@@ -22,3 +22,8 @@ Capability sweep (requires repo-agent follow-up):
 - Add core API/SPI contracts: `BookId`, `BookHandle`, `BookManifest`, `BookLibrary`/`BookResolver`, pagination cache interface.
 - Add assembly hooks: attach `book_id` component to items, intercept book open to use library resolver, enforce hard limits.
 - Define packaged content layout and loader (offline-first).
+
+Resolved (repo agent):
+- Added `LibraryBookDef` contract to core API and wiring in both assemblies.
+- Assemblies now register library-backed book items and open a reader screen using `BookViewScreen`.
+- Library loader uses Book Core pagination and classpath resources.

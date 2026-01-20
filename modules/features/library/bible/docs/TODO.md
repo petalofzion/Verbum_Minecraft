@@ -10,5 +10,6 @@ This file tracks **capsule-local** work only. It is maintained by capsule agents
 
 ## Tasks
 - [ ] Verify Bible item appears in creative inventory (creative tab wiring implemented; runtime verification pending).
-- [x] Register Bible as a written book via `BookDef`.
-- [x] Add placeholder Bible book content asset.
+- [ ] Verify Bible reads the full text offline via the library-backed reader.
+- [x] Register Bible as a library-backed book via `LibraryBookDef`.
+- [x] Add full Bible content asset (Douay-Rheims) to `assets/verbum/books/bible.txt`.

@@ -15,7 +15,7 @@ Provide a library-backed book system so the vanilla written book can reference l
 - As a content author, I can ship large books as packaged resources.
 
 ## Data Model
-- Book identity stored in the item as compact metadata (e.g., `verbum:book_id`, `verbum:edition`, `verbum:bookmark`).
+- Book identity stored as a compact handle (Stage 1 uses the item definition; later stages can add `book_id`/bookmark components).
 - Book content stored as packaged resources (Stage 1-3).
 - Pagination cache keyed by `(book_id, locale, font, gui_scale, wrap_width)`.
 - No world-save data in Stage 1 (offline-only).
@@ -30,15 +30,16 @@ Provide a library-backed book system so the vanilla written book can reference l
 
 ## Staging Plan (Offline First)
 ### Stage 1: Library Pointer + Full Bible (Offline)
-- Vanilla written book becomes a handle with `book_id`.
+- Vanilla written book becomes a handle keyed by the item definition.
 - Packaged book library resolver (no network).
 - Pagination + caching so the full Bible is readable.
-- Hard limits: max raw text bytes (50 MB), max pages (20000), max page chars (8192).
+- Hard limits: max raw text bytes (128 MB), max pages (100000), max page chars (16384).
 
 ### Stage 2: Offline UX Enhancements
 - Table of contents / chapter index mapping.
 - Bookmarks and last-read position.
 - Improved pagination stability across client settings.
+- Page formatting heuristics (wrap width, paragraph handling).
 
 ### Stage 3: Offline “Nice-to-Have” Features
 - Crosslinks and footnotes (data-driven).

@@ -1,9 +1,9 @@
 package com.verbum_minecraft.features.library.bookcore;
 
 public record BookPageLimits(long maxRawBytes, int maxPages, int maxPageChars) {
-    public static final long PRD_MAX_RAW_BYTES = 50L * 1024L * 1024L;
-    public static final int PRD_MAX_PAGES = 20_000;
-    public static final int PRD_MAX_PAGE_CHARS = 8_192;
+    public static final long PRD_MAX_RAW_BYTES = 128L * 1024L * 1024L;
+    public static final int PRD_MAX_PAGES = 100_000;
+    public static final int PRD_MAX_PAGE_CHARS = 16_384;
     public static final BookPageLimits PRD_DEFAULTS =
         new BookPageLimits(PRD_MAX_RAW_BYTES, PRD_MAX_PAGES, PRD_MAX_PAGE_CHARS);
 

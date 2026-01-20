@@ -3,7 +3,9 @@ package com.verbum_minecraft.vanilla.registry;
 import com.verbum_minecraft.api.content.BookDef;
 import com.verbum_minecraft.api.content.ContentSink;
 import com.verbum_minecraft.api.content.ItemDef;
+import com.verbum_minecraft.api.content.LibraryBookDef;
 import com.verbum_minecraft.api.content.VerbumId;
+import com.verbum_minecraft.features.library.bookcore.BookId;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +52,21 @@ public class MinecraftContentRegistrar implements ContentSink {
             .component(DataComponents.WRITTEN_BOOK_CONTENT, content);
 
         Item item = new WrittenBookItem(settings);
+        Registry.register(BuiltInRegistries.ITEM, id, item);
+        registerCreativeTab(itemDef, item);
+    }
+
+    @Override
+    public void acceptLibraryBook(LibraryBookDef def) {
+        ItemDef itemDef = def.item();
+        Identifier id = toIdentifier(itemDef.id());
+        BookId bookId = LibraryBookSupport.register(def);
+
+        WrittenBookContent content = buildLibraryBookContent(def);
+        Item.Properties settings = buildItemProperties(itemDef, id)
+            .component(DataComponents.WRITTEN_BOOK_CONTENT, content);
+
+        Item item = new LibraryBookItem(settings, bookId);
         Registry.register(BuiltInRegistries.ITEM, id, item);
         registerCreativeTab(itemDef, item);
     }
@@ -107,6 +124,21 @@ public class MinecraftContentRegistrar implements ContentSink {
         List<String> pages = enforcePageLength(loadPages(def));
         List<Filterable<Component>> pageComponents = toComponents(pages);
         String title = truncate(def.title(), WrittenBookContent.TITLE_MAX_LENGTH);
+
+        return new WrittenBookContent(
+            Filterable.passThrough(title),
+            def.author(),
+            0,
+            pageComponents,
+            true
+        );
+    }
+
+    private static WrittenBookContent buildLibraryBookContent(LibraryBookDef def) {
+        String title = truncate(def.title(), WrittenBookContent.TITLE_MAX_LENGTH);
+        List<Filterable<Component>> pageComponents = List.of(
+            Filterable.passThrough(Component.literal("Open to read."))
+        );
 
         return new WrittenBookContent(
             Filterable.passThrough(title),

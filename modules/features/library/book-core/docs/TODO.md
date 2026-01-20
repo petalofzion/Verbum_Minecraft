@@ -17,3 +17,4 @@ This file tracks **capsule-local** work only. It is maintained by capsule agents
 - [x] Stage 2: Add BookBookmark record for bookId + page tracking.
 - [x] Stage 2: Add BookChapter record with title and startPage.
 - [x] Stage 2: Add BookTableOfContents validation and page lookup.
+- [x] Stage 1: Coordinate Bible text asset in the bible capsule resources.

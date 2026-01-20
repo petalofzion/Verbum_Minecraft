@@ -18,6 +18,11 @@ Include a source link for each entry.
   replace NBT for items and block entities. This affects how item data is stored
   and surfaced.
   Source: https://minecraft.wiki/w/Data_component_format
+- 1.21.11 Mojang mappings: `BookViewScreen.BookAccess` is a record that takes a
+  `List<Component>` and `BookViewScreen` constructors are public but no longer
+  accept the `(BookAccess, boolean)` signature. Item `use` returns
+  `InteractionResult` and `Level.isClientSide()` is a method, not a field.
+  Source: local 1.21.11 mapped jar inspection (Loom cache).
 - Resource pack format is now 75.0 for 1.21.11.
   Source: https://minecraft.wiki/w/Java_Edition_1.21.11
 - Data pack format is now 94.1 for 1.21.11.
@@ -33,4 +38,3 @@ Include a source link for each entry.
 - Fabric API 0.140.2+1.21.11: language provider subclasses can change output
   paths (datagen), and there are small helper API additions and fixes.
   Source: https://github.com/FabricMC/fabric-api/releases/tag/0.140.2%2B1.21.11
-

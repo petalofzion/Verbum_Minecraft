@@ -7,4 +7,6 @@ public interface ContentSink {
     void acceptItem(ItemDef def);
 
     void acceptBook(BookDef def);
+
+    void acceptLibraryBook(LibraryBookDef def);
 }
