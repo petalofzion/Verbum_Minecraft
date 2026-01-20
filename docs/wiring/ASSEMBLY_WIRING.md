@@ -29,6 +29,7 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 
 ## Resource Expectations (Items)
 Capsule resources must exist for any item:
+- `assets/<namespace>/items/<path>.json`
 - `assets/<namespace>/models/item/<path>.json`
 - `assets/<namespace>/textures/item/<path>.png`
 - `assets/<namespace>/lang/en_us.json`
@@ -36,6 +37,7 @@ Capsule resources must exist for any item:
 Missing assets result in the purple/black missing‑texture cube.
 
 **Resource loading:** Assemblies merge capsule `src/main/resources` into the final mod jar so client resource packs can see feature assets (excluding `META-INF/services/**`, which stays in module jars). If assets are missing in-game, this is the first wiring check.
+**Dev runs:** Assemblies also add module `src/main/resources` as resource roots for `runClient`/`runServer`, excluding `META-INF/services/**` to avoid duplicate `ServiceLoader` entries.
 
 ## Resource Expectations (Books)
 Written books also require:

@@ -16,3 +16,9 @@ This capsule provides the Bible item definition and related feature wiring for V
 - `module.json`: module metadata and dependency declarations.
 - `src/main/java/.../BibleFeature.java`: feature entrypoint.
 - `src/main/resources/META-INF/services/com.verbum_minecraft.spi.FeatureEntrypoint`: SPI registration.
+
+## Asset Checklist (Item)
+- `src/main/resources/assets/verbum/items/bible.json`
+- `src/main/resources/assets/verbum/models/item/bible.json`
+- `src/main/resources/assets/verbum/textures/item/bible.png`
+- `src/main/resources/assets/verbum/lang/en_us.json`

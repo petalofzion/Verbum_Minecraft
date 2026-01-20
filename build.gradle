@@ -111,6 +111,137 @@ tasks.register('verifySpiRegistration') {
     }
 }
 
+tasks.register('verifyItemAssets') {
+    group = 'verification'
+    description = 'Ensures item models, item definitions, and textures exist for module assets.'
+    doLast {
+        def errors = []
+        def models = fileTree(dir: 'modules', include: '**/src/main/resources/assets/*/models/item/*.json')
+        def itemDefs = fileTree(dir: 'modules', include: '**/src/main/resources/assets/*/items/*.json')
+        def slurper = new groovy.json.JsonSlurper()
+
+        itemDefs.each { File itemDef ->
+            File namespaceRoot = itemDef.parentFile.parentFile
+            def json
+            try {
+                json = slurper.parse(itemDef)
+            } catch (Exception e) {
+                errors.add("Invalid item definition JSON: ${itemDef.path} (${e.message})")
+                return
+            }
+            def model = json instanceof Map ? json.model : null
+            def modelPath = (model instanceof Map) ? model.model : null
+            if (!(modelPath instanceof String) || modelPath.isBlank()) {
+                errors.add("Missing model path in item definition: ${itemDef.path}")
+                return
+            }
+            def parts = modelPath.split(':', 2)
+            if (parts.length != 2) {
+                errors.add("Invalid model path in item definition: ${itemDef.path} (${modelPath})")
+                return
+            }
+            def modelNamespace = parts[0]
+            def modelRelPath = parts[1]
+            if (modelNamespace == 'minecraft') {
+                return
+            }
+            File modelFile = new File(namespaceRoot, "models/${modelRelPath}.json")
+            if (!modelFile.exists() || modelFile.length() == 0) {
+                errors.add("Missing model JSON: ${modelFile.path} (from ${itemDef.path})")
+            }
+        }
+
+        models.each { File modelFile ->
+            File namespaceRoot = modelFile.parentFile.parentFile.parentFile
+            String namespace = namespaceRoot.name
+            String itemName = modelFile.name.replaceAll(/\.json$/, '')
+
+            File itemDef = new File(namespaceRoot, "items/${itemName}.json")
+            if (!itemDef.exists() || itemDef.length() == 0) {
+                errors.add("Missing item definition: ${itemDef.path}")
+            }
+
+            def modelJson
+            try {
+                modelJson = slurper.parse(modelFile)
+            } catch (Exception e) {
+                errors.add("Invalid model JSON: ${modelFile.path} (${e.message})")
+                return
+            }
+
+            def textures = modelJson instanceof Map ? modelJson.textures : null
+            if (textures instanceof Map) {
+                textures.values().each { value ->
+                    if (!(value instanceof String)) {
+                        return
+                    }
+                    def parts = value.split(':', 2)
+                    if (parts.length != 2) {
+                        return
+                    }
+                    def texNamespace = parts[0]
+                    def texPath = parts[1]
+                    if (texNamespace == 'minecraft') {
+                        return
+                    }
+                    File textureFile = new File(namespaceRoot, "textures/${texPath}.png")
+                    if (!textureFile.exists() || textureFile.length() == 0) {
+                        errors.add("Missing texture: ${textureFile.path} (from ${modelFile.path})")
+                    }
+                }
+            } else if (modelJson instanceof Map && modelJson.parent instanceof String) {
+                def parentParts = modelJson.parent.split(':', 2)
+                if (parentParts.length == 2 && parentParts[0] == namespace) {
+                    File parentFile = new File(namespaceRoot, "models/${parentParts[1]}.json")
+                    if (!parentFile.exists() || parentFile.length() == 0) {
+                        errors.add("Missing parent model: ${parentFile.path} (from ${modelFile.path})")
+                        return
+                    }
+                    def parentJson
+                    try {
+                        parentJson = slurper.parse(parentFile)
+                    } catch (Exception e) {
+                        errors.add("Invalid parent model JSON: ${parentFile.path} (${e.message})")
+                        return
+                    }
+                    def parentTextures = parentJson instanceof Map ? parentJson.textures : null
+                    if (parentTextures instanceof Map) {
+                        parentTextures.values().each { value ->
+                            if (!(value instanceof String)) {
+                                return
+                            }
+                            def parts = value.split(':', 2)
+                            if (parts.length != 2) {
+                                return
+                            }
+                            def texNamespace = parts[0]
+                            def texPath = parts[1]
+                            if (texNamespace == 'minecraft') {
+                                return
+                            }
+                            File textureFile = new File(namespaceRoot, "textures/${texPath}.png")
+                            if (!textureFile.exists() || textureFile.length() == 0) {
+                                errors.add("Missing texture: ${textureFile.path} (from ${parentFile.path})")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new GradleException("Item asset verification failed:\n" + errors.join("\n"))
+        }
+        println "Verified: Item assets and textures are present."
+    }
+}
+
+subprojects {
+    tasks.matching { it.name == 'check' }.configureEach {
+        dependsOn(rootProject.tasks.named('verifyItemAssets'))
+    }
+}
+
 def buildTodoIndexContent() {
     def todos = []
     def featuresDir = new File(rootDir, "modules/features")

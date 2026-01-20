@@ -65,15 +65,21 @@ def resourceModulePaths = [
     ':modules:magic:visions-only:magic-base'
 ]
 
+sourceSets {
+    main {
+        resources {
+            resourceModulePaths.each { path ->
+                srcDir project(path).file("src/main/resources")
+            }
+            exclude("META-INF/services/**")
+        }
+    }
+}
+
 processResources {
     inputs.property "version", modVersion
     filesMatching("fabric.mod.json") {
         expand "version": modVersion
-    }
-    resourceModulePaths.each { path ->
-        from(project(path).file("src/main/resources")) {
-            exclude("META-INF/services/**")
-        }
     }
 }
 

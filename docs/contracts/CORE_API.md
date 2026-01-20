@@ -103,6 +103,7 @@ These are available for features that interface with the kernel, but **do not ye
 
 ## Asset Checklist (for ItemDef)
 Item registration requires assets in the capsule resources:
+- `src/main/resources/assets/<namespace>/items/<path>.json`
 - `src/main/resources/assets/<namespace>/models/item/<path>.json`
 - `src/main/resources/assets/<namespace>/textures/item/<path>.png`
 - `src/main/resources/assets/<namespace>/lang/en_us.json`
