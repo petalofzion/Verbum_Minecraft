@@ -25,8 +25,8 @@ Provide a library-backed book system so the vanilla written book can reference l
 - Avoid repeated pagination; cache page breaks on first open.
 - Hard caps for safety (see Staging Plan).
 
-## Edition Target
-- Both editions (vanilla-plus and visions).
+## Build / Profile Target
+- Shared across Veritas, Votum, Visions, and Vorago.
 
 ## Staging Plan (Offline First)
 ### Stage 1: Library Pointer + Full Bible (Offline)

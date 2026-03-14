@@ -36,16 +36,42 @@ tasks.register('verifyModuleMetadata') {
         def ids = [:]
         def errors = []
         def allowedDomains = ['core', 'feature', 'library', 'world', 'magic', 'tech', 'assembly', 'tool']
+        def allowedModuleEditions = ['shared', 'veritas', 'votum', 'visions', 'vorago']
+        def allowedAssemblyEditions = ['veritas', 'votum', 'visions', 'vorago']
         
-        fileTree(dir: '.', include: '**/module.json').each { file ->
+        def metadataFiles = files(
+            fileTree(dir: 'modules', include: '**/module.json'),
+            fileTree(dir: 'assemblies', include: '**/module.json')
+        )
+
+        metadataFiles.each { file ->
             def json = new groovy.json.JsonSlurper().parse(file)
             def path = file.path
             
             // Required fields
             if (!json.id) errors.add("Missing 'id' in ${path}")
             if (!json.domain) errors.add("Missing 'domain' in ${path}")
+            if (!json.edition) errors.add("Missing 'edition' in ${path}")
             if (!allowedDomains.contains(json.domain)) errors.add("Invalid 'domain' [${json.domain}] in ${path}. Allowed: ${allowedDomains}")
             if (json.providesFeature == null) errors.add("Missing 'providesFeature' in ${path}")
+
+            if (path.startsWith('modules/')) {
+                if (!allowedModuleEditions.contains(json.edition)) {
+                    errors.add("Invalid module edition [${json.edition}] in ${path}. Allowed: ${allowedModuleEditions}")
+                }
+            } else if (path.startsWith('assemblies/')) {
+                if (!allowedAssemblyEditions.contains(json.edition)) {
+                    errors.add("Invalid assembly edition [${json.edition}] in ${path}. Allowed: ${allowedAssemblyEditions}")
+                }
+                def expectedEdition = file.parentFile.name
+                if (json.edition != expectedEdition) {
+                    errors.add("Assembly edition mismatch in ${path}: expected '${expectedEdition}', found '${json.edition}'")
+                }
+                def expectedId = "assembly-${expectedEdition}"
+                if (json.id && json.id != expectedId) {
+                    errors.add("Assembly id mismatch in ${path}: expected '${expectedId}', found '${json.id}'")
+                }
+            }
             
             // Uniqueness
             if (ids.containsKey(json.id)) {
@@ -59,6 +85,57 @@ tasks.register('verifyModuleMetadata') {
             throw new GradleException("Module Metadata Validation Failed:\n" + errors.join("\n"))
         }
         println "Verified: Module metadata is valid and unique."
+    }
+}
+
+def runPythonCheck(List<String> commandLineArgs) {
+    def process = new ProcessBuilder(commandLineArgs)
+        .directory(rootDir)
+        .start()
+    def stdoutText = process.inputStream.getText('UTF-8').trim()
+    def stderrText = process.errorStream.getText('UTF-8').trim()
+    def exitCode = process.waitFor()
+    if (stdoutText) {
+        println stdoutText
+    }
+    if (exitCode != 0) {
+        throw new GradleException(stderrText ?: stdoutText ?: "Command failed: ${commandLineArgs.join(' ')}")
+    }
+}
+
+tasks.register('verifyModuleManifest') {
+    group = 'verification'
+    description = 'Verifies that modules/modules.toml matches module.json tier metadata.'
+    doLast {
+        runPythonCheck(['python3', 'tools/scripts/update_module_manifest.py', '--check'])
+    }
+}
+
+tasks.register('verifyAgentProtocolAssets') {
+    group = 'verification'
+    description = 'Validates orchestration schemas, examples, and executor wrapper scripts.'
+    doLast {
+        runPythonCheck([
+            'python3',
+            '-m',
+            'py_compile',
+            'tools/scripts/json_schema_utils.py',
+            'tools/scripts/validate_agent_json.py',
+            'tools/scripts/codex_exec_from_packet.py',
+            'tools/scripts/update_module_manifest.py'
+        ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/validate_agent_json.py',
+            'docs/agents/schemas/task-packet.schema.json',
+            'docs/agents/examples/task-packet.example.json'
+        ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/validate_agent_json.py',
+            'docs/agents/schemas/agent-report.schema.json',
+            'docs/agents/examples/agent-report.example.json'
+        ])
     }
 }
 
@@ -236,9 +313,23 @@ tasks.register('verifyItemAssets') {
     }
 }
 
+def rootVerificationTaskNames = [
+    'verifyNoMinecraftImports',
+    'verifyModuleMetadata',
+    'verifyModuleManifest',
+    'verifyNoNamedElements',
+    'verifySpiRegistration',
+    'verifyAgentProtocolAssets',
+    'verifyItemAssets',
+    'verifyTodoIndex',
+    'verifyContractIndex'
+]
+
 subprojects {
     tasks.matching { it.name == 'check' }.configureEach {
-        dependsOn(rootProject.tasks.named('verifyItemAssets'))
+        rootVerificationTaskNames.each { taskName ->
+            dependsOn(rootProject.tasks.named(taskName))
+        }
     }
 }
 
@@ -300,12 +391,14 @@ tasks.register('verifyContractIndex', Exec) {
 def rootCheck = tasks.findByName('check')
 if (rootCheck == null) {
     tasks.register('check') {
-        dependsOn tasks.named('verifyTodoIndex')
-        dependsOn tasks.named('verifyContractIndex')
+        rootVerificationTaskNames.each { taskName ->
+            dependsOn tasks.named(taskName)
+        }
     }
 } else {
-    rootCheck.dependsOn tasks.named('verifyTodoIndex')
-    rootCheck.dependsOn tasks.named('verifyContractIndex')
+    rootVerificationTaskNames.each { taskName ->
+        rootCheck.dependsOn tasks.named(taskName)
+    }
 }
 
 tasks.register('printTargets') {

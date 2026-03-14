@@ -1,44 +1,40 @@
-# .github/workflows/build.yml
-# This GitHub Actions workflow defines the Continuous Integration (CI) pipeline
-# for the Verbum Minecraft project.
+name: Build
 
-# It will typically include:
-# - **Triggers:** When the workflow should run (e.g., on push to main, pull requests).
-# - **Jobs:** A set of jobs to be executed (e.g., build, test, lint, run benchmarks).
-# - **Steps:** Individual commands or actions within each job.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
-# This workflow is crucial for:
-# - Ensuring the project builds successfully.
-# - Running unit, integration, and performance tests.
-# - Enforcing architectural rules (e.g., via custom Gradle build-logic plugins).
-# - Maintaining code quality and consistency.
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-# Example structure:
-# name: CI Build
+permissions:
+  contents: read
 
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
+jobs:
+  gradle:
+    name: Gradle Check And Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
-#       - name: Set up JDK 17
-#         uses: actions/setup-java@v4
-#         with:
-#           java-version: '17'
-#           distribution: 'temurin'
-#       - name: Grant execute permission for gradlew
-#         run: chmod +x gradlew
-#       - name: Build with Gradle
-#         run: ./gradlew build
-#       # - name: Run Tests
-#       #   run: ./gradlew test
-#       # - name: Run Architecture Checks
-#       #   run: ./gradlew enforceModuleBoundaries checkNoAllocations
-#       # - name: Run Benchmarks
-#       #   run: ./gradlew :tools:benchmarks:micro:jmh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x gradlew
+
+      - name: Verify repo and build assemblies
+        run: ./gradlew check build --stacktrace

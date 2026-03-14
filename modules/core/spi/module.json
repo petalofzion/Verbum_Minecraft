@@ -1,7 +1,7 @@
 {
   "id": "core-spi",
   "domain": "core",
-  "edition": "vanilla-plus",
+  "edition": "shared",
   "providesFeature": false,
   "dependsOn": [
     "core-api"

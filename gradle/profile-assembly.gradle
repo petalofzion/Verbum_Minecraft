@@ -1,0 +1,89 @@
+import groovy.json.JsonSlurper
+
+def profileOrder = ['veritas', 'votum', 'visions', 'vorago']
+def editionRank = [
+    'shared': 0,
+    'veritas': 1,
+    'votum': 2,
+    'visions': 3,
+    'vorago': 4
+]
+
+def profilesForEdition = { String edition ->
+    switch (edition) {
+        case 'shared':
+        case 'veritas':
+            return profileOrder
+        case 'votum':
+            return ['votum', 'visions', 'vorago']
+        case 'visions':
+            return ['visions', 'vorago']
+        case 'vorago':
+            return ['vorago']
+        default:
+            throw new GradleException("Unsupported module edition '${edition}' for ${project.path}")
+    }
+}
+
+def currentProfile = project.name
+if (!profileOrder.contains(currentProfile)) {
+    throw new GradleException("Assembly ${project.path} must use one of ${profileOrder} as the project name.")
+}
+
+def metadata = new JsonSlurper().parse(project.file('module.json'))
+if (metadata.edition != currentProfile) {
+    throw new GradleException("Assembly metadata edition '${metadata.edition}' does not match project name '${currentProfile}' in ${project.path}.")
+}
+
+def moduleProjects = rootProject.subprojects
+    .findAll { it.path.startsWith(':modules:') && it.file('module.json').exists() }
+    .collect { subproject ->
+        def moduleMetadata = new JsonSlurper().parse(subproject.file('module.json'))
+        [
+            project: subproject,
+            edition: moduleMetadata.edition.toString(),
+            moduleId: moduleMetadata.id.toString()
+        ]
+    }
+    .findAll { module -> profilesForEdition(module.edition).contains(currentProfile) }
+    .sort { left, right ->
+        def rankCompare = editionRank[left.edition] <=> editionRank[right.edition]
+        rankCompare != 0 ? rankCompare : left.project.path <=> right.project.path
+    }
+
+def modulePaths = moduleProjects.collect { it.project.path }
+def modVersion = project.version.toString()
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modulePaths.each { path ->
+        implementation project(path)
+        include project(path)
+    }
+}
+
+sourceSets {
+    main {
+        resources {
+            modulePaths.each { path ->
+                srcDir project(path).file("src/main/resources")
+            }
+            exclude("META-INF/services/**")
+        }
+    }
+}
+
+processResources {
+    inputs.property "version", modVersion
+    filesMatching("fabric.mod.json") {
+        expand "version": modVersion
+    }
+}
+
+base {
+    archivesName = "verbum-${currentProfile}"
+}

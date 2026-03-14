@@ -33,6 +33,8 @@ target/
 # Log files
 *.log
 log/
+__pycache__/
+*.py[cod]
 
 # OS generated files
 .DS_Store

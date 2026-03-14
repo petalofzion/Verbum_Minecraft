@@ -1,7 +1,7 @@
 # ADR 0002: Tiered Edition Build Model
 
 ## Status
-Accepted
+Superseded by ADR 0004
 
 ## Context
 We want to support a conservative "Vanilla+" experience and a full "Total Conversion" without maintaining two separate codebases.

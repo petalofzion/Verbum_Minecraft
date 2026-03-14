@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "verbum_vorago",
+  "version": "${version}",
+  "name": "Verbum: Vorago",
+  "description": "The brutal challenge line of Verbum Minecraft, built for friction, danger, and pressure.",
+  "authors": [ "Auriella" ],
+  "contact": {
+    "email": "support@verbum-minecraft.org"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [ "com.verbum_minecraft.vorago.VerbumVorago" ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

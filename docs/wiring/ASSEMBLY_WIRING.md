@@ -7,8 +7,10 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 
 ## Feature Discovery & Registration Flow
 **Entry points:**
-- `assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/VerbumVanilla.java`
+- `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/VerbumVeritas.java`
+- `assemblies/votum/src/main/java/com/verbum_minecraft/votum/VerbumVotum.java`
 - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/VerbumVisions.java`
+- `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/VerbumVorago.java`
 
 **Flow:**
 1. Assembly creates a `FeatureContext` backed by a `ContentSink`.
@@ -18,8 +20,10 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 
 ## ContentSink Wiring
 **Implementations:**
-- `assemblies/vanilla-plus/src/main/java/com/verbum_minecraft/vanilla/registry/MinecraftContentRegistrar.java`
+- `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`
+- `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`
 - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`
+- `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`
 
 **Current mapping:**
 - `ItemDef` → `Item.Properties` → `Registry.register(BuiltInRegistries.ITEM, id, item)`
@@ -29,6 +33,24 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
   - Mapping uses vanilla creative tabs (e.g., `books` → `TOOLS_AND_UTILITIES`).
 - `BookDef` → `WrittenBookItem` + `DataComponents.WRITTEN_BOOK_CONTENT` (vanilla book limits apply).
 - `LibraryBookDef` → library-backed `WrittenBookItem` that opens `BookViewScreen` with pages loaded from the Book Enhancement library (offline, classpath resources). Item content uses a tiny placeholder page to avoid large NBT payloads. The client paginates text to `BookViewScreen` text width/height so pages are not truncated.
+
+## UI Modifications
+### Library Book Reader Enhancements
+- Adds page jump + bookmark controls to the book reader UI.
+- Opens `BookViewScreen` with library-backed pages, paginated for the current text area.
+- Assembly files:
+  - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookClient.java`
+  - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookView.java`
+  - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookBookmarks.java`
+  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookClient.java`
+  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookView.java`
+  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookBookmarks.java`
+  - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookClient.java`
+  - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookView.java`
+  - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookBookmarks.java`
+  - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookClient.java`
+  - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookView.java`
+  - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookBookmarks.java`
 
 ## Resource Expectations (Items)
 Capsule resources must exist for any item:

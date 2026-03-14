@@ -1,7 +1,7 @@
 {
   "id": "world-base",
   "domain": "world",
-  "edition": "vanilla-plus",
+  "edition": "shared",
   "providesFeature": false,
   "dependsOn": []
 }

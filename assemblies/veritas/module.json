@@ -1,0 +1,15 @@
+{
+  "id": "assembly-veritas",
+  "domain": "assembly",
+  "edition": "veritas",
+  "providesFeature": false,
+  "dependsOn": [
+    "core-api",
+    "core-spi",
+    "core-sim-kernel",
+    "core-runtime",
+    "core-ux-framework",
+    "core-vanilla-core",
+    "feature-bible"
+  ]
+}

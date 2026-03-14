@@ -1,7 +1,7 @@
 {
   "id": "core-feature-core",
   "domain": "core",
-  "edition": "vanilla-plus",
+  "edition": "shared",
   "providesFeature": true,
   "entrypointClass": "com.verbum_minecraft.feature_core.CoreFeature",
   "dependsOn": [
