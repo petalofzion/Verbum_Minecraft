@@ -47,7 +47,7 @@ The prompt must instruct the agent to end immediately after completion or when a
 Every subagent run must include:
 - a task packet that follows [`docs/agents/schemas/task-packet.schema.json`](./schemas/task-packet.schema.json),
 - the final report schema at [`docs/agents/schemas/agent-report.schema.json`](./schemas/agent-report.schema.json),
-- explicit allowed paths,
+- explicit allowed write paths,
 - explicit stop conditions,
 - explicit required checks.
 
@@ -94,8 +94,11 @@ Minimum structure:
 
 ```text
 You are a <capsule|repo> agent.
+Task ID: <task_id>
 Start at AGENTS.md and follow the required read order.
-Allowed paths: <paths>
+Allowed write paths: <paths>
+You may read additional repo files required by must_read or verification.
+Do not modify files outside the allowed write paths.
 Objective: <single concrete task>
 Must read: <paths>
 Success criteria:
@@ -115,18 +118,22 @@ codex exec -m gpt-5.2-codex -c model_reasoning_effort="medium" \
   --output-schema docs/agents/schemas/agent-report.schema.json \
   --output-last-message subagent_temp/feature-bible-review.json \
   "You are a capsule agent.
+Task ID: feature-bible-review
 Start at AGENTS.md and follow the funnel.
-Allowed paths: modules/features/library/bible/**
+Allowed write paths: modules/features/library/bible/**
+You may read additional repo files required by must_read or verification.
+Do not modify files outside the allowed write paths.
 Objective: Review the capsule state and report gaps only.
 Must read: FUNNELING.md, modules/features/library/bible/AGENTS.md, docs/contracts/CORE_API.md
 Success criteria:
 - Identify concrete capsule gaps.
 - Do not modify files.
 Stop conditions:
-- Need to read or write outside the allowed paths.
+- Need to modify files outside the allowed write paths.
 - Need a new cross-module contract.
 Required checks:
 - none
+Return task_id exactly as: feature-bible-review
 Return a final report that matches docs/agents/schemas/agent-report.schema.json.
 End immediately after completion or when any stop condition fires."
 ```

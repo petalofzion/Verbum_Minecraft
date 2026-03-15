@@ -16,7 +16,7 @@
     "Do not modify files."
   ],
   "stop_conditions": [
-    "Need to read or write outside the allowed paths.",
+    "Need to modify files outside the allowed paths.",
     "Need a new cross-module contract.",
     "No net progress after two attempts."
   ],

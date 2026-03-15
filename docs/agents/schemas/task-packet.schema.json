@@ -93,5 +93,5 @@
       "enum": ["low", "normal", "high"]
     }
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

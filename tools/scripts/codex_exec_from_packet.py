@@ -2,7 +2,9 @@
 import argparse
 import json
 import subprocess
+from datetime import UTC, datetime
 from pathlib import Path
+import shutil
 
 from json_schema_utils import SchemaValidationError, validate_file
 
@@ -10,8 +12,11 @@ from json_schema_utils import SchemaValidationError, validate_file
 def build_prompt(packet):
     lines = [
         f"You are a {packet['role']} agent.",
+        f"Task ID: {packet['task_id']}",
         "Start at AGENTS.md and follow the required read order.",
-        f"Allowed paths: {', '.join(packet['allowed_paths'])}",
+        f"Allowed write paths: {', '.join(packet['allowed_paths'])}",
+        "You may read additional repo files when required by must_read, verification, or stop-condition handling.",
+        "Do not modify files outside the allowed write paths.",
         f"Objective: {packet['objective']}",
         f"Must read: {', '.join(packet['must_read'])}",
         "Success criteria:",
@@ -24,6 +29,7 @@ def build_prompt(packet):
         lines.extend(f"- {item}" for item in packet["required_checks"])
     else:
         lines.append("- none")
+    lines.append(f"Return task_id exactly as: {packet['task_id']}")
     lines.append(f"Return a final report that matches {packet['report_schema']}.")
     lines.append("End immediately after completion or when any stop condition fires.")
     return "\n".join(lines)
@@ -125,6 +131,13 @@ def main():
         raise SystemExit(f"Generated report failed validation:\n{exc}")
 
     subprocess.run(postflight_command, cwd=repo_root, check=True)
+
+    if args.history_dir:
+        history_dir = (repo_root / args.history_dir).resolve() if not Path(args.history_dir).is_absolute() else Path(args.history_dir).resolve()
+        history_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+        history_path = history_dir / f"{packet['task_id']}-{timestamp}.json"
+        shutil.copy2(report_output, history_path)
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ Provide a Bible item that registers a library-backed book entry so players can r
 - Content is loaded once and cached by the book-enhancement library.
 
 ## Build / Profile Target
-- Shared across Veritas, Votum, Visions, and Vorago.
+- Veritas baseline content, inherited upward into Votum, Visions, and Vorago.
 
 ## API / SPI Needs
 - Uses `LibraryBookDef` to register the library-backed Bible.

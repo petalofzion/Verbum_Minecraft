@@ -143,10 +143,11 @@ def validate_report(
     normalized_touched = [normalize_repo_path(path) for path in report["files_touched"]]
     normalized_read = [normalize_repo_path(path) for path in report["files_read"]]
 
-    for required_path in packet["must_read"]:
-        required_norm = normalize_repo_path(required_path)
-        if required_norm not in normalized_read:
-            errors.append(f"Missing required read in report.files_read: {required_path}")
+    if report["status"] in {"done", "needs_review", "failed"}:
+        for required_path in packet["must_read"]:
+            required_norm = normalize_repo_path(required_path)
+            if required_norm not in normalized_read:
+                errors.append(f"Missing required read in report.files_read: {required_path}")
 
     for touched_path in normalized_touched:
         if not any(path_is_within(touched_path, allowed) for allowed in normalized_allowed):
