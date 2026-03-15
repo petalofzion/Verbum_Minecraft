@@ -1,226 +1,196 @@
-# Subagent Orchestration (Repo Agent Guide)
+# Subagent Orchestration (Codex Executor Adapter)
 
-This guide defines the **only supported** way for repo agents to spawn Codex subagents,
-capture their final output, and validate their work without manual TUI interaction.
+This document is the Codex-specific executor guide that implements
+[`docs/agents/ORCHESTRATION_SPEC.md`](./ORCHESTRATION_SPEC.md).
 
-## Goals
-- Run subagents **non-interactively**.
-- Capture a **single final report** to a file.
-- Keep subagents siloed to their task scope.
-- Verify changes independently (do not trust stdout).
+Use the orchestration spec for the policy.
+Use this document for the command shape, output capture, and Codex-specific validation flow.
 
 ## Non-Interactive Spawn (Required)
-Use `codex exec` with `--output-last-message` and a prompt that ends with “stop”.
+Use `codex exec` only.
+Interactive `codex` sessions are not acceptable for automated orchestration.
+
+Preferred wrapper:
 
 ```bash
-codex exec --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
+python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
+  --model gpt-5.3-codex \
+  --reasoning-effort medium \
+  --report-output subagent_temp/<TASK_ID>.json
+```
+
+The wrapper validates the task packet before execution and validates the final report after execution.
+For guarded autonomous runs, also pass active-packet and report-history directories so overlap and loop-brake checks are enforced in code:
+
+```bash
+python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
+  --model gpt-5.3-codex \
+  --reasoning-effort medium \
+  --report-output subagent_temp/reports/<TASK_ID>.json \
+  --active-packets-dir subagent_temp/active_packets \
+  --history-dir subagent_temp/report_history
+```
+
+Required command shape:
+
+```bash
+codex exec -m <MODEL> -c model_reasoning_effort="<EFFORT>" \
+  --sandbox workspace-write --color never \
+  --output-schema docs/agents/schemas/agent-report.schema.json \
+  --output-last-message subagent_temp/<TASK_ID>.json \
   "YOUR PROMPT HERE"
 ```
 
-### Why this is required
-- `codex "prompt"` (interactive) **requires a TTY** and fails in automation.
-- `codex exec` runs immediately and can be automated.
-- `--output-last-message` writes the final response to a file you can parse.
+The prompt must instruct the agent to end immediately after completion or when a stop condition fires.
+
+## Required Inputs
+Every subagent run must include:
+- a task packet that follows [`docs/agents/schemas/task-packet.schema.json`](./schemas/task-packet.schema.json),
+- the final report schema at [`docs/agents/schemas/agent-report.schema.json`](./schemas/agent-report.schema.json),
+- explicit allowed write paths,
+- explicit stop conditions,
+- explicit required checks.
+
+Do not send vague freeform prompts for integration work.
+Use [`tools/scripts/validate_agent_json.py`](../../tools/scripts/validate_agent_json.py) if you need to validate packets or reports manually.
+Use [`tools/scripts/verify_orchestration_run.py`](../../tools/scripts/verify_orchestration_run.py) to enforce:
+- allowed-path ownership,
+- active packet overlap checks,
+- required-check evidence,
+- loop-brake history checks,
+- optional git diff vs `files_touched` validation.
 
 ## Required Subagent Temp Folder
-All subagent outputs must go in `subagent_temp/` at repo root.
+All final report files must be written under `subagent_temp/` in repo root.
 
 ```bash
 mkdir -p subagent_temp
 ```
 
-All `--output-last-message` files **must** be written under `subagent_temp/`.
-Use a unique filename per run to avoid overwriting reports.
+Use one unique report filename per run.
+Do not reuse a prior report path for a new task.
+Recommended layout:
+- `subagent_temp/active_packets/` for packets currently in flight
+- `subagent_temp/reports/` for the latest report artifact
+- `subagent_temp/report_history/` for prior report snapshots used by loop-brake checks
 
 ## Model Selection (Required)
-Pick a model explicitly when spawning subagents. Use faster/cheaper models for
-simple reads or summaries, and higher‑reasoning models for debugging, refactors,
-or architectural changes.
+Pick the model explicitly for every run.
 
-### Set model on the command
-```bash
-codex exec -m <MODEL> --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
-  "YOUR PROMPT HERE"
+Recommended defaults:
+- `low`: tightly-scoped read-only summaries or simple edits with literal instructions.
+- `medium`: default for most capsule tasks.
+- `high`: debugging, refactors, or partially-specified repo work.
+- `xhigh`: only for unusually ambiguous or complex architectural work.
+
+Every run must set both:
+- `-m <MODEL>`
+- `-c model_reasoning_effort="<EFFORT>"`
+
+## Prompt Structure
+The prompt should mirror the task packet instead of improvising.
+
+Minimum structure:
+
+```text
+You are a <capsule|repo> agent.
+Task ID: <task_id>
+Start at AGENTS.md and follow the required read order.
+Allowed write paths: <paths>
+You may read additional repo files required by must_read or verification.
+Do not modify files outside the allowed write paths.
+Objective: <single concrete task>
+Must read: <paths>
+Success criteria:
+- ...
+Stop conditions:
+- ...
+Required checks:
+- ...
+Return a final report that matches docs/agents/schemas/agent-report.schema.json.
+End immediately after completion or when any stop condition fires.
 ```
 
-Equivalent:
+## Example Spawn
 ```bash
-codex exec -c model="<MODEL>" --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
-  "YOUR PROMPT HERE"
-```
-
-### How to list available model names
-There is no non‑interactive `codex` CLI command that prints a model list.
-Use the interactive picker:
-```bash
-codex
-# then run:
-/model
-```
-
-If you manage profiles, you can also set model defaults in
-`~/.codex/config.toml` and select them with `-p <PROFILE>`.
-
-## Reasoning Effort (Cost/Latency Control)
-You can set reasoning depth per run. Lower effort is cheaper/faster; higher
-effort is slower/more expensive but better for complex debugging.
-
-```bash
-codex exec -m gpt-5.2-codex -c model_reasoning_effort="low" \
+codex exec -m gpt-5.3-codex -c model_reasoning_effort="medium" \
   --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
-  "YOUR PROMPT HERE"
-```
-
-Supported values (from config): `low`, `medium`, `high`, `xhigh`.
-You can set a default in `~/.codex/config.toml` or use profiles via `-p`.
-
-### How to choose reasoning effort (required)
-- `low`: Use only for **simple, tightly‑specified tasks** with explicit steps.
-  The prompt must be highly specific and literal.
-- `medium`: Default for most tasks. Works well with normal instructions and
-  moderate context.
-- `high`: Use for complex changes, debugging, or partial specs.
-- `xhigh`: Reserved for **very complex** tasks with unclear or evolving specs.
-
-All subagent runs **must** explicitly set both the model and
-`model_reasoning_effort`.
-
-## Prompt Templates
-All prompts must:
-- Explicitly state the agent role (capsule or repo).
-- Instruct the agent to start at `AGENTS.md` and follow the full funneling
-  pipeline from there.
-- Enforce scope boundaries in the prompt.
-
-### Capsule review (read-only)
-```text
-You are a capsule agent. Start at AGENTS.md and follow the funnel.
-Your scope is only modules/features/<domain>/<feature>/**.
-Task: review the capsule state (code, resources, docs, TODO, agent logs).
-Do not modify files. Do not run build/tests. Report findings and files read.
-End immediately after the report.
-```
-
-### Capsule task (changes allowed)
-```text
-You are a capsule agent. Start at AGENTS.md and follow the funnel.
-Your scope is only modules/features/<domain>/<feature>/**.
-Task: <describe changes>. Use only contracts in docs/contracts/CORE_API.md.
-If a capability is missing, do a capability sweep, log it in docs/agent-logs/,
-then stop. Run capsule commands listed in the capsule AGENTS.md.
-End immediately after the final report.
-```
-
-### Repo task (wiring/integration)
-```text
-You are a repo agent. Follow the repo agent read order in AGENTS.md.
-Task: <describe wiring work>. Respect restricted areas and architecture rules.
-Do not modify files outside the task scope. End immediately after the report.
+  --output-schema docs/agents/schemas/agent-report.schema.json \
+  --output-last-message subagent_temp/feature-bible-review.json \
+  "You are a capsule agent.
+Task ID: feature-bible-review
+Start at AGENTS.md and follow the funnel.
+Allowed write paths: modules/features/library/bible/**
+You may read additional repo files required by must_read or verification.
+Do not modify files outside the allowed write paths.
+Objective: Review the capsule state and report gaps only.
+Must read: FUNNELING.md, modules/features/library/bible/AGENTS.md, docs/contracts/CORE_API.md
+Success criteria:
+- Identify concrete capsule gaps.
+- Do not modify files.
+Stop conditions:
+- Need to modify files outside the allowed write paths.
+- Need a new cross-module contract.
+Required checks:
+- none
+Return task_id exactly as: feature-bible-review
+Return a final report that matches docs/agents/schemas/agent-report.schema.json.
+End immediately after completion or when any stop condition fires."
 ```
 
 ## Output Capture (Required)
-Always read the final report from the output file, not stdout.
+Always read the final report from the `--output-last-message` file.
+Do not trust stdout.
 
 ```bash
-cat subagent_temp/REPORT.txt
+cat subagent_temp/<TASK_ID>.json
 ```
 
-### Do not trust stdout
-The CLI prints internal "thinking" and interim summaries to stdout.
-Those are **not** the final report and can be wrong.
+Stdout may contain partial reasoning or interim summaries and must not be used as the authoritative result.
 
-## Parallel Subagents (Allowed, With Constraints)
-You can run multiple `codex exec` processes in parallel **only** when they:
-- are read‑only, or
-- write to **disjoint files** (no overlap).
+## Parallel Runs
+Parallel `codex exec` runs are allowed only when:
+- they are read-only, or
+- they write to disjoint paths and distinct report files.
 
-Never run parallel subagents that might edit the same file or shared index.
+Never run parallel subagents that can touch:
+- the same assembly,
+- the same contract surface,
+- shared generated indexes,
+- the same capsule.
 
-### Parallel example (read‑only summaries)
+## Validation (Required For Any Changes)
+Repo agents must validate any subagent result before integrating it.
+
+Minimum validation:
+- inspect `git status --short`,
+- inspect the changed files,
+- compare `files_touched` in the report to the actual diff,
+- run the required checks from the task packet or stronger local checks.
+
+Recommended command:
+
 ```bash
-codex exec -m gpt-5.2-codex -c model_reasoning_effort="low" \
-  --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/readme_summary.txt \
-  "Summarize README.md in 5 concise bullets. Do not modify files. End immediately." &
-
-codex exec -m gpt-5.2-codex -c model_reasoning_effort="low" \
-  --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/todo_summary.txt \
-  "Summarize TODO.md in 5 concise bullets. Do not modify files. End immediately." &
-
-wait
+python3 tools/scripts/verify_orchestration_run.py path/to/task-packet.json \
+  --report subagent_temp/reports/<TASK_ID>.json \
+  --active-packets-dir subagent_temp/active_packets \
+  --history-dir subagent_temp/report_history
 ```
 
-## Validation (Required for any changes)
-Subagents can write incorrect files (example: invalid syntax).
-Repo agents **must verify** any created or modified file.
+## Loop Brakes
+Do not let a subagent continue indefinitely.
 
-Minimum checks:
-- `git status --short`
-- `rg` or `sed` to inspect changed files
-- Format/lint/test commands if the task demands it
+If a task needs another round, issue a new task packet when:
+- the prior run reported `blocked`, `needs_contract`, or `needs_review`,
+- required checks failed without a new hypothesis,
+- the task scope changed,
+- the agent hit `max_iterations`.
 
-Example:
-```bash
-rg -n "" THROWAWAY.py
-python3 -m py_compile THROWAWAY.py
-```
-
-## Timeouts and Stuck Sessions
-If `codex exec` does not exit, terminate it.
-
-Example timeout:
-```bash
-timeout 120s codex exec --sandbox workspace-write --color never \
-  --output-last-message subagent_temp/REPORT.txt \
-  "YOUR PROMPT HERE"
-```
-
-If needed, kill by PID:
-```bash
-ps -ax | rg "codex exec"
-kill <PID>
-```
-
-## Optional Structured Output
-For machine parsing, provide a JSON schema and use `--output-schema`.
-This forces the final report to match your required structure.
-
-Example schema (minimal):
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["summary", "files_read", "issues"],
-  "properties": {
-    "summary": { "type": "string" },
-    "files_read": { "type": "array", "items": { "type": "string" } },
-    "issues": { "type": "array", "items": { "type": "string" } }
-  }
-}
-```
-
-Example usage:
-```bash
-codex exec -m gpt-5.2-codex -c model_reasoning_effort="medium" \
-  --sandbox workspace-write --color never \
-  --output-schema subagent_temp/report_schema.json \
-  --output-last-message subagent_temp/REPORT.json \
-  "YOUR PROMPT HERE"
-```
+Do not respond to a stale task with "keep going" unless the constraints changed.
 
 ## Common Failure Modes
-- **TTY errors:** use `codex exec` only.
-- **No final report file:** verify `--output-last-message` path.
-- **Incorrect file content:** always validate output before accepting.
-- **Scope drift:** enforce scope in the prompt and verify file paths touched.
-
-## Clean-Up (Recommended)
-If the task was a test, remove artifacts after validation:
-```bash
-rm -f THROWAWAY.py
-```
+- `TTY` errors: use `codex exec`, not interactive `codex`.
+- No report file: verify `--output-last-message` path and prompt termination instructions.
+- Scope drift: compare the diff to `allowed_paths`.
+- Prose-only report: require the schema and reject non-structured output.
+- Executor thrash: stop and re-issue a tighter task packet instead of waiting for more wandering.

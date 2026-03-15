@@ -6,16 +6,17 @@ You have broader scope and must read broader context.
 ## Read Order (required)
 1. `README.md`
 2. `WORKFLOW.md`
-3. `FUNNELING.md`
-4. `docs/ARCHITECTURE_MAP.md`
-5. `docs/runtime-constitution.md`
-6. `docs/contracts/CORE_API.md`
-7. `docs/contracts/CONTRACT_INDEX.md`
-8. `docs/wiring/ASSEMBLY_WIRING.md`
-9. `docs/CONTRIBUTING.md`
-10. `CODEOWNERS`
-11. `TODO.md` and `docs/TODO_INDEX.md`
-12. Nearest `AGENTS.md` for any module you touch
+3. `docs/agents/ORCHESTRATION_SPEC.md`
+4. `FUNNELING.md`
+5. `docs/ARCHITECTURE_MAP.md`
+6. `docs/runtime-constitution.md`
+7. `docs/contracts/CORE_API.md`
+8. `docs/contracts/CONTRACT_INDEX.md`
+9. `docs/wiring/ASSEMBLY_WIRING.md`
+10. `docs/CONTRIBUTING.md`
+11. `CODEOWNERS`
+12. `TODO.md` and `docs/TODO_INDEX.md`
+13. Nearest `AGENTS.md` for any module you touch
 
 ## Typical Duties
 - Assembly wiring and Fabric/Minecraft integration (`assemblies/*`).
@@ -23,23 +24,29 @@ You have broader scope and must read broader context.
 - Repo-wide consistency, documentation, and CI gates.
 - Maintain `TODO.md` and `docs/TODO_INDEX.md`.
 - Maintain `docs/contracts/contract_wiring.tsv` and regenerate `docs/contracts/CONTRACT_INDEX.md` when contracts or wiring change.
+- Prepare task packets and validate structured final reports when orchestrating subagents.
+- Use `tools/scripts/verify_orchestration_run.py` when dispatching or integrating autonomous subagent work.
 
 ## Repo Agent Setup
 - Run `tools/scripts/install-git-hooks.sh` to enable the TODO index pre-commit hook.
 - The pre-commit hook also keeps `docs/contracts/CONTRACT_INDEX.md` up to date.
 - `tools/scripts/update_contract_index.sh` requires `python3` in PATH.
+- For multi-agent runs, use `subagent_temp/active_packets/` and `subagent_temp/report_history/` so overlap and loop-brake checks are durable across runs.
 
 ## Conventions (must follow)
 - **Java 21** only for code.
 - **Mojang mappings** only (no Yarn names).
 - Preserve module boundaries in `docs/ARCHITECTURE_MAP.md`.
 - Keep assemblies as the only place for Fabric/Minecraft classes and config/IO.
+- Enforce stop conditions and loop brakes from `docs/agents/ORCHESTRATION_SPEC.md`; do not let agents continue indefinitely after repeated no-progress reports.
 
 ## Common Pitfalls
 - Adding feature logic to assemblies.
 - Introducing cross-feature imports.
 - Editing restricted areas without explicit need.
 - Forgetting to merge capsule resources into assemblies, causing missing textures/models/lang at runtime.
+- Treating executor-specific prompting as the orchestration model instead of using task packets and structured reports.
+- Accepting prose-only subagent summaries without validating the diff and required checks.
 
 ## When to Stop and Log
 - Architectural changes, new subsystems, or hot‑path changes require ADRs and benchmarks.

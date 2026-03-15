@@ -1,0 +1,22 @@
+{
+  "task_id": "feature-bible-review",
+  "status": "done",
+  "summary": "Reviewed the Bible capsule and identified no missing integration steps for the current scope.",
+  "files_touched": [],
+  "files_read": [
+    "AGENTS.md",
+    "FUNNELING.md",
+    "modules/features/library/bible/AGENTS.md",
+    "docs/contracts/CORE_API.md"
+  ],
+  "commands_run": [
+    "./gradlew check"
+  ],
+  "evidence": [
+    "Capsule metadata is present.",
+    "SPI registration exists.",
+    "No cross-module import violations were required."
+  ],
+  "blockers": [],
+  "next_action": "Integrate or close the review task."
+}

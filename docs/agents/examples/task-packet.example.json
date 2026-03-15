@@ -1,0 +1,29 @@
+{
+  "task_id": "feature-bible-review",
+  "role": "capsule",
+  "objective": "Review the Bible capsule and report any concrete integration gaps.",
+  "allowed_paths": [
+    "modules/features/library/bible"
+  ],
+  "must_read": [
+    "AGENTS.md",
+    "FUNNELING.md",
+    "modules/features/library/bible/AGENTS.md",
+    "docs/contracts/CORE_API.md"
+  ],
+  "success_criteria": [
+    "Identify concrete capsule gaps.",
+    "Do not modify files."
+  ],
+  "stop_conditions": [
+    "Need to modify files outside the allowed paths.",
+    "Need a new cross-module contract.",
+    "No net progress after two attempts."
+  ],
+  "required_checks": [
+    "none"
+  ],
+  "max_iterations": 1,
+  "report_schema": "docs/agents/schemas/agent-report.schema.json",
+  "priority": "normal"
+}
