@@ -28,6 +28,7 @@ You have broader scope and must read broader context.
 - Maintain `docs/contracts/contract_wiring.tsv` and regenerate `docs/contracts/CONTRACT_INDEX.md` when contracts or wiring change.
 - Prepare task packets and validate structured final reports when orchestrating subagents.
 - Use `tools/scripts/verify_orchestration_run.py` when dispatching or integrating autonomous subagent work.
+- Own repo-integration follow-through after capsule subagents finish: manifest refreshes, TODO index refreshes, and full `./gradlew check build`.
 
 ## Repo Agent Setup
 - Run `tools/scripts/install-git-hooks.sh` to enable the TODO index pre-commit hook.
@@ -42,6 +43,7 @@ You have broader scope and must read broader context.
 - Keep assemblies as the only place for Fabric/Minecraft classes and config/IO.
 - **Logic ownership:** Feature/module logic lives in capsules under `modules/*`. Repo agents should only wire and integrate. If capsule logic is needed, spawn a capsule subagent using `docs/agents/SUBAGENT_ORCHESTRATION.md`.
 - Enforce stop conditions and loop brakes from `docs/agents/ORCHESTRATION_SPEC.md`; do not let agents continue indefinitely after repeated no-progress reports.
+- Default capsule task packets to `verification_scope: capsule_local`. Use `repo_integration` only when the delegated task is intentionally responsible for repo-wide integration updates and verification.
 
 ## Common Pitfalls
 - Adding feature logic to assemblies.

@@ -11,6 +11,7 @@
     "success_criteria",
     "stop_conditions",
     "required_checks",
+    "verification_scope",
     "max_iterations",
     "report_schema"
   ],
@@ -65,6 +66,10 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "verification_scope": {
+      "type": "string",
+      "enum": ["capsule_local", "repo_integration"]
     },
     "max_iterations": {
       "type": "integer",

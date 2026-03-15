@@ -14,7 +14,7 @@ Preferred wrapper:
 
 ```bash
 python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
-  --model gpt-5.2-codex \
+  --model gpt-5.3-codex \
   --reasoning-effort medium \
   --report-output subagent_temp/<TASK_ID>.json
 ```
@@ -24,7 +24,7 @@ For guarded autonomous runs, also pass active-packet and report-history director
 
 ```bash
 python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
-  --model gpt-5.2-codex \
+  --model gpt-5.3-codex \
   --reasoning-effort medium \
   --report-output subagent_temp/reports/<TASK_ID>.json \
   --active-packets-dir subagent_temp/active_packets \
@@ -50,6 +50,7 @@ Every subagent run must include:
 - explicit allowed write paths,
 - explicit stop conditions,
 - explicit required checks.
+- explicit `verification_scope` so the subagent knows whether it owns only capsule-local proof or full repo integration.
 
 Do not send vague freeform prompts for integration work.
 Use [`tools/scripts/validate_agent_json.py`](../../tools/scripts/validate_agent_json.py) if you need to validate packets or reports manually.
@@ -57,6 +58,7 @@ Use [`tools/scripts/verify_orchestration_run.py`](../../tools/scripts/verify_orc
 - allowed-path ownership,
 - active packet overlap checks,
 - required-check evidence,
+- verification-scope discipline,
 - loop-brake history checks,
 - optional git diff vs `files_touched` validation.
 
@@ -105,6 +107,7 @@ Success criteria:
 - ...
 Stop conditions:
 - ...
+Verification scope: <capsule_local|repo_integration>
 Required checks:
 - ...
 Return a final report that matches docs/agents/schemas/agent-report.schema.json.
@@ -113,7 +116,7 @@ End immediately after completion or when any stop condition fires.
 
 ## Example Spawn
 ```bash
-codex exec -m gpt-5.2-codex -c model_reasoning_effort="medium" \
+codex exec -m gpt-5.3-codex -c model_reasoning_effort="medium" \
   --sandbox workspace-write --color never \
   --output-schema docs/agents/schemas/agent-report.schema.json \
   --output-last-message subagent_temp/feature-bible-review.json \
@@ -131,10 +134,12 @@ Success criteria:
 Stop conditions:
 - Need to modify files outside the allowed write paths.
 - Need a new cross-module contract.
+Verification scope: capsule_local
 Required checks:
 - none
 Return task_id exactly as: feature-bible-review
 Return a final report that matches docs/agents/schemas/agent-report.schema.json.
+Set blocker_category to one of: none, environment, scope, contract, verification, requirements, unknown.
 End immediately after completion or when any stop condition fires."
 ```
 
@@ -167,6 +172,11 @@ Minimum validation:
 - inspect the changed files,
 - compare `files_touched` in the report to the actual diff,
 - run the required checks from the task packet or stronger local checks.
+
+For capsule tasks, the repo agent still owns:
+- `tools/scripts/update_todo_index.sh`
+- `python3 tools/scripts/update_module_manifest.py`
+- full `./gradlew check build`
 
 Recommended command:
 

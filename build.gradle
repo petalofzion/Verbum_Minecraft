@@ -371,6 +371,72 @@ tasks.register('verifyItemAssets') {
     }
 }
 
+tasks.register('verifyLibraryBookResources') {
+    group = 'verification'
+    description = 'Ensures library capsules with edition-qualified book ids ship matching book resources.'
+    doLast {
+        def slurper = new groovy.json.JsonSlurper()
+        def errors = []
+
+        fileTree(dir: 'modules', include: '**/module.json').each { metadataFile ->
+            def moduleDir = metadataFile.parentFile
+            def metadata = slurper.parse(metadataFile)
+            def entrypointClass = metadata.entrypointClass
+            if (!(entrypointClass instanceof String) || entrypointClass.isBlank()) {
+                return
+            }
+
+            def javaPath = "src/main/java/${entrypointClass.replace('.', '/')}.java"
+            def entrypointFile = new File(moduleDir, javaPath)
+            if (!entrypointFile.exists()) {
+                return
+            }
+
+            def source = entrypointFile.getText('UTF-8')
+            if (!source.contains('new LibraryBookDef(')) {
+                return
+            }
+
+            def itemIdMatcher = source =~ /VerbumId\.of\(\s*"([^"]+)"\s*,\s*"([^"]+)"\s*\)/
+            if (!itemIdMatcher.find()) {
+                errors.add("Could not derive LibraryBookDef item id from ${entrypointFile.path}")
+                return
+            }
+
+            def namespace = itemIdMatcher.group(1)
+            def itemPath = itemIdMatcher.group(2)
+            def compactIdMatcher = source =~ /"([^"]+:[^"@]+@[^"]+)"/
+            def compactId = compactIdMatcher.find() ? compactIdMatcher.group(1) : null
+
+            if (compactId == null) {
+                def editionExprMatcher = source =~ /@\s*([a-z0-9_-]+)"/
+                if (!editionExprMatcher.find()) {
+                    return
+                }
+                compactId = "${namespace}:${itemPath}@${editionExprMatcher.group(1)}"
+            }
+
+            def atIndex = compactId.indexOf('@')
+            if (atIndex < 0) {
+                return
+            }
+
+            def edition = compactId.substring(atIndex + 1)
+            def expectedBookFile = new File(moduleDir, "src/main/resources/assets/${namespace}/books/${itemPath}@${edition}.txt")
+            if (!expectedBookFile.exists() || expectedBookFile.length() == 0) {
+                errors.add(
+                    "Library book id '${compactId}' in ${entrypointFile.path} requires resource ${expectedBookFile.path}"
+                )
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new GradleException("Library book resource verification failed:\n" + errors.join("\n"))
+        }
+        println "Verified: Edition-qualified library books have matching resources."
+    }
+}
+
 def rootVerificationTaskNames = [
     'verifyNoMinecraftImports',
     'verifyModuleMetadata',
@@ -380,6 +446,7 @@ def rootVerificationTaskNames = [
     'verifyAgentProtocolAssets',
     'verifyLegacyNamingIsolation',
     'verifyItemAssets',
+    'verifyLibraryBookResources',
     'verifyTodoIndex',
     'verifyContractIndex'
 ]

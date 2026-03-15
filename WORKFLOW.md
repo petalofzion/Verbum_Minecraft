@@ -144,21 +144,20 @@ Each agent is told:
 - the PRD link/path
 - the **exact allowed directories**
 - the commands they must run before finishing
+- the `verification_scope` they own (`capsule_local` for capsule implementation, `repo_integration` only for deliberate integration tasks)
 - what evidence to report
 - the stop conditions that require it to report and end
 
 ### Step 4 — Implementation + local verification
-Agent implements inside the capsule only, then runs:
-- `./gradlew build`
-- `./gradlew check`
-- plus any capsule-specific tests
-- plus benchmarks if kernel-hot paths were touched
+For capsule tasks, the agent implements inside the capsule only, then runs capsule-local checks only.
+Repo-wide verification remains repo-agent work unless the packet explicitly sets `verification_scope: repo_integration`.
 
 ### Step 5 — Review + merge (repo agent)
 Repo agent checks:
 - directory constraints were respected
 - no forbidden imports
 - profile/build wiring is correct
+- repo integration follow-through is complete (`modules/modules.toml`, `docs/TODO_INDEX.md`, and any other generated indexes)
 - test/benchmark evidence exists
 - ADRs/attribution updated if required
 - final report satisfies the required schema
@@ -236,6 +235,7 @@ Every delegated task must have:
 - a bounded task packet,
 - explicit stop conditions,
 - a structured final report,
+- a `blocker_category` that distinguishes environment blocks from real code/scope/contract blocks,
 - a maximum iteration count.
 
 Repo agents should validate:

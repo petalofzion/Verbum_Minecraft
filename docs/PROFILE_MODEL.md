@@ -18,7 +18,7 @@ Current shipped artifacts:
 
 Player-facing profiles:
 - `Veritas`
-- `Votum`
+- `Vocations` (current internal/build id: `votum`)
 - `Visions`
 - `Vorago`
 
@@ -32,13 +32,15 @@ Design intent:
 - stable foundation for every larger profile,
 - strongest compatibility guarantee in the line.
 
-### Votum
-The cozy and expansive line. This is the "vow" profile: slow-life play, decor, farming, atmosphere, and lower-stress progression.
+### Vocations
+Current internal/build id: `votum`
+
+The cozy and expansive line. This is the calm vocational profile: slow-life play, decor, farming, building, stewardship, atmosphere, and lower-stress progression.
 
 Design intent:
 - aesthetic depth without punitive pressure,
 - broader ambient and lifestyle content than Veritas,
-- devotional and pastoral tone,
+- pastoral, domestic, and artisanal tone,
 - upward compatibility into Visions and Vorago.
 
 ### Visions
@@ -48,7 +50,7 @@ Design intent:
 - broad mechanical depth,
 - tech, magic, and exploration systems,
 - the main "complete Verbum" profile,
-- includes the Veritas and Votum foundations rather than forking away from them.
+- includes the Veritas and Vocations foundations rather than forking away from them.
 
 ### Vorago
 The brutal challenge line. This is the "abyss" profile for players who want friction, danger, and pressure by design.
@@ -63,8 +65,8 @@ Design intent:
 Profiles should remain monotonic wherever possible:
 
 - `Veritas` is the refined baseline.
-- `Votum` expands upward from `Veritas`.
-- `Visions` expands upward from `Votum`.
+- `Vocations` (`votum`) expands upward from `Veritas`.
+- `Visions` expands upward from `Vocations`.
 - `Vorago` expands upward from `Visions`.
 
 This keeps the migration direction simple and consistent:
@@ -84,7 +86,7 @@ Current assembly ids and artifacts:
 Metadata guidance:
 - `shared` is reserved for non-player-facing core infrastructure under `modules/core/**`.
 - Modules that define the player-facing Veritas baseline should be marked `veritas`.
-- Modules that ship in `Votum`, `Visions`, and `Vorago` but not `Veritas` should be marked `votum`.
+- Modules that ship in `Vocations`, `Visions`, and `Vorago` but not `Veritas` should be marked `votum`.
 - Modules that ship in `Visions` and `Vorago` but not the calmer lines should be marked `visions`.
 - Modules that ship only in `Vorago` should be marked `vorago`.
 
@@ -96,7 +98,7 @@ Interpretation rule:
 
 Current implementation note:
 - The repo already ships four assemblies.
-- Today, `Votum` still shares the Veritas module set until cozy-specific modules/config layers are added.
+- Today, `Vocations` still uses the `votum` assembly/build id and shares the Veritas module set until cozy-specific modules/config layers are added.
 - Today, `Vorago` still shares the Visions module set until punitive-specific modules/config layers are added.
 
 Assembly membership is now derived from module tier metadata instead of being hand-maintained in each assembly build file.
@@ -105,8 +107,8 @@ Assembly membership is now derived from module tier metadata instead of being ha
 ## Naming Guidance
 The active public line is intentionally alliterative:
 - `Veritas`
-- `Votum`
+- `Vocations` (internal id currently `votum`)
 - `Visions`
 - `Vorago`
 
-This gives the project a clearer conceptual progression from truth, to vow, to sight, to abyss while preserving clean upgrade semantics.
+This gives the project a clearer conceptual progression from truth, to work and calling, to sight, to abyss while preserving clean upgrade semantics.

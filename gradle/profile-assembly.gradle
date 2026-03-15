@@ -1,3 +1,4 @@
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 def profileOrder = ['veritas', 'votum', 'visions', 'vorago']
@@ -73,11 +74,48 @@ sourceSets {
                 srcDir project(path).file("src/main/resources")
             }
             exclude("META-INF/services/**")
+            exclude("assets/*/lang/*.json")
         }
     }
 }
 
+def generatedResourcesDir = layout.buildDirectory.dir("generated/profileResources")
+def mergedLangDir = generatedResourcesDir.map { it.dir("assets/verbum/lang") }
+
+tasks.register("generateMergedLangResources") {
+    def outputFile = mergedLangDir.map { it.file("en_us.json") }
+
+    inputs.files(modulePaths.collect { path ->
+        project(path).file("src/main/resources/assets/verbum/lang/en_us.json")
+    })
+    outputs.file(outputFile)
+
+    doLast {
+        def mergedLang = new LinkedHashMap<String, Object>()
+        modulePaths.each { path ->
+            def langFile = project(path).file("src/main/resources/assets/verbum/lang/en_us.json")
+            if (!langFile.exists()) {
+                return
+            }
+            def parsed = new JsonSlurper().parse(langFile)
+            if (!(parsed instanceof Map)) {
+                throw new GradleException("Expected JSON object in ${langFile}")
+            }
+            parsed.each { key, value ->
+                mergedLang[key.toString()] = value
+            }
+        }
+
+        def targetDir = outputFile.get().asFile.parentFile
+        targetDir.mkdirs()
+        outputFile.get().asFile.text = JsonOutput.prettyPrint(JsonOutput.toJson(mergedLang)) + "\n"
+    }
+}
+
+sourceSets.main.resources.srcDir(generatedResourcesDir)
+
 processResources {
+    dependsOn("generateMergedLangResources")
     inputs.property "version", modVersion
     filesMatching("fabric.mod.json") {
         expand "version": modVersion

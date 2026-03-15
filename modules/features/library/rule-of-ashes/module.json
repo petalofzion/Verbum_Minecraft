@@ -1,0 +1,11 @@
+{
+  "id": "feature-rule-of-ashes",
+  "domain": "library",
+  "edition": "vorago",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.library.ruleofashes.RuleOfAshesFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

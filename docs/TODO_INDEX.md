@@ -9,6 +9,10 @@ Do not edit by hand.
 ## Capsule TODOs
 - `modules/features/library/bible/docs/TODO.md`
 - `modules/features/library/book-enhancement/docs/TODO.md`
+- `modules/features/library/book-of-hours/docs/TODO.md`
+- `modules/features/library/dusty-devotional/docs/TODO.md`
+- `modules/features/library/pilgrims-atlas/docs/TODO.md`
+- `modules/features/library/rule-of-ashes/docs/TODO.md`
 
 ## How to Maintain
 - Repo agents run `tools/scripts/update_todo_index.sh` when a capsule is added or removed.

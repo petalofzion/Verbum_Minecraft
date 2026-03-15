@@ -10,6 +10,7 @@ This document is the **single, fast path** for agents working inside a capsule. 
 5. Read global constraints and contracts:
    - `docs/ARCHITECTURE_MAP.md` (boundaries)
    - `docs/runtime-constitution.md` (performance laws)
+   - `docs/CONTENT_STYLE_BIBLE.md` (player-facing tone and thematic guidance)
    - `docs/contracts/CORE_API.md` (available contracts)
    - `docs/contracts/CONTRACT_INDEX.md` (wiring coverage)
 6. Read the capsule docs in this order:

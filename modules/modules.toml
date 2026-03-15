@@ -68,6 +68,30 @@ edition = ["veritas", "votum", "visions", "vorago"]
 category = "library"
 tags = ["library"]
 
+[modules."modules:features:library:book-of-hours"]
+name = "Book Of Hours"
+edition = ["votum", "visions", "vorago"]
+category = "library"
+tags = ["library"]
+
+[modules."modules:features:library:dusty-devotional"]
+name = "Dusty Devotional"
+edition = ["veritas", "votum", "visions", "vorago"]
+category = "library"
+tags = ["library"]
+
+[modules."modules:features:library:pilgrims-atlas"]
+name = "Pilgrims Atlas"
+edition = ["visions", "vorago"]
+category = "library"
+tags = ["library"]
+
+[modules."modules:features:library:rule-of-ashes"]
+name = "Rule Of Ashes"
+edition = ["vorago"]
+category = "library"
+tags = ["library"]
+
 [modules."modules:magic:visions-only:magic-base"]
 name = "Magic Base"
 edition = ["visions", "vorago"]
