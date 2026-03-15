@@ -8,7 +8,7 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 ## Feature Discovery & Registration Flow
 **Entry points:**
 - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/VerbumVeritas.java`
-- `assemblies/votum/src/main/java/com/verbum_minecraft/votum/VerbumVotum.java`
+- `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/VerbumVocations.java`
 - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/VerbumVisions.java`
 - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/VerbumVorago.java`
 
@@ -21,7 +21,7 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 ## ContentSink Wiring
 **Implementations:**
 - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`
-- `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`
+- `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`
 - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`
 - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`
 
@@ -42,9 +42,9 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
   - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookClient.java`
   - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookView.java`
   - `assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/client/LibraryBookBookmarks.java`
-  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookClient.java`
-  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookView.java`
-  - `assemblies/votum/src/main/java/com/verbum_minecraft/votum/client/LibraryBookBookmarks.java`
+  - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookClient.java`
+  - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookView.java`
+  - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookBookmarks.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookClient.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookView.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookBookmarks.java`

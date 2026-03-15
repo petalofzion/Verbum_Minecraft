@@ -5,11 +5,11 @@ import re
 from pathlib import Path
 
 
-PROFILE_LADDER = ["veritas", "votum", "visions", "vorago"]
+PROFILE_LADDER = ["veritas", "vocations", "visions", "vorago"]
 EDITION_TO_PROFILES = {
     "shared": PROFILE_LADDER,
     "veritas": PROFILE_LADDER,
-    "votum": PROFILE_LADDER[1:],
+    "vocations": PROFILE_LADDER[1:],
     "visions": PROFILE_LADDER[2:],
     "vorago": PROFILE_LADDER[3:],
 }

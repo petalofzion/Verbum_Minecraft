@@ -14,7 +14,7 @@ public class BookOfHoursFeature implements FeatureEntrypoint {
     private static final String BOOK_OF_HOURS_BOOK_ID = BOOK_OF_HOURS_ID.namespace()
         + ":"
         + BOOK_OF_HOURS_ID.path()
-        + "@votum";
+        + "@vocations";
 
     @Override
     public String id() {

@@ -27,4 +27,4 @@ Provide a cozy Vocations profile manual as a library-backed book item. The capsu
 - `src/main/resources/assets/verbum/lang/en_us.json`
 
 ## Asset Checklist (Library Book)
-- `src/main/resources/assets/verbum/books/book_of_hours@votum.txt`
+- `src/main/resources/assets/verbum/books/book_of_hours@vocations.txt`

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "verbum_votum",
+  "id": "verbum_vocations",
   "version": "${version}",
-  "name": "Verbum: Votum",
+  "name": "Verbum: Vocations",
   "description": "The cozy and expansive line of Verbum Minecraft, built for slow-life play and atmosphere.",
   "authors": [ "Auriella" ],
   "contact": {
@@ -11,7 +11,7 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": [ "com.verbum_minecraft.votum.VerbumVotum" ]
+    "main": [ "com.verbum_minecraft.vocations.VerbumVocations" ]
   },
   "depends": {
     "fabricloader": ">=0.18.4",

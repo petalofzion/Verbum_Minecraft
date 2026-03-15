@@ -49,7 +49,7 @@ Profiles decide which features and behavior layers are included.
 
 Current implementation state:
 - `veritas`
-- `votum`
+- `vocations`
 - `visions`
 - `vorago`
 
@@ -110,7 +110,7 @@ modules/features/library/bible/
 ### `module.json` Fields:
 - `id`: unique module identifier.
 - `domain`: core/qol/world/magic/tech/ui/etc.
-- `edition`: current build target metadata. Use `veritas`, `votum`, `visions`, or `vorago` for player-facing content modules. Reserve `shared` for non-player-facing core infrastructure under `modules/core/**`; see `docs/PROFILE_MODEL.md`.
+- `edition`: current build target metadata. Use `veritas`, `vocations`, `visions`, or `vorago` for player-facing content modules. Reserve `shared` for non-player-facing core infrastructure under `modules/core/**`; see `docs/PROFILE_MODEL.md`.
 - `providesFeature`: boolean (true if it implements `FeatureEntrypoint`).
 - `entrypointClass`: FQCN of the `FeatureEntrypoint` implementation (optional).
 - `dependsOn`: list of module IDs.
@@ -252,8 +252,8 @@ The source of truth is `docs/agents/ORCHESTRATION_SPEC.md`.
 ### 7.1 Profile gating (build-time, safest)
 Use build profiles to include/exclude entire capsules:
 - `Veritas` is the refined baseline profile
-- `Votum` layers cozy and expansive content above `Veritas`
-- `Visions` layers the broader flagship feature set above `Votum`
+- `Vocations` layers cozy and expansive content above `Veritas`
+- `Visions` layers the broader flagship feature set above `Vocations`
 - `Vorago` layers punitive challenge content above `Visions`
 
 This avoids world corruption from removing registries.

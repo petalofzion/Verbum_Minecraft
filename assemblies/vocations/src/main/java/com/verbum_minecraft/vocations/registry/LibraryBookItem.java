@@ -1,4 +1,4 @@
-package com.verbum_minecraft.votum.registry;
+package com.verbum_minecraft.vocations.registry;
 
 import com.verbum_minecraft.features.library.bookenhancement.BookId;
 import java.lang.reflect.Method;
@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 final class LibraryBookItem extends WrittenBookItem {
     private static final Logger LOGGER = LoggerFactory.getLogger(LibraryBookItem.class);
-    private static final String CLIENT_HELPER = "com.verbum_minecraft.votum.client.LibraryBookClient";
+    private static final String CLIENT_HELPER = "com.verbum_minecraft.vocations.client.LibraryBookClient";
     private static final String CLIENT_METHOD = "openBook";
     private static final Object CLIENT_LOCK = new Object();
 

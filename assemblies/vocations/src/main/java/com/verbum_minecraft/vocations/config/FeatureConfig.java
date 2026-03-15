@@ -1,4 +1,4 @@
-package com.verbum_minecraft.votum.config;
+package com.verbum_minecraft.vocations.config;
 
 import java.util.Collections;
 import java.util.Set;

@@ -14,11 +14,11 @@ Do not edit by hand.
 
 ### com.verbum_minecraft.api.content.BookDef (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/BookDef.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=WrittenBookItem with WRITTEN_BOOK_CONTENT; vanilla page limits apply
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=WrittenBookItem with WRITTEN_BOOK_CONTENT; vanilla page limits apply
 
 ### com.verbum_minecraft.api.content.ContentSink (api interface)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/ContentSink.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=Item and book registration into Minecraft registries
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=Item and book registration into Minecraft registries
 
 ### com.verbum_minecraft.api.content.ContentType (api enum)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/ContentType.java`
@@ -26,19 +26,19 @@ Do not edit by hand.
 
 ### com.verbum_minecraft.api.content.FeatureContext (api interface)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/FeatureContext.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/AssemblyFeatureContext.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/AssemblyFeatureContext.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/AssemblyFeatureContext.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/AssemblyFeatureContext.java`; notes=Assembly provides context to features
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/AssemblyFeatureContext.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/AssemblyFeatureContext.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/AssemblyFeatureContext.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/AssemblyFeatureContext.java`; notes=Assembly provides context to features
 
 ### com.verbum_minecraft.api.content.ItemDef (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/ItemDef.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=ItemDef mapped to Item.Properties, Registry.register, and creativeTabKey → creative tab entries
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=ItemDef mapped to Item.Properties, Registry.register, and creativeTabKey → creative tab entries
 
 ### com.verbum_minecraft.api.content.LibraryBookDef (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/LibraryBookDef.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=Library-backed WrittenBookItem using BookLibrary + BookViewScreen; offline classpath resources
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=Library-backed WrittenBookItem using BookLibrary + BookViewScreen; offline classpath resources
 
 ### com.verbum_minecraft.api.content.VerbumId (api record)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/content/VerbumId.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=VerbumId mapped to Identifier
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/registry/MinecraftContentRegistrar.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/registry/MinecraftContentRegistrar.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/registry/MinecraftContentRegistrar.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/registry/MinecraftContentRegistrar.java`; notes=VerbumId mapped to Identifier
 
 ### com.verbum_minecraft.api.energy.Energy (api interface)
 - Source: `modules/core/api/src/main/java/com/verbum_minecraft/api/energy/Energy.java`
@@ -50,4 +50,4 @@ Do not edit by hand.
 
 ### com.verbum_minecraft.spi.FeatureEntrypoint (spi interface)
 - Source: `modules/core/spi/src/main/java/com/verbum_minecraft/spi/FeatureEntrypoint.java`
-- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/VerbumVeritas.java`, `assemblies/votum/src/main/java/com/verbum_minecraft/votum/VerbumVotum.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/VerbumVisions.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/VerbumVorago.java`; notes=ServiceLoader discovery and lifecycle calls
+- Capabilities Matrix: wiring=wired; paths=`assemblies/veritas/src/main/java/com/verbum_minecraft/veritas/VerbumVeritas.java`, `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/VerbumVocations.java`, `assemblies/visions/src/main/java/com/verbum_minecraft/visions/VerbumVisions.java`, `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/VerbumVorago.java`; notes=ServiceLoader discovery and lifecycle calls

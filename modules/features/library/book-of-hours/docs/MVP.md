@@ -2,7 +2,7 @@
 
 ## Must-Have
 - Book of Hours item registered via `FeatureEntrypoint` using `LibraryBookDef`.
-- Book id uses `@votum` edition suffix.
+- Book id uses `@vocations` edition suffix.
 - Player-facing manual text explains Vocations in a warm domestic tone.
 - Item assets and lang entry included.
 
@@ -13,6 +13,6 @@
 
 ## Acceptance Criteria
 - Registration defines `verbum:book_of_hours` item id.
-- Library book id is `verbum:book_of_hours@votum`.
+- Library book id is `verbum:book_of_hours@vocations`.
 - Content uses Vocations as the player-facing profile name.
 - Capsule stays pure (no Minecraft/Fabric classes).

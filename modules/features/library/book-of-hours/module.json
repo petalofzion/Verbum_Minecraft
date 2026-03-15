@@ -1,7 +1,7 @@
 {
   "id": "feature-book-of-hours",
   "domain": "library",
-  "edition": "votum",
+  "edition": "vocations",
   "providesFeature": true,
   "entrypointClass": "com.verbum_minecraft.features.library.bookofhours.BookOfHoursFeature",
   "dependsOn": [

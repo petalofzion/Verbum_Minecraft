@@ -36,8 +36,8 @@ tasks.register('verifyModuleMetadata') {
         def ids = [:]
         def errors = []
         def allowedDomains = ['core', 'feature', 'library', 'world', 'magic', 'tech', 'assembly', 'tool']
-        def allowedModuleEditions = ['shared', 'veritas', 'votum', 'visions', 'vorago']
-        def allowedAssemblyEditions = ['veritas', 'votum', 'visions', 'vorago']
+        def allowedModuleEditions = ['shared', 'veritas', 'vocations', 'visions', 'vorago']
+        def allowedAssemblyEditions = ['veritas', 'vocations', 'visions', 'vorago']
         
         def metadataFiles = files(
             fileTree(dir: 'modules', include: '**/module.json'),
@@ -60,7 +60,7 @@ tasks.register('verifyModuleMetadata') {
                     errors.add("Invalid module edition [${json.edition}] in ${path}. Allowed: ${allowedModuleEditions}")
                 }
                 if (json.edition == 'shared' && !path.startsWith('modules/core/')) {
-                    errors.add("Module edition 'shared' is reserved for non-player-facing core infrastructure under modules/core/**. Use 'veritas', 'votum', 'visions', or 'vorago' for feature/content modules: ${path}")
+                    errors.add("Module edition 'shared' is reserved for non-player-facing core infrastructure under modules/core/**. Use 'veritas', 'vocations', 'visions', or 'vorago' for feature/content modules: ${path}")
                 }
             } else if (path.startsWith('assemblies/')) {
                 if (!allowedAssemblyEditions.contains(json.edition)) {

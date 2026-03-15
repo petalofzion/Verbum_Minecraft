@@ -22,29 +22,29 @@ The project now needs room for:
 Adopt a four-profile player-facing model:
 
 1. `Veritas`
-2. `Votum`
+2. `Vocations`
 3. `Visions`
 4. `Vorago`
 
 Semantics:
 - `Veritas` is the refined baseline profile.
-- `Votum` is the cozy and expansive profile.
+- `Vocations` is the cozy and expansive profile.
 - `Visions` is the flagship full profile.
 - `Vorago` is the punitive challenge profile.
 
 The migration is implemented in the repo as:
 - `assemblies/veritas`
-- `assemblies/votum`
+- `assemblies/vocations`
 - `assemblies/visions`
 - `assemblies/vorago`
 
 Compatibility direction:
-- `Veritas -> Votum -> Visions -> Vorago`
+- `Veritas -> Vocations -> Visions -> Vorago`
 
 Metadata guidance:
 - only non-player-facing core infrastructure under `modules/core/**` uses `shared`
 - Veritas-baseline modules use `veritas`
-- Votum-layer modules use `votum`
+- Vocations-layer modules use `vocations`
 - Visions-layer modules use `visions`
 - Vorago-layer modules use `vorago`
 

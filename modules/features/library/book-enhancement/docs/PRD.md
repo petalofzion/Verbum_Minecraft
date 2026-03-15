@@ -26,7 +26,7 @@ Provide a library-backed book system so the vanilla written book can reference l
 - Hard caps for safety (see Staging Plan).
 
 ## Build / Profile Target
-- Shared across Veritas, Votum, Visions, and Vorago.
+- Shared across Veritas, Vocations, Visions, and Vorago.
 
 ## Staging Plan (Offline First)
 ### Stage 1: Library Pointer + Full Bible (Offline)

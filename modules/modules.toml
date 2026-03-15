@@ -4,79 +4,79 @@
 
 [modules."modules:core:api"]
 name = "Core API"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["api", "contract"]
 
 [modules."modules:core:baseline:content-code"]
 name = "Content Code"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["registration", "content"]
 
 [modules."modules:core:baseline:content-data"]
 name = "Content Data"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["data", "resources"]
 
 [modules."modules:core:baseline:feature-core"]
 name = "Feature Core"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["feature", "baseline"]
 
 [modules."modules:core:baseline:vanilla-core"]
 name = "Vanilla Core"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["vanilla", "baseline"]
 
 [modules."modules:core:runtime"]
 name = "Core Runtime"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["runtime", "utilities"]
 
 [modules."modules:core:sim-kernel"]
 name = "Simulation Kernel"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["kernel", "performance"]
 
 [modules."modules:core:spi"]
 name = "Core SPI"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["spi", "discovery"]
 
 [modules."modules:core:ux-framework"]
 name = "UX Framework"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "core"
 tags = ["client", "rendering"]
 
 [modules."modules:features:library:bible"]
 name = "Bible"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "library"
 tags = ["library", "books", "feature"]
 
 [modules."modules:features:library:book-enhancement"]
 name = "Book Enhancement"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "library"
 tags = ["library"]
 
 [modules."modules:features:library:book-of-hours"]
 name = "Book Of Hours"
-edition = ["votum", "visions", "vorago"]
+edition = ["vocations", "visions", "vorago"]
 category = "library"
 tags = ["library"]
 
 [modules."modules:features:library:dusty-devotional"]
 name = "Dusty Devotional"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "library"
 tags = ["library"]
 
@@ -106,6 +106,6 @@ tags = ["tech", "machinery"]
 
 [modules."modules:world:baseline:world-base"]
 name = "World Base"
-edition = ["veritas", "votum", "visions", "vorago"]
+edition = ["veritas", "vocations", "visions", "vorago"]
 category = "world"
 tags = ["worldgen", "biomes"]

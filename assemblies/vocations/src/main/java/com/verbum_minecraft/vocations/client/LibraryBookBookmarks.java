@@ -1,4 +1,4 @@
-package com.verbum_minecraft.votum.client;
+package com.verbum_minecraft.vocations.client;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

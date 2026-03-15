@@ -1,11 +1,11 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-def profileOrder = ['veritas', 'votum', 'visions', 'vorago']
+def profileOrder = ['veritas', 'vocations', 'visions', 'vorago']
 def editionRank = [
     'shared': 0,
     'veritas': 1,
-    'votum': 2,
+    'vocations': 2,
     'visions': 3,
     'vorago': 4
 ]
@@ -15,8 +15,8 @@ def profilesForEdition = { String edition ->
         case 'shared':
         case 'veritas':
             return profileOrder
-        case 'votum':
-            return ['votum', 'visions', 'vorago']
+        case 'vocations':
+            return ['vocations', 'visions', 'vorago']
         case 'visions':
             return ['visions', 'vorago']
         case 'vorago':

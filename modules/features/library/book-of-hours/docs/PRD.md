@@ -14,15 +14,15 @@ Provide a Book of Hours item that registers a Vocations profile manual as a libr
 
 ## Data Model
 - Item id: `verbum:book_of_hours`
-- Library book id: `verbum:book_of_hours@votum`
-- Content resource: `assets/verbum/books/book_of_hours@votum.txt`
+- Library book id: `verbum:book_of_hours@vocations`
+- Content resource: `assets/verbum/books/book_of_hours@vocations.txt`
 
 ## Performance Notes
 - Hot path: no.
 - Book content is static packaged text loaded through library book wiring.
 
 ## Build / Profile Target
-- Votum edition tier (player-facing Vocations line), inherited upward into Visions and Vorago.
+- Vocations edition tier (player-facing Vocations line), inherited upward into Visions and Vorago.
 
 ## API / SPI Needs
 - Uses `LibraryBookDef` for a library-backed profile manual.

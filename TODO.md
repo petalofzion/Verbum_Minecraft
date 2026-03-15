@@ -9,9 +9,9 @@ After adding/removing capsule TODO files, run `tools/scripts/update_todo_index.s
 ## Next Steps (Active Development)
 *   **Implement Sim-Kernel** batched tick loop (O(1)).
 *   **"Stone Age" Vertical Slice** content (Basic materials, items).
-*   **Add actual Votum gameplay layers** (cozy modules and/or config overlays) on top of the Veritas baseline.
+*   **Add actual Vocations gameplay layers** (cozy modules and/or config overlays) on top of the Veritas baseline.
 *   **Add actual Vorago gameplay layers** (punitive modules and/or config overlays) on top of the Visions assembly.
-*   **Add the first `votum` and `vorago`-tagged modules** so the higher profiles stop being only config/name scaffolds.
+*   **Add the first `vocations` and `vorago`-tagged modules** so the higher profiles stop being only config/name scaffolds.
 
 ## Documentation (Maintain)
 *   Update `SOURCE_ATTRIBUTION.md` as new libraries are integrated.
@@ -21,8 +21,8 @@ After adding/removing capsule TODO files, run `tools/scripts/update_todo_index.s
 *   ✅ Real GitHub CI workflow activated for `check` + `build`.
 *   ✅ Root verification tasks wired into `check`.
 *   ✅ Orchestration spec added for bounded autonomous agent work.
-*   ✅ Four-profile player model documented (`Veritas / Votum / Visions / Vorago`).
-*   ✅ Live assembly/profile migration completed (`veritas`, `votum`, `visions`, `vorago`).
+*   ✅ Four-profile player model documented (`Veritas / Vocations / Visions / Vorago`).
+*   ✅ Live assembly/profile migration completed (`veritas`, `vocations`, `visions`, `vorago`).
 *   ✅ Assembly membership now derives from module tier metadata instead of hand-maintained per-profile lists.
 *   ✅ Module manifest verification added so `modules/modules.toml` stays aligned with `module.json`.
 *   ✅ Orchestration schemas/examples and Codex packet wrapper are validated in repo checks.

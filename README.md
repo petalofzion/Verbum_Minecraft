@@ -74,13 +74,13 @@ This project is not structured like a normal mod. We use a strictly tiered **Mod
 Verbum is built as a single codebase with build-time profile selection.
 
 * **Verbum: Veritas** — the refined baseline line: essential, minimal, optimized, and closest to the "true" Minecraft baseline. Output: `verbum-veritas.jar`.
-* **Verbum: Vocations** — the cozy and expansive line for slow-life play: decor, farming, building, atmosphere, stewardship, and lower-stress progression. Internal build id currently remains `votum`. **Vocations builds upward from Veritas.** Output: `verbum-votum.jar`.
+* **Verbum: Vocations** — the cozy and expansive line for slow-life play: decor, farming, building, atmosphere, stewardship, and lower-stress progression. **Vocations builds upward from Veritas.** Output: `verbum-vocations.jar`.
 * **Verbum: Visions** — the full expanded profile (tech, high magic, dimensions, and the broader modded experience). **Visions is a superset of Vocations.** Output: `verbum-visions.jar`.
 * **Verbum: Vorago** — the brutal challenge profile. **Vorago is a superset of Visions**, intended for friction-heavy progression, pressure, and punitive play by design. Output: `verbum-vorago.jar`.
 
 This split is intentional: it enforces architectural boundaries early, keeps upward migrations simple, and lets each profile remain internally coherent.
 
-Module tier metadata follows the same ladder. Player-facing baseline content should be marked `veritas`, then inherited upward by `votum`, `visions`, and `vorago`. The internal `shared` tier is reserved only for non-player-facing core infrastructure such as API/SPI/runtime/kernel modules.
+Module tier metadata follows the same ladder. Player-facing baseline content should be marked `veritas`, then inherited upward by `vocations`, `visions`, and `vorago`. The internal `shared` tier is reserved only for non-player-facing core infrastructure such as API/SPI/runtime/kernel modules.
 
 ```mermaid
 graph TD
@@ -296,7 +296,7 @@ cd Verbum_Minecraft
 
 # Optional: profile-specific artifacts
 ./gradlew :assemblies:veritas:build
-./gradlew :assemblies:votum:build
+./gradlew :assemblies:vocations:build
 ./gradlew :assemblies:visions:build
 ./gradlew :assemblies:vorago:build
 
@@ -348,13 +348,13 @@ Verbum publishes **four installable profiles**:
 Choose **one** profile to install (do not install multiple Verbum profile jars at the same time):
 
 - **Veritas:** install `verbum-veritas-X.X.X.jar`
-- **Vocations:** install `verbum-votum-X.X.X.jar` (includes the Veritas foundation; internal build id currently remains `votum`)
+- **Vocations:** install `verbum-vocations-X.X.X.jar` (includes the Veritas foundation)
 - **Visions:** install `verbum-visions-X.X.X.jar` (includes Vocations and Veritas content)
 - **Vorago:** install `verbum-vorago-X.X.X.jar` (includes Visions, Vocations, and Veritas content)
 
 1.  **Install Fabric Loader:** Download and run the [Fabric Installer](https://fabricmc.net/use/). Use the **Minecraft** + **Fabric Loader** versions listed in the Targets table above.
 2.  **Install Fabric API:** Download the appropriate **Fabric API** version listed in the Targets table and place it in your `mods` folder.
-3.  **Download Verbum:** Get the latest release from the [releases page](https://github.com/petalofzion/Verbum_Minecraft/releases) and place **one** of `verbum-veritas-X.X.X.jar`, `verbum-votum-X.X.X.jar`, `verbum-visions-X.X.X.jar`, or `verbum-vorago-X.X.X.jar` in your `mods` folder.
+3.  **Download Verbum:** Get the latest release from the [releases page](https://github.com/petalofzion/Verbum_Minecraft/releases) and place **one** of `verbum-veritas-X.X.X.jar`, `verbum-vocations-X.X.X.jar`, `verbum-visions-X.X.X.jar`, or `verbum-vorago-X.X.X.jar` in your `mods` folder.
 
 ### Usage
 *   **Client & Server Support:** Verbum is designed to work seamlessly on both single-player clients and dedicated servers.

@@ -59,7 +59,7 @@ You have broader scope and must read broader context.
 ## Testing with Prism Launcher (local)
 1. Build the profile you want:
    - Veritas: `./gradlew :assemblies:veritas:build`
-   - Votum: `./gradlew :assemblies:votum:build`
+   - Vocations: `./gradlew :assemblies:vocations:build`
    - Visions: `./gradlew :assemblies:visions:build`
    - Vorago: `./gradlew :assemblies:vorago:build`
 2. In Prism, create a Fabric instance:

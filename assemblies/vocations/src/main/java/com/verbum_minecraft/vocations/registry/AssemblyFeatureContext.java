@@ -1,4 +1,4 @@
-package com.verbum_minecraft.votum.registry;
+package com.verbum_minecraft.vocations.registry;
 
 import com.verbum_minecraft.api.content.ContentSink;
 import com.verbum_minecraft.api.content.FeatureContext;

@@ -103,8 +103,7 @@ If writing a Veritas book, ask:
 - does it feel foundational rather than ornamental?
 
 ### Vocations
-Internal module/build id: `votum`
-Current code/build id remains `votum` until a deliberate rename lands.
+Internal module/build id: `vocations`
 Player-facing name: `Vocations`
 
 Purpose:

@@ -19,8 +19,8 @@ Why this feature exists and the player/dev value it provides.
 - If yes, which loops and how will you batch?
 
 ## Build / Profile Target
-- Current assembly target: Veritas / Votum / Visions / Vorago / Shared
-- Intended player-facing profile: Veritas / Votum / Visions / Vorago / Shared
+- Current assembly target: Veritas / Vocations / Visions / Vorago / Shared
+- Intended player-facing profile: Veritas / Vocations / Visions / Vorago / Shared
 
 ## API / SPI Needs
 - New contracts required? yes/no

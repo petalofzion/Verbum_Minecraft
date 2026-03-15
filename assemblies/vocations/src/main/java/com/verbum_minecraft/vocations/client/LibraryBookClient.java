@@ -1,9 +1,9 @@
-package com.verbum_minecraft.votum.client;
+package com.verbum_minecraft.vocations.client;
 
 import com.verbum_minecraft.features.library.bookenhancement.BookId;
 import com.verbum_minecraft.features.library.bookenhancement.BookPageLayout;
 import com.verbum_minecraft.features.library.bookenhancement.BookPages;
-import com.verbum_minecraft.votum.registry.LibraryBookSupport;
+import com.verbum_minecraft.vocations.registry.LibraryBookSupport;
 import java.io.IOException;
 import java.util.List;
 import net.fabricmc.api.EnvType;

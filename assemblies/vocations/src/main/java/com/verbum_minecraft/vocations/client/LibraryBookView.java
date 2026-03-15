@@ -1,4 +1,4 @@
-package com.verbum_minecraft.votum.client;
+package com.verbum_minecraft.vocations.client;
 
 import com.verbum_minecraft.features.library.bookenhancement.BookBookmarkStore;
 import com.verbum_minecraft.features.library.bookenhancement.BookId;

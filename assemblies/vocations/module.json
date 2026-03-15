@@ -1,7 +1,7 @@
 {
-  "id": "assembly-votum",
+  "id": "assembly-vocations",
   "domain": "assembly",
-  "edition": "votum",
+  "edition": "vocations",
   "providesFeature": false,
   "dependsOn": [
     "core-api",

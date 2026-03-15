@@ -1,16 +1,16 @@
-package com.verbum_minecraft.votum;
+package com.verbum_minecraft.vocations;
 
 import com.verbum_minecraft.spi.FeatureEntrypoint;
 import java.util.ServiceLoader;
 import net.fabricmc.api.ModInitializer;
-import com.verbum_minecraft.votum.config.FeatureConfig;
-import com.verbum_minecraft.votum.registry.AssemblyFeatureContext;
-import com.verbum_minecraft.votum.registry.MinecraftContentRegistrar;
+import com.verbum_minecraft.vocations.config.FeatureConfig;
+import com.verbum_minecraft.vocations.registry.AssemblyFeatureContext;
+import com.verbum_minecraft.vocations.registry.MinecraftContentRegistrar;
 
-public class VerbumVotum implements ModInitializer {
+public class VerbumVocations implements ModInitializer {
     @Override
     public void onInitialize() {
-        System.out.println("Verbum: Votum Initializing...");
+        System.out.println("Verbum: Vocations Initializing...");
         FeatureConfig.load();
 
         MinecraftContentRegistrar registrar = new MinecraftContentRegistrar();
