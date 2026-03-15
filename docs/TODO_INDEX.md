@@ -11,6 +11,7 @@ Do not edit by hand.
 - `modules/features/library/book-enhancement/docs/TODO.md`
 - `modules/features/library/book-of-hours/docs/TODO.md`
 - `modules/features/library/dusty-devotional/docs/TODO.md`
+- `modules/features/library/librarians-desk/docs/TODO.md`
 - `modules/features/library/pilgrims-atlas/docs/TODO.md`
 - `modules/features/library/rule-of-ashes/docs/TODO.md`
 

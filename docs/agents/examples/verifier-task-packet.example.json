@@ -1,0 +1,36 @@
+{
+  "task_id": "verify-feature-bible-review",
+  "role": "verifier",
+  "objective": "Verify the Bible capsule review task output and confirm required checks passed without introducing repo regressions.",
+  "allowed_paths": [
+    "modules/features/library/bible",
+    "subagent_temp/reports"
+  ],
+  "must_read": [
+    "AGENTS.md",
+    "docs/agents/VERIFIER_AGENT.md",
+    "docs/GOTCHAS.md",
+    "docs/contracts/CORE_API.md"
+  ],
+  "success_criteria": [
+    "Run the required verification commands.",
+    "Do not modify implementation files.",
+    "Return a structured verifier report."
+  ],
+  "stop_conditions": [
+    "Required verification command cannot run.",
+    "Need to modify implementation code to continue.",
+    "No new hypothesis after repeated verification failure."
+  ],
+  "required_checks": [
+    "./gradlew check build"
+  ],
+  "verification_scope": "repo_integration",
+  "max_iterations": 1,
+  "report_schema": "docs/agents/schemas/agent-report.schema.json",
+  "priority": "normal",
+  "verification_targets": [
+    "feature-bible-review"
+  ],
+  "gotcha_review_required": true
+}

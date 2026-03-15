@@ -80,6 +80,12 @@ edition = ["veritas", "vocations", "visions", "vorago"]
 category = "library"
 tags = ["library"]
 
+[modules."modules:features:library:librarians-desk"]
+name = "Librarians Desk"
+edition = ["vocations", "visions", "vorago"]
+category = "library"
+tags = ["library"]
+
 [modules."modules:features:library:pilgrims-atlas"]
 name = "Pilgrims Atlas"
 edition = ["visions", "vorago"]

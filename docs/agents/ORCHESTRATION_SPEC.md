@@ -29,6 +29,11 @@ Terminal states:
 - `needs_review`
 - `failed`
 
+Recommended execution roles inside the loop:
+- `repo` for wiring, contracts, assembly changes, and integration
+- `capsule` for siloed module work
+- verifier pass for runtime-sensitive or seam-sensitive validation
+
 An agent should never invent a new state. If it cannot satisfy the task within the packet constraints, it must stop in one of the terminal states and report.
 
 ## Required Task Packet
@@ -52,6 +57,9 @@ Optional but recommended:
 - `context_bundle`: exact files or notes passed to the agent.
 - `handoff_inputs`: dependencies from earlier tasks.
 - `priority`: `low`, `normal`, or `high`.
+- `requires_verifier`: whether closeout requires a verifier report.
+- `verification_targets`: task ids a verifier packet is validating.
+- `gotcha_review_required`: whether the verifier must explicitly review `docs/GOTCHAS.md`.
 
 ## Context Discipline
 Context should be layered, not dumped.
@@ -135,12 +143,20 @@ Verification ownership:
 - `capsule_local`: the subagent proves only capsule-local structure and checks. Repo indexes, manifest refreshes, and full `./gradlew check build` remain repo-agent work.
 - `repo_integration`: the delegated task owns integration updates and repo-level verification in addition to local edits.
 
+When to add a dedicated verifier pass:
+- any change in `assemblies/*`
+- any new or changed contract in `modules/core/api/*` or `modules/core/spi/*`
+- any new runtime registration seam
+- any task whose first real proof requires client/server initialization rather than pure compilation
+
 Repo-local enforcement is available through `tools/scripts/verify_orchestration_run.py`.
+Closeout-gate enforcement is available through `tools/scripts/verify_done_gate.py`.
 
 Recommended checks:
 - Compare the report summary to the actual diff.
 - Re-run the highest-signal verification locally.
 - Confirm that any new stop condition or capability gap is logged in the correct place.
+- For repo-seam work, prefer `repo-seam packet -> verifier pass -> capsule packet` over one mixed implementation packet.
 
 ## Report-Back Policy
 Agents should report back immediately when:

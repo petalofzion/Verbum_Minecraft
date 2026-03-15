@@ -1,0 +1,11 @@
+{
+  "id": "feature-librarians-desk",
+  "domain": "library",
+  "edition": "vocations",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.library.librariansdesk.LibrariansDeskFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

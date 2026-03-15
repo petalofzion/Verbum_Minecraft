@@ -13,6 +13,7 @@ This document is the **single, fast path** for agents working inside a capsule. 
    - `docs/CONTENT_STYLE_BIBLE.md` (player-facing tone and thematic guidance)
    - `docs/contracts/CORE_API.md` (available contracts)
    - `docs/contracts/CONTRACT_INDEX.md` (wiring coverage)
+   - `docs/GOTCHAS.md` (version-specific pitfalls that affect assets, data, and runtime assumptions)
 6. Read the capsule docs in this order:
    - `README.md` (scope + constraints)
    - `docs/PRD.md` (what to build)

@@ -63,6 +63,15 @@
     },
     "next_action": {
       "type": "string"
+    },
+    "gotchas_checked": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_summary": {
+      "type": "string"
     }
   },
   "additionalProperties": false

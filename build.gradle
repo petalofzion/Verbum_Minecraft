@@ -134,6 +134,8 @@ tasks.register('verifyAgentProtocolAssets') {
             'tools/scripts/validate_agent_json.py',
             'tools/scripts/codex_exec_from_packet.py',
             'tools/scripts/verify_orchestration_run.py',
+            'tools/scripts/verify_done_gate.py',
+            'tools/scripts/runtime_smoke_check.py',
             'tools/scripts/update_module_manifest.py'
         ])
         runPythonCheck([
@@ -150,9 +152,36 @@ tasks.register('verifyAgentProtocolAssets') {
         ])
         runPythonCheck([
             'python3',
+            'tools/scripts/validate_agent_json.py',
+            'docs/agents/schemas/task-packet.schema.json',
+            'docs/agents/examples/verifier-task-packet.example.json'
+        ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/validate_agent_json.py',
+            'docs/agents/schemas/agent-report.schema.json',
+            'docs/agents/examples/verifier-report.example.json'
+        ])
+        runPythonCheck([
+            'python3',
             'tools/scripts/verify_orchestration_run.py',
             'docs/agents/examples/task-packet.example.json',
             '--report',
+            'docs/agents/examples/agent-report.example.json'
+        ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/verify_orchestration_run.py',
+            'docs/agents/examples/verifier-task-packet.example.json',
+            '--report',
+            'docs/agents/examples/verifier-report.example.json'
+        ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/verify_done_gate.py',
+            '--task-packet',
+            'docs/agents/examples/task-packet.example.json',
+            '--task-report',
             'docs/agents/examples/agent-report.example.json'
         ])
     }

@@ -27,12 +27,14 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 
 **Current mapping:**
 - `ItemDef` → `Item.Properties` → `Registry.register(BuiltInRegistries.ITEM, id, item)`
+- `BlockDef` → `BlockBehaviour.Properties` → `Registry.register(BuiltInRegistries.BLOCK, id, block)` plus a same-id `BlockItem`
 - `maxStackSize`, `fireproof`, `rarityOrdinal` are mapped directly.
 - `creativeTabKey` is wired via Fabric ItemGroupEvents.
   - Supported keys: `books`, `tools`, `ingredients`, `combat`, `food`, `building`, `functional`, `redstone`, `spawn_eggs`
   - Mapping uses vanilla creative tabs (e.g., `books` → `TOOLS_AND_UTILITIES`).
 - `BookDef` → `WrittenBookItem` + `DataComponents.WRITTEN_BOOK_CONTENT` (vanilla book limits apply).
 - `LibraryBookDef` → library-backed `WrittenBookItem` that opens `BookViewScreen` with pages loaded from the Book Enhancement library (offline, classpath resources). Item content uses a tiny placeholder page to avoid large NBT payloads. The client paginates text to `BookViewScreen` text width/height so pages are not truncated.
+- `BlockInteractionHandler` → generic `InteractiveFeatureBlock` wiring in assemblies. The assembly constructs a pure `BlockInteractionContext` from held item id / sneaking / creative mode, calls the capsule-owned handler, and applies `BlockInteractionResult` grants or messages server-side.
 
 ## UI Modifications
 ### Library Book Reader Enhancements
@@ -60,6 +62,14 @@ Capsule resources must exist for any item:
 - `assets/<namespace>/lang/en_us.json`
 
 Missing assets result in the purple/black missing‑texture cube.
+
+## Resource Expectations (Blocks)
+Placeable blocks also require:
+- `assets/<namespace>/blockstates/<path>.json`
+- `assets/<namespace>/models/block/<path>.json`
+- `assets/<namespace>/models/item/<path>.json`
+- `assets/<namespace>/items/<path>.json`
+- `assets/<namespace>/lang/en_us.json`
 
 **1.21.11 note:** The `items/<path>.json` file is required to map the item to
 its model. Missing it will show the missing-texture cube even if the model and

@@ -12,6 +12,7 @@ This template is intentionally aligned to Verbum's actual repo surfaces:
 - `docs/agents/ORCHESTRATION_SPEC.md`
 - `docs/UPDATE_SURFACES.md`
 - `docs/CAPSULE_INDEX.md`
+- `docs/agents/VERIFIER_AGENT.md`
 
 It should not restate the whole repo constitution. It should define the mission, scope, decision budget, update obligations, and stop rules clearly enough that the orchestrator can work without mid-run supervision.
 
@@ -39,6 +40,23 @@ repo_agent
 
 ## Mission
 <one short paragraph describing what must exist when the task is fully complete>
+
+## Seam risk
+- Does this task create or change repo-level seams?
+  `<yes | no>`
+- If yes, split execution into:
+  - repo-seam implementation packet
+  - verifier packet
+  - capsule implementation packet
+- If no, note why:
+  `<one short line>`
+
+## Verifier gate
+- `requires_verifier`: `<yes | no>`
+- Why verifier signoff is or is not required:
+  `<one short line>`
+- Closeout rule:
+  If `requires_verifier` is `yes`, do not report `done` until verifier evidence exists and the done gate is satisfied.
 
 ## Product intent
 - Player-facing purpose:
@@ -68,6 +86,7 @@ repo_agent
   - `docs/contracts/CONTRACT_INDEX.md`
   - `docs/wiring/ASSEMBLY_WIRING.md`
   - `docs/GOTCHAS.md`
+  - `docs/agents/VERIFIER_AGENT.md`
 
 ## Scope
 ### In scope
@@ -100,6 +119,7 @@ repo_agent
 - Prefer conservative implementation when multiple valid options exist.
 - Default capsule subagents to `verification_scope: capsule_local`.
 - Keep repo-wide integration and final verification as repo-agent work unless a delegated task explicitly owns `repo_integration`.
+- Do not report `done` if verifier signoff is required and still missing.
 
 ## Decision budget
 ### You may decide without escalation
@@ -129,6 +149,11 @@ repo_agent
 - structured final report required
 - no overlapping write scopes
 
+### Verifier use
+- add a verifier pass after assembly or `modules/core/api/*` seam changes
+- verifier agents diagnose and report; they do not silently take over implementation
+- if `requires_verifier` is `yes`, verifier evidence is mandatory for closeout
+
 ## Update targets
 Mark each as: `<required | inspect | no>`
 
@@ -157,6 +182,10 @@ Mark each as: `<required | inspect | no>`
 
 ### Additional required checks
 - profile-specific assembly build(s) for touched edition(s): `<required | inspect | no>`
+- verifier signoff required: `<yes | no>`
+- verifier packet/report must exist before closeout when required: `<yes | no>`
+- targeted runtime smoke check when `assemblies/*` or `modules/core/api/*` changed: `<required | inspect | no>`
+- done gate check: `python3 tools/scripts/verify_done_gate.py ...` `<required | inspect | no>`
 - ...
 - ...
 

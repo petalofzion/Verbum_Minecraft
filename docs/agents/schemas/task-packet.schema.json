@@ -22,7 +22,7 @@
     },
     "role": {
       "type": "string",
-      "enum": ["capsule", "repo"]
+      "enum": ["capsule", "repo", "verifier"]
     },
     "objective": {
       "type": "string",
@@ -96,6 +96,19 @@
     "priority": {
       "type": "string",
       "enum": ["low", "normal", "high"]
+    },
+    "requires_verifier": {
+      "type": "boolean"
+    },
+    "verification_targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "gotcha_review_required": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

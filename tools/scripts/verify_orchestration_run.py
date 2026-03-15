@@ -191,6 +191,14 @@ def validate_report(
                     f"{command}"
                 )
 
+    if packet["role"] == "verifier":
+        if normalized_touched:
+            errors.append("Verifier tasks must not touch implementation files; files_touched must be empty.")
+        if not packet.get("verification_targets"):
+            errors.append("Verifier task packet must declare verification_targets.")
+        if report["status"] == "done" and packet.get("gotcha_review_required") and not report.get("gotchas_checked"):
+            errors.append("Verifier report must list gotchas_checked when gotcha_review_required is true.")
+
     if report["status"] == "blocked" and report["blocker_category"] == "none":
         errors.append("Blocked report must set blocker_category to a non-'none' value.")
     if report["status"] == "needs_contract" and report["blocker_category"] != "contract":
