@@ -19,15 +19,24 @@ def normalize_repo_path(repo_root: Path, path_text: str) -> str:
     return normalized
 
 
+def normalize_allowed_prefix(repo_root: Path, allowed_path: str) -> str:
+    trimmed = allowed_path
+    if trimmed.endswith("/**"):
+        trimmed = trimmed[:-3]
+    elif trimmed.endswith("/*"):
+        trimmed = trimmed[:-2]
+    return normalize_repo_path(repo_root, trimmed)
+
+
 def path_is_within(repo_root: Path, rel_path: str, allowed_path: str) -> bool:
     rel = normalize_repo_path(repo_root, rel_path)
-    allowed = normalize_repo_path(repo_root, allowed_path)
+    allowed = normalize_allowed_prefix(repo_root, allowed_path)
     return rel == allowed or rel.startswith(f"{allowed}/")
 
 
 def paths_overlap(repo_root: Path, left: str, right: str) -> bool:
-    left_norm = normalize_repo_path(repo_root, left)
-    right_norm = normalize_repo_path(repo_root, right)
+    left_norm = normalize_allowed_prefix(repo_root, left)
+    right_norm = normalize_allowed_prefix(repo_root, right)
     return (
         left_norm == right_norm
         or left_norm.startswith(f"{right_norm}/")
