@@ -70,6 +70,13 @@ def main():
                     errors.append(f"Verifier report is missing required check: {required_check}")
             if verifier_packet.get("gotcha_review_required") and not verifier_report.get("gotchas_checked"):
                 errors.append("Verifier packet requires gotcha review but verifier report.gotchas_checked is empty.")
+            if verifier_packet.get("architecture_audit_required"):
+                if verifier_report.get("separation_verdict") != "pass":
+                    errors.append("Verifier packet requires architecture audit but verifier report.separation_verdict is not 'pass'.")
+                if not verifier_report.get("boundary_checks_run"):
+                    errors.append("Verifier packet requires architecture audit but verifier report.boundary_checks_run is empty.")
+                if not verifier_report.get("architecture_audit_summary"):
+                    errors.append("Verifier packet requires architecture audit but verifier report.architecture_audit_summary is empty.")
 
     if errors:
         raise SystemExit("\n".join(errors))

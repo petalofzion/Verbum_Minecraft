@@ -11,7 +11,8 @@
     "docs/contracts/CORE_API.md"
   ],
   "commands_run": [
-    "./gradlew check build"
+    "./gradlew check build",
+    "python3 tools/scripts/verify_boundary_separation.py"
   ],
   "evidence": [
     "Required verification command passed.",
@@ -22,5 +23,11 @@
   "gotchas_checked": [
     "No version-specific gotcha applied to this review scope."
   ],
-  "verification_summary": "Green verification pass with no implementation changes."
+  "verification_summary": "Green verification pass with no implementation changes.",
+  "separation_verdict": "pass",
+  "boundary_checks_run": [
+    "python3 tools/scripts/verify_boundary_separation.py"
+  ],
+  "boundary_findings": [],
+  "architecture_audit_summary": "Assembly, API, and capsule separation remained intact for the reviewed scope."
 }

@@ -20,6 +20,7 @@ Use this role after:
 ## Duties
 - run the required verification commands
 - identify the smallest failing surface
+- audit architecture separation against the documented assembly/API/capsule boundaries when required
 - report the failure clearly
 - do not broaden scope into implementation unless explicitly reassigned
 
@@ -27,9 +28,19 @@ Use this role after:
 - `./gradlew check build`
 - targeted assembly builds for touched editions
 - targeted runtime smoke checks when assemblies or core contracts changed
+- `python3 tools/scripts/verify_boundary_separation.py` when architecture audit is required
 
 ## Runtime Smoke Rule
 If a task changed `assemblies/*` or `modules/core/api/*`, treat a targeted `runClient` or equivalent dev-runtime launch as a recommended smoke check, not an optional extra.
+
+## Architecture Audit Rule
+If a task changed `assemblies/*`, `modules/core/api/*`, `modules/core/spi/*`, or introduced a new capability seam, treat boundary verification as part of the done gate.
+
+Confirm:
+- Minecraft/Fabric imports did not leak into API, SPI, or feature capsules.
+- Assemblies still own Minecraft/Fabric wiring, menus, screens, and registry application.
+- Capsules still own feature behavior through pure contracts.
+- Assembly code translates and applies pure results; it must not silently take over feature semantics.
 
 ## Output
 Return:
@@ -37,3 +48,5 @@ Return:
 - pass/fail status
 - smallest failing file/surface
 - whether the issue is capsule-local, repo wiring, version gotcha, or environment
+- separation verdict: `pass`, `needs_review`, or `blocked`
+- boundary checks run and any boundary findings

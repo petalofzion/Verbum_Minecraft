@@ -23,7 +23,8 @@
     "No new hypothesis after repeated verification failure."
   ],
   "required_checks": [
-    "./gradlew check build"
+    "./gradlew check build",
+    "python3 tools/scripts/verify_boundary_separation.py"
   ],
   "verification_scope": "repo_integration",
   "max_iterations": 1,
@@ -32,5 +33,6 @@
   "verification_targets": [
     "feature-bible-review"
   ],
-  "gotcha_review_required": true
+  "gotcha_review_required": true,
+  "architecture_audit_required": true
 }

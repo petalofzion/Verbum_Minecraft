@@ -109,6 +109,9 @@
     },
     "gotcha_review_required": {
       "type": "boolean"
+    },
+    "architecture_audit_required": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

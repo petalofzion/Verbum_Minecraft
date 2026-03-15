@@ -55,8 +55,11 @@ repo_agent
 - `requires_verifier`: `<yes | no>`
 - Why verifier signoff is or is not required:
   `<one short line>`
+- `architecture_audit_required`: `<yes | no>`
 - Closeout rule:
   If `requires_verifier` is `yes`, do not report `done` until verifier evidence exists and the done gate is satisfied.
+- Iteration rule:
+  If verifier output finds a fixable implementation or integration gap, continue the orchestration loop with corrective packets instead of reporting back to the user.
 
 ## Product intent
 - Player-facing purpose:
@@ -120,6 +123,7 @@ repo_agent
 - Default capsule subagents to `verification_scope: capsule_local`.
 - Keep repo-wide integration and final verification as repo-agent work unless a delegated task explicitly owns `repo_integration`.
 - Do not report `done` if verifier signoff is required and still missing.
+- Do not report verifier failure outward unless it has become a terminal blocker; otherwise iterate until the verifier gate is green.
 
 ## Decision budget
 ### You may decide without escalation
@@ -185,6 +189,7 @@ Mark each as: `<required | inspect | no>`
 - verifier signoff required: `<yes | no>`
 - verifier packet/report must exist before closeout when required: `<yes | no>`
 - targeted runtime smoke check when `assemblies/*` or `modules/core/api/*` changed: `<required | inspect | no>`
+- architecture separation audit when seams or assemblies changed: `<required | inspect | no>`
 - done gate check: `python3 tools/scripts/verify_done_gate.py ...` `<required | inspect | no>`
 - ...
 - ...
@@ -212,6 +217,7 @@ Stop early only if:
 - required verification passed
 - docs refreshed where needed
 - final review completed
+- any required verifier gate passed after all needed repair iterations
 
 ## Final report
 Include:

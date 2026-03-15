@@ -40,11 +40,21 @@ Validate the implementation and report only. Do not edit implementation files.
 - `./gradlew check build`
 - targeted assembly build(s): `<required | inspect | no>`
 - targeted runtime smoke: `<required | inspect | no>`
+- architecture separation audit: `<required | inspect | no>`
+- if required, run `python3 tools/scripts/verify_boundary_separation.py`
 
 ## Gotcha review
 - required: `<yes | no>`
 - touched gotcha surfaces:
   - ...
+
+## Architecture audit
+- required: `<yes | no>`
+- verify:
+  - assemblies still own Minecraft/Fabric wiring
+  - API/SPI stay pure
+  - capsules still own feature behavior
+  - no feature-to-feature or assembly-to-module drift
 
 ## Done means
 - all required checks were run
@@ -56,6 +66,9 @@ Include:
 - exact commands run
 - pass/fail result
 - gotchas checked
+- separation verdict
+- boundary checks run
+- boundary findings
 - smallest failing surface
 - whether the issue is capsule, repo wiring, runtime/version, or environment
 ```

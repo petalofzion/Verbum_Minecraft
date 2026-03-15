@@ -19,6 +19,13 @@ def build_prompt(packet):
         "Do not modify files outside the allowed write paths.",
         f"Objective: {packet['objective']}",
         f"Must read: {', '.join(packet['must_read'])}",
+        "Discovery guardrail:",
+        "- Fully read the required must_read files and the explicitly named target code files first.",
+        "- After that required context is covered, switch from discovery to implementation immediately.",
+        "- Do not keep searching for more precedents or more repo context unless a concrete blocker appears.",
+        "- If you need more context after the required read set, allow yourself at most two additional targeted discovery commands.",
+        "- If those extra discovery commands do not change the implementation plan, stop discovery and implement the smallest conservative change.",
+        "- Do not emit progress reports merely because you finished reading context; either implement, or stop on a packet-defined blocker.",
         "Success criteria:",
     ]
     lines.extend(f"- {item}" for item in packet["success_criteria"])

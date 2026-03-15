@@ -39,6 +39,8 @@ Use this document when the task requires planning, spawning capsule agents, inte
 ## Spawn Rules
 - Prefer one packet per capsule or bounded repo surface.
 - Use a verifier agent or verifier packet after assembly/core-api seam work.
+- Require an architecture audit in the verifier packet when a task changes assemblies, API/SPI seams, or feature-to-assembly behavior routing.
+- Do not confuse required reading with open-ended discovery. Once a worker has completed the packet's `must_read` set and named target files, it should implement or stop on a concrete blocker rather than keep hunting precedents.
 - Always set:
   - `task_id`
   - `role`
@@ -71,6 +73,14 @@ After every subagent finishes:
    - repair locally,
    - issue a tighter follow-up packet,
    - stop on a terminal blocker.
+
+Verifier result handling:
+- Treat verifier failure as a normal iteration trigger, not as user-facing closeout.
+- If the verifier finds a fixable implementation or integration gap, issue the next corrective packet and continue the loop.
+- If the verifier reports boundary drift between assemblies, API/SPI, and capsules, treat that as a real failure surface, not an optional style note.
+- Report back to the user only when:
+  - the verifier gate is green, or
+  - a true terminal blocker prevents further progress.
 
 Do not trust prose summaries without checking the actual file changes and required checks.
 
