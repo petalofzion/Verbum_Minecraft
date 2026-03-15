@@ -1,19 +1,32 @@
 Dusty Devotional
 A manual for Veritas baseline.
 
-This book is not a quest line.
-It is a way to read the world clearly.
+This is a practical guide, not a quest line.
+Use it to understand what Veritas is trying to protect.
 ---PAGE---
-Veritas is the refined baseline of Verbum.
-It favors useful tools, calm pacing, and dependable structure.
-Nothing flashy is required for it to feel complete.
----PAGE---
-Pay attention to what lasts:
-solid paths, readable spaces, clear storage, and work you can return to.
-The point is not speed. The point is stability.
----PAGE---
-If a system feels noisy, simplify it.
-If a build feels ornamental, make it useful.
-If progress feels scattered, return to first things.
+What Veritas is for:
+to make Minecraft steadier, clearer, and easier to live in for a long time.
 
-That is the Veritas posture.
+It is the baseline you can trust before any larger profile layers on top.
+---PAGE---
+How Veritas should feel:
+plain, grounded, and reliable.
+
+You should feel oriented, not overwhelmed.
+Systems should read clearly and behave the same way tomorrow.
+---PAGE---
+What kind of play it invites:
+slow improvement over sudden leaps.
+Build places you can use every session.
+Prefer workflows you can remember without notes.
+---PAGE---
+Pay attention to durable wins:
+clear storage labels, walkable paths, modest farms, repair-friendly layouts,
+and rooms that are easy to read at a glance.
+---PAGE---
+When deciding between two options, pick the one that is:
+more readable,
+easier to maintain,
+and kinder to future you.
+
+That is the Veritas posture: first things, done well, repeated calmly.
