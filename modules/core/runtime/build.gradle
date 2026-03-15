@@ -5,5 +5,6 @@ plugins {
 }
 
 dependencies {
-    // Runtime utilities - no internal project dependencies
+    implementation project(':modules:core:api')
+    implementation project(':modules:core:spi')
 }

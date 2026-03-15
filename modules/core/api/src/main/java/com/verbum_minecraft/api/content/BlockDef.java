@@ -11,8 +11,20 @@ public record BlockDef(
     float explosionResistance,
     String creativeTabKey,
     String soundTypeKey,
-    String interactionHandlerClass
+    String interactionBehaviorId,
+    String workstationBehaviorId
 ) {
+    public BlockDef(
+        VerbumId id,
+        float destroyTime,
+        float explosionResistance,
+        String creativeTabKey,
+        String soundTypeKey,
+        String interactionBehaviorId
+    ) {
+        this(id, destroyTime, explosionResistance, creativeTabKey, soundTypeKey, interactionBehaviorId, null);
+    }
+
     public BlockDef {
         Objects.requireNonNull(id, "id");
         if (destroyTime < 0.0F) {
@@ -27,12 +39,22 @@ public record BlockDef(
         if (soundTypeKey == null || soundTypeKey.isBlank()) {
             soundTypeKey = "stone";
         }
-        if (interactionHandlerClass != null && interactionHandlerClass.isBlank()) {
-            throw new IllegalArgumentException("interactionHandlerClass is blank");
+        if (interactionBehaviorId != null && interactionBehaviorId.isBlank()) {
+            throw new IllegalArgumentException("interactionBehaviorId is blank");
+        }
+        if (workstationBehaviorId != null && workstationBehaviorId.isBlank()) {
+            throw new IllegalArgumentException("workstationBehaviorId is blank");
+        }
+        if (interactionBehaviorId != null && workstationBehaviorId != null) {
+            throw new IllegalArgumentException("BlockDef cannot define both interaction and workstation behaviors");
         }
     }
 
-    public boolean hasInteractionHandler() {
-        return interactionHandlerClass != null;
+    public boolean hasInteractionBehavior() {
+        return interactionBehaviorId != null;
+    }
+
+    public boolean hasWorkstationBehavior() {
+        return workstationBehaviorId != null;
     }
 }

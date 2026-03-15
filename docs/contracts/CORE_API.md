@@ -65,7 +65,10 @@ ctx.content().acceptItem(new ItemDef(
 - `float explosionResistance`
 - `String creativeTabKey`
 - `String soundTypeKey` (`wood`, `stone`, `metal`, `glass`, `gravel`, `wool`, `sand`)
-- `String interactionHandlerClass` (optional pure handler class name for assembly-side block use wiring)
+- `String interactionBehaviorId` (optional symbolic behavior id resolved through SPI for assembly-side block use wiring)
+- `String workstationBehaviorId` (optional symbolic behavior id resolved through SPI for assembly-side workstation block UI wiring)
+
+`interactionBehaviorId` and `workstationBehaviorId` are mutually exclusive.
 
 **Example:**
 ```java
@@ -75,9 +78,12 @@ ctx.content().acceptBlock(new BlockDef(
     3.0F,
     "functional",
     "wood",
-    "com.verbum_minecraft.features.library.librariansdesk.LibrariansDeskInteractionHandler"
+    null,
+    "verbum:librarians_desk"
 ));
 ```
+
+Behavior ids are resolved through SPI providers in `modules/core/spi`, not through API-level class names.
 
 ### com.verbum_minecraft.api.content.BookDef
 **Purpose:** Pure data definition for a written book item backed by a resource file.
@@ -149,6 +155,8 @@ ctx.content().acceptLibraryBook(new LibraryBookDef(
 
 **Use:** implement `use(BlockInteractionContext context)` and return a `BlockInteractionResult`.
 
+Provide it to assemblies through `com.verbum_minecraft.spi.BlockInteractionBehaviorProvider`.
+
 ### com.verbum_minecraft.api.content.BlockInteractionContext
 **Purpose:** Pure interaction input describing the held item and basic player posture.
 
@@ -176,6 +184,89 @@ ctx.content().acceptLibraryBook(new LibraryBookDef(
 **Fields:**
 - `String itemId`
 - `int count`
+
+### com.verbum_minecraft.api.content.BlockWorkstationHandler
+**Purpose:** Pure capsule-owned workstation hook called by assembly-side workstation UI wiring.
+
+**Use:** implement:
+- `uiSpec()` to declare the number of input slots and whether batch salvage / copy / write flows are enabled.
+- `apply(WorkstationActionRequest request)` to process UI actions and return `WorkstationActionResult`.
+
+Provide it to assemblies through `com.verbum_minecraft.spi.BlockWorkstationBehaviorProvider`.
+
+### com.verbum_minecraft.api.content.WorkstationUiSpec
+**Purpose:** Pure workstation capability descriptor for assembly menu/UI wiring.
+
+**Fields:**
+- `int inputSlots`
+- `boolean batchSalvageEnabled`
+- `boolean playerCopyEnabled`
+- `boolean playerWriteEnabled`
+
+### com.verbum_minecraft.api.content.WorkstationActionRequest
+**Purpose:** Pure workstation action payload emitted from assembly UI/state.
+
+**Fields:**
+- `String actionId`
+- `List<WorkstationSlotInput> inputSlots`
+- `String playerName`
+- `boolean creativeMode`
+- `WorkstationBookDraft draftBook` (optional)
+
+### com.verbum_minecraft.api.content.WorkstationSlotInput
+**Purpose:** Pure input-slot snapshot for workstation requests.
+
+**Fields:**
+- `int slotIndex`
+- `String itemId`
+- `int count`
+- `WorkstationBookSnapshot book` (optional source book metadata for copy workflows)
+
+### com.verbum_minecraft.api.content.WorkstationBookSnapshot
+**Purpose:** Pure source-book metadata for copy workflows.
+
+**Fields:**
+- `String title`
+- `String author`
+- `List<String> pages`
+- `String sourceBookId` (optional)
+
+### com.verbum_minecraft.api.content.WorkstationBookDraft
+**Purpose:** Pure player draft content for write/copy workflows.
+
+**Fields:**
+- `String title`
+- `List<String> pages`
+
+### com.verbum_minecraft.api.content.WorkstationActionResult
+**Purpose:** Pure workstation action output consumed by assembly wiring.
+
+**Fields:**
+- `boolean handled`
+- `List<WorkstationSlotDelta> slotDeltas`
+- `List<ItemGrant> itemGrants`
+- `List<WorkstationPlayerBookGrant> playerBookGrants`
+- `String message` (optional)
+
+**Helpers:**
+- `WorkstationActionResult.pass()`
+- `WorkstationActionResult.handled(...)`
+
+### com.verbum_minecraft.api.content.WorkstationSlotDelta
+**Purpose:** Pure slot-consumption directive for multi-slot/batch workstation actions.
+
+**Fields:**
+- `int slotIndex`
+- `int consumeCount`
+
+### com.verbum_minecraft.api.content.WorkstationPlayerBookGrant
+**Purpose:** Pure player-authored written-book output.
+
+Assembly wiring materializes these into `minecraft:written_book` item stacks owned by the interacting player, so shipped library resources remain immutable.
+
+**Fields:**
+- `String title`
+- `List<String> pages`
 
 ### com.verbum_minecraft.api.content.ContentType
 **Purpose:** Enumerates content types (reserved for future expansion).

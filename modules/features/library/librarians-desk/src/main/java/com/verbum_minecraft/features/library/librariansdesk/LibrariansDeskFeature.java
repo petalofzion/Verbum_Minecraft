@@ -24,7 +24,8 @@ public class LibrariansDeskFeature implements FeatureEntrypoint {
             3.0F,
             "functional",
             "wood",
-            LibrariansDeskInteractionHandler.class.getName()
+            null,
+            LibrariansDeskWorkstationBehaviorProvider.BEHAVIOR_ID
         ));
     }
 

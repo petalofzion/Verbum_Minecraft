@@ -146,8 +146,11 @@ public class MinecraftContentRegistrar implements ContentSink {
             .setId(ResourceKey.create(Registries.BLOCK, id))
             .strength(def.destroyTime(), def.explosionResistance())
             .sound(toSoundType(def.soundTypeKey()));
-        if (def.hasInteractionHandler()) {
-            return new InteractiveFeatureBlock(properties, def.interactionHandlerClass());
+        if (def.hasWorkstationBehavior()) {
+            return new WorkstationFeatureBlock(properties, def.workstationBehaviorId());
+        }
+        if (def.hasInteractionBehavior()) {
+            return new InteractiveFeatureBlock(properties, def.interactionBehaviorId());
         }
         return new Block(properties);
     }

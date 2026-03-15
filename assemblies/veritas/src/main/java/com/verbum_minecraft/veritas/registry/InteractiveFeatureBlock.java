@@ -4,6 +4,7 @@ import com.verbum_minecraft.api.content.BlockInteractionContext;
 import com.verbum_minecraft.api.content.BlockInteractionHandler;
 import com.verbum_minecraft.api.content.BlockInteractionResult;
 import com.verbum_minecraft.api.content.ItemGrant;
+import com.verbum_minecraft.runtime.content.ContentBehaviorResolver;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,9 +28,9 @@ final class InteractiveFeatureBlock extends Block {
 
     private final BlockInteractionHandler handler;
 
-    InteractiveFeatureBlock(BlockBehaviour.Properties properties, String handlerClassName) {
+    InteractiveFeatureBlock(BlockBehaviour.Properties properties, String behaviorId) {
         super(properties);
-        this.handler = instantiate(handlerClassName);
+        this.handler = ContentBehaviorResolver.resolveInteraction(behaviorId);
     }
 
     @Override
@@ -56,16 +57,6 @@ final class InteractiveFeatureBlock extends Block {
             applyResult(player, stack, result);
         }
         return InteractionResult.SUCCESS;
-    }
-
-    private static BlockInteractionHandler instantiate(String handlerClassName) {
-        try {
-            Class<?> raw = Class.forName(handlerClassName);
-            Object instance = raw.getDeclaredConstructor().newInstance();
-            return (BlockInteractionHandler) instance;
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            throw new IllegalStateException("Failed to instantiate block interaction handler: " + handlerClassName, e);
-        }
     }
 
     private static String itemId(ItemStack stack) {
