@@ -29,6 +29,11 @@ Terminal states:
 - `needs_review`
 - `failed`
 
+Recommended execution roles inside the loop:
+- `repo` for wiring, contracts, assembly changes, and integration
+- `capsule` for siloed module work
+- verifier pass for runtime-sensitive or seam-sensitive validation
+
 An agent should never invent a new state. If it cannot satisfy the task within the packet constraints, it must stop in one of the terminal states and report.
 
 ## Required Task Packet
@@ -52,6 +57,10 @@ Optional but recommended:
 - `context_bundle`: exact files or notes passed to the agent.
 - `handoff_inputs`: dependencies from earlier tasks.
 - `priority`: `low`, `normal`, or `high`.
+- `requires_verifier`: whether closeout requires a verifier report.
+- `verification_targets`: task ids a verifier packet is validating.
+- `gotcha_review_required`: whether the verifier must explicitly review `docs/GOTCHAS.md`.
+- `architecture_audit_required`: whether closeout requires a verifier separation audit.
 
 ## Context Discipline
 Context should be layered, not dumped.
@@ -65,6 +74,20 @@ Preferred order:
 
 Do not flood subagents with repo-wide summaries unless the task genuinely needs them.
 The orchestrator owns context curation.
+
+## Discovery Cutoff
+Required reading is not optional, but discovery is not open-ended.
+
+Rule:
+- finish the packet's `must_read` set and any explicitly named target files,
+- then switch into implementation,
+- only reopen discovery for a concrete blocker.
+
+Guardrails:
+- do not continue repo-wide precedent hunting after the required context is covered,
+- allow at most two additional targeted discovery commands after the required read set,
+- if those extra discovery steps do not materially change the design, implement the smallest conservative change,
+- if implementation still cannot begin, stop and report a blocker instead of continuing to read.
 
 ## Final Report Contract
 Every agent must return a structured final report that matches
@@ -92,6 +115,12 @@ Required report classification:
 - `blocker_category`: `none`, `environment`, `scope`, `contract`, `verification`, `requirements`, or `unknown`.
 
 The orchestrator should reject unstructured or incomplete final reports for integration work.
+
+When `architecture_audit_required` is true for a verifier packet, the verifier report should also include:
+- `separation_verdict`
+- `boundary_checks_run`
+- `boundary_findings`
+- `architecture_audit_summary`
 
 ## Stop Conditions
 Every task packet must define stop conditions.
@@ -135,12 +164,22 @@ Verification ownership:
 - `capsule_local`: the subagent proves only capsule-local structure and checks. Repo indexes, manifest refreshes, and full `./gradlew check build` remain repo-agent work.
 - `repo_integration`: the delegated task owns integration updates and repo-level verification in addition to local edits.
 
+When to add a dedicated verifier pass:
+- any change in `assemblies/*`
+- any new or changed contract in `modules/core/api/*` or `modules/core/spi/*`
+- any new runtime registration seam
+- any task whose first real proof requires client/server initialization rather than pure compilation
+
 Repo-local enforcement is available through `tools/scripts/verify_orchestration_run.py`.
+Closeout-gate enforcement is available through `tools/scripts/verify_done_gate.py`.
 
 Recommended checks:
 - Compare the report summary to the actual diff.
 - Re-run the highest-signal verification locally.
 - Confirm that any new stop condition or capability gap is logged in the correct place.
+- For repo-seam work, prefer `repo-seam packet -> verifier pass -> capsule packet` over one mixed implementation packet.
+- For seam-changing work, require a verifier architecture audit that checks assembly/API/capsule separation in addition to build success.
+- Prefer a machine check such as `python3 tools/scripts/verify_boundary_separation.py` plus verifier judgment on any remaining gray-zone semantic drift.
 
 ## Report-Back Policy
 Agents should report back immediately when:
@@ -151,6 +190,11 @@ Agents should report back immediately when:
 
 Agents should not report back merely because they finished reading context.
 The orchestrator should not ask for streaming status unless the executor requires it.
+Verifier failure by itself is not a user-facing report-back event if the gap is still fixable within the task.
+When verifier output identifies a concrete repair path, the orchestrator should issue the next corrective packet and continue the loop.
+Only report verifier failure outward when:
+- the verifier gate is now green, or
+- a true terminal blocker prevents any further corrective iteration.
 
 ## Parallel Work Rules
 Parallel work is allowed only when write scopes are disjoint.
@@ -173,5 +217,10 @@ Before integrating:
 - run the required checks,
 - ensure the report status is acceptable,
 - ensure the work satisfies the task packet.
+
+For verifier-gated tasks:
+- do not treat `needs_review` or verifier-detected functional mismatch as closeout,
+- iterate through repair and re-verification until the verifier gate passes or a terminal blocker is reached,
+- only then mark the control loop `done` or `blocked`.
 
 If the result is directionally useful but incomplete, create a new task packet instead of telling the same agent to "keep going" without updated constraints.

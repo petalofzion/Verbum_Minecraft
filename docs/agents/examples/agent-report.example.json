@@ -19,5 +19,11 @@
     "No cross-module import violations were required."
   ],
   "blockers": [],
-  "next_action": "Integrate or close the review task."
+  "next_action": "Integrate or close the review task.",
+  "gotchas_checked": [],
+  "verification_summary": "Review-only task; no separate verifier-specific gotcha checks were required.",
+  "separation_verdict": "pass",
+  "boundary_checks_run": [],
+  "boundary_findings": [],
+  "architecture_audit_summary": ""
 }

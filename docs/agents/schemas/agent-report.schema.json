@@ -12,7 +12,9 @@
     "commands_run",
     "evidence",
     "blockers",
-    "next_action"
+    "next_action",
+    "gotchas_checked",
+    "verification_summary"
   ],
   "properties": {
     "task_id": {
@@ -62,6 +64,34 @@
       }
     },
     "next_action": {
+      "type": "string"
+    },
+    "gotchas_checked": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "verification_summary": {
+      "type": "string"
+    },
+    "separation_verdict": {
+      "type": "string",
+      "enum": ["pass", "needs_review", "blocked"]
+    },
+    "boundary_checks_run": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "boundary_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "architecture_audit_summary": {
       "type": "string"
     }
   },

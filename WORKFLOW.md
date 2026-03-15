@@ -147,6 +147,7 @@ Each agent is told:
 - the `verification_scope` they own (`capsule_local` for capsule implementation, `repo_integration` only for deliberate integration tasks)
 - what evidence to report
 - the stop conditions that require it to report and end
+- that verifier failure triggers another orchestrator iteration unless a true terminal blocker is hit
 
 ### Step 4 — Implementation + local verification
 For capsule tasks, the agent implements inside the capsule only, then runs capsule-local checks only.
@@ -161,6 +162,7 @@ Repo agent checks:
 - test/benchmark evidence exists
 - ADRs/attribution updated if required
 - final report satisfies the required schema
+- verifier-gated tasks continue through repair and re-verification until the verifier gate passes or a terminal blocker is declared
 
 ---
 

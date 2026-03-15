@@ -32,13 +32,17 @@ You have broader scope and must read broader context.
 - Maintain `docs/contracts/contract_wiring.tsv` and regenerate `docs/contracts/CONTRACT_INDEX.md` when contracts or wiring change.
 - Prepare task packets and validate structured final reports when orchestrating subagents.
 - Use `tools/scripts/verify_orchestration_run.py` when dispatching or integrating autonomous subagent work.
+- Use `tools/scripts/verify_done_gate.py` before reporting a verifier-gated task as done.
+- Use `python3 tools/scripts/verify_boundary_separation.py` or an equivalent verifier packet check whenever the task touches assemblies, API/SPI seams, or routing between capsules and assemblies.
 - Own repo-integration follow-through after capsule subagents finish: manifest refreshes, capsule index refreshes, TODO index refreshes, and full `./gradlew check build`.
+- Treat verifier failure as an iteration trigger, not as a user-facing closeout, unless a terminal blocker has been reached.
 
 ## Repo Agent Setup
 - Run `tools/scripts/install-git-hooks.sh` to enable the TODO index pre-commit hook.
 - The pre-commit hook also keeps `docs/contracts/CONTRACT_INDEX.md`, `docs/CAPSULE_INDEX.*`, and `modules/modules.toml` up to date.
 - `tools/scripts/update_contract_index.sh` requires `python3` in PATH.
 - For multi-agent runs, use `subagent_temp/active_packets/` and `subagent_temp/report_history/` so overlap and loop-brake checks are durable across runs.
+- `tools/scripts/runtime_smoke_check.py` provides a standard non-GUI runtime smoke path for verifier tasks.
 
 ## Conventions (must follow)
 - **Java 21** only for code.
@@ -48,6 +52,7 @@ You have broader scope and must read broader context.
 - **Logic ownership:** Feature/module logic lives in capsules under `modules/*`. Repo agents should only wire and integrate. If capsule logic is needed, spawn a capsule subagent using `docs/agents/SUBAGENT_ORCHESTRATION.md`.
 - Enforce stop conditions and loop brakes from `docs/agents/ORCHESTRATION_SPEC.md`; do not let agents continue indefinitely after repeated no-progress reports.
 - Default capsule task packets to `verification_scope: capsule_local`. Use `repo_integration` only when the delegated task is intentionally responsible for repo-wide integration updates and verification.
+- For verifier-gated work, keep iterating through repair packets until verifier evidence is green; do not stop at the first failed verifier report.
 
 ## Common Pitfalls
 - Adding feature logic to assemblies.
