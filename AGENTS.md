@@ -69,7 +69,7 @@ Repo agents are responsible for maintaining `TODO.md`, `docs/TODO_INDEX.md`, and
 
 These are explicit rules reiterated from the `README.md` that you, as an AI agent, **must** follow:
 
-1.  Read **docs/ARCHITECTURE_MAP.md** first.
+1.  Start with `AGENTS.md`, then follow the role-specific read order. `docs/ARCHITECTURE_MAP.md` remains mandatory within that read path.
 2.  **Never** place simulation logic in `modules/<category>/...`.
 3.  Any change to kernel hot paths requires:
     *   a benchmark update (`tools/benchmarks` or JMH), and

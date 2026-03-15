@@ -5,6 +5,7 @@
   "required": [
     "task_id",
     "status",
+    "blocker_category",
     "summary",
     "files_touched",
     "files_read",
@@ -21,6 +22,10 @@
     "status": {
       "type": "string",
       "enum": ["done", "blocked", "needs_contract", "needs_review", "failed"]
+    },
+    "blocker_category": {
+      "type": "string",
+      "enum": ["none", "environment", "scope", "contract", "verification", "requirements", "unknown"]
     },
     "summary": {
       "type": "string",

@@ -7,7 +7,7 @@ For wiring coverage and status, see the auto-generated `docs/contracts/CONTRACT_
 Repo agents maintain wiring notes in `docs/contracts/contract_wiring.tsv` and regenerate the index with `tools/scripts/update_contract_index.sh`.
 
 ## Content Registration (Capsule Path)
-**Flow:** `FeatureEntrypoint.register()` → `FeatureContext.content()` → `ContentSink.acceptItem(ItemDef)` / `ContentSink.acceptBook(BookDef)`
+**Flow:** `FeatureEntrypoint.register()` → `FeatureContext.content()` → `ContentSink.acceptItem(ItemDef)` / `ContentSink.acceptBook(BookDef)` / `ContentSink.acceptLibraryBook(LibraryBookDef)`
 
 ### com.verbum_minecraft.spi.FeatureEntrypoint
 **Purpose:** Standard entrypoint for feature capsules. Discovered via ServiceLoader.
@@ -30,6 +30,7 @@ Repo agents maintain wiring notes in `docs/contracts/contract_wiring.tsv` and re
 **Use:** 
 - `acceptItem(ItemDef def)` for standard items.
 - `acceptBook(BookDef def)` for written book items.
+- `acceptLibraryBook(LibraryBookDef def)` for library-backed books.
 
 ### com.verbum_minecraft.api.content.ItemDef
 **Purpose:** Pure data definition for an item.
@@ -39,7 +40,7 @@ Repo agents maintain wiring notes in `docs/contracts/contract_wiring.tsv` and re
 - `int maxStackSize`
 - `boolean fireproof`
 - `int rarityOrdinal` (`RARITY_*` constants)
-- `String creativeTabKey` (**not wired yet**; see repo wiring doc)
+- `String creativeTabKey` (wired in assemblies; see `docs/wiring/ASSEMBLY_WIRING.md`)
 
 **Example:**
 ```java
@@ -84,6 +85,34 @@ ctx.content().acceptBook(new BookDef(
 ));
 ```
 
+### com.verbum_minecraft.api.content.LibraryBookDef
+**Purpose:** Pure data definition for a library-backed written book that reads large content from packaged resources.
+
+**Fields:**
+- `ItemDef item`
+- `String bookId` (`namespace:path[@edition]`)
+- `String title`
+- `String author`
+- `String contentResourcePath` (optional override; defaults to `assets/<namespace>/books/<path>.txt`)
+
+**Example:**
+```java
+ItemDef item = new ItemDef(
+    VerbumId.of("verbum", "bible"),
+    1,
+    false,
+    ItemDef.RARITY_UNCOMMON,
+    "books"
+);
+ctx.content().acceptLibraryBook(new LibraryBookDef(
+    item,
+    "verbum:bible",
+    "The Holy Bible",
+    "Douay-Rheims",
+    null
+));
+```
+
 ### com.verbum_minecraft.api.content.VerbumId
 **Purpose:** Pure identifier (`namespace:path`).
 
@@ -110,8 +139,17 @@ Item registration requires assets in the capsule resources:
 
 **Lang entry:** `item.<namespace>.<path>` → display name
 
+**1.21.11 note:** The `items/<path>.json` file is required in 1.21.11 to map
+the item to its model. In older versions the `models/item/<path>.json` alone
+was sufficient. Missing the `items/<path>.json` file produces missing-texture
+items even when the model and PNG exist.
+
 ## Asset Checklist (for BookDef)
 Book registration also requires:
+- `src/main/resources/assets/<namespace>/books/<path>.txt`
+
+## Asset Checklist (for LibraryBookDef)
+Library-backed books also require:
 - `src/main/resources/assets/<namespace>/books/<path>.txt`
 
 ## If You Need More

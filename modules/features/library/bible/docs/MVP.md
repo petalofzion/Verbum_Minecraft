@@ -1,19 +1,20 @@
 # MVP: Bible Feature
 
 ## Must-Have
-- Bible item registered via `FeatureEntrypoint`.
-- Human-readable name via language entry.
-- Placeholder icon/model using vanilla book texture.
+- Bible item registered via `FeatureEntrypoint` using `LibraryBookDef`.
+- Full Bible text packaged as `assets/verbum/books/bible.txt`.
+- Custom Bible icon/model asset.
 
 ## Out of Scope (for MVP)
-- Custom Bible UI or multi-page reading system.
-- Custom textures or assets beyond a minimal model reference.
-- Any kernel or runtime changes.
+- Multiplayer sync or server-authoritative streaming.
+- Lectern-specific integration beyond default item behavior.
+- Custom reader UI beyond the library-backed book view.
 
 ## Acceptance Criteria
 - Bible item exists in-game (creative inventory).
+- Opening the Bible reads the full text offline.
 - No Minecraft/Fabric classes used in the capsule.
 - Build and check pass.
 
 ## Risks / Open Questions
-- Asset packaging across modules vs. assemblies (verify resource loading).
+- Resource loading across modules vs. assemblies (verify in-game).

@@ -1,0 +1,15 @@
+{
+  "id": "assembly-votum",
+  "domain": "assembly",
+  "edition": "votum",
+  "providesFeature": false,
+  "dependsOn": [
+    "core-api",
+    "core-spi",
+    "core-sim-kernel",
+    "core-runtime",
+    "core-ux-framework",
+    "core-vanilla-core",
+    "feature-bible"
+  ]
+}

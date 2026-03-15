@@ -13,10 +13,12 @@ You have broader scope and must read broader context.
 7. `docs/contracts/CORE_API.md`
 8. `docs/contracts/CONTRACT_INDEX.md`
 9. `docs/wiring/ASSEMBLY_WIRING.md`
-10. `docs/CONTRIBUTING.md`
-11. `CODEOWNERS`
-12. `TODO.md` and `docs/TODO_INDEX.md`
-13. Nearest `AGENTS.md` for any module you touch
+10. `docs/PROFILE_MODEL.md`
+11. `docs/GOTCHAS.md` (version-specific pitfalls that affect wiring and assets)
+12. `docs/CONTRIBUTING.md`
+13. `CODEOWNERS`
+14. `TODO.md` and `docs/TODO_INDEX.md`
+15. Nearest `AGENTS.md` for any module you touch
 
 ## Typical Duties
 - Assembly wiring and Fabric/Minecraft integration (`assemblies/*`).
@@ -26,10 +28,11 @@ You have broader scope and must read broader context.
 - Maintain `docs/contracts/contract_wiring.tsv` and regenerate `docs/contracts/CONTRACT_INDEX.md` when contracts or wiring change.
 - Prepare task packets and validate structured final reports when orchestrating subagents.
 - Use `tools/scripts/verify_orchestration_run.py` when dispatching or integrating autonomous subagent work.
+- Own repo-integration follow-through after capsule subagents finish: manifest refreshes, TODO index refreshes, and full `./gradlew check build`.
 
 ## Repo Agent Setup
 - Run `tools/scripts/install-git-hooks.sh` to enable the TODO index pre-commit hook.
-- The pre-commit hook also keeps `docs/contracts/CONTRACT_INDEX.md` up to date.
+- The pre-commit hook also keeps `docs/contracts/CONTRACT_INDEX.md` and `modules/modules.toml` up to date.
 - `tools/scripts/update_contract_index.sh` requires `python3` in PATH.
 - For multi-agent runs, use `subagent_temp/active_packets/` and `subagent_temp/report_history/` so overlap and loop-brake checks are durable across runs.
 
@@ -38,7 +41,9 @@ You have broader scope and must read broader context.
 - **Mojang mappings** only (no Yarn names).
 - Preserve module boundaries in `docs/ARCHITECTURE_MAP.md`.
 - Keep assemblies as the only place for Fabric/Minecraft classes and config/IO.
+- **Logic ownership:** Feature/module logic lives in capsules under `modules/*`. Repo agents should only wire and integrate. If capsule logic is needed, spawn a capsule subagent using `docs/agents/SUBAGENT_ORCHESTRATION.md`.
 - Enforce stop conditions and loop brakes from `docs/agents/ORCHESTRATION_SPEC.md`; do not let agents continue indefinitely after repeated no-progress reports.
+- Default capsule task packets to `verification_scope: capsule_local`. Use `repo_integration` only when the delegated task is intentionally responsible for repo-wide integration updates and verification.
 
 ## Common Pitfalls
 - Adding feature logic to assemblies.
@@ -52,15 +57,17 @@ You have broader scope and must read broader context.
 - Architectural changes, new subsystems, or hot‑path changes require ADRs and benchmarks.
 
 ## Testing with Prism Launcher (local)
-1. Build the edition you want:
-   - Vanilla+: `./gradlew :assemblies:vanilla-plus:build`
+1. Build the profile you want:
+   - Veritas: `./gradlew :assemblies:veritas:build`
+   - Votum: `./gradlew :assemblies:votum:build`
    - Visions: `./gradlew :assemblies:visions:build`
+   - Vorago: `./gradlew :assemblies:vorago:build`
 2. In Prism, create a Fabric instance:
    - Minecraft: 1.21.11
    - Fabric Loader: 0.18.4
 3. Add mods:
    - Fabric API 0.140.2+1.21.11
-   - The built jar from `assemblies/<edition>/build/libs/`
+   - The built jar from `assemblies/<profile>/build/libs/`
 4. Launch and verify:
-   - Only install one edition jar at a time.
+   - Only install one profile jar at a time.
    - Use `/give @p verbum:bible` to confirm the item.

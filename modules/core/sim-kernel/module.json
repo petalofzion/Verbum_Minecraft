@@ -1,7 +1,7 @@
 {
   "id": "core-sim-kernel",
   "domain": "core",
-  "edition": "vanilla-plus",
+  "edition": "shared",
   "providesFeature": false,
   "dependsOn": [
     "core-api",

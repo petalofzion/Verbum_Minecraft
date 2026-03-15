@@ -35,7 +35,6 @@ target/
 log/
 __pycache__/
 *.py[cod]
-subagent_temp/
 
 # OS generated files
 .DS_Store
@@ -54,3 +53,6 @@ local.properties
 # You might want to ignore large assets, local data, etc.
 # assets/temp/
 # data/local/
+subagent_temp/active_packets/
+subagent_temp/reports/
+subagent_temp/report_history/

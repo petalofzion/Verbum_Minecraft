@@ -1,7 +1,7 @@
 {
   "id": "core-ux-framework",
   "domain": "core",
-  "edition": "vanilla-plus",
+  "edition": "shared",
   "providesFeature": false,
   "dependsOn": [
     "core-api",

@@ -1,0 +1,11 @@
+{
+  "id": "feature-pilgrims-atlas",
+  "domain": "library",
+  "edition": "visions",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.library.pilgrimsatlas.PilgrimsAtlasFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

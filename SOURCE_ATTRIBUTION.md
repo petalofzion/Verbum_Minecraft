@@ -14,3 +14,4 @@ This document tracks the origin and licensing of third-party code, designs, or a
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Project Scaffolding | Code | [Fabric Example Mod](https://github.com/fabricmc/fabric-example-mod) | CC0 | 2025-12-26 | Initial repo structure |
 | Multi-Project Layout | Design | [Gradle Multi-Project Guide](https://docs.gradle.org/current/userguide/multi_project_builds.html) | Apache 2.0 | 2025-12-26 | Tiered build architecture |
+| Douay-Rheims Bible (Project Gutenberg) | Content/Text | [Project Gutenberg #1581](https://www.gutenberg.org/ebooks/1581) | Project Gutenberg License (Public Domain) | 2026-01-19 | Text stripped of PG header/footer; stored at `modules/features/library/bible/src/main/resources/assets/verbum/books/bible.txt`; license in `LICENSES/PROJECT_GUTENBERG_LICENSE.txt` |

@@ -1,7 +1,7 @@
 {
   "id": "feature-<slug>",
   "domain": "<domain>",
-  "edition": "vanilla-plus",
+  "edition": "veritas",
   "providesFeature": true,
   "entrypointClass": "com.verbum_minecraft.features.<domain>.<feature>.<FeatureEntrypoint>",
   "dependsOn": [

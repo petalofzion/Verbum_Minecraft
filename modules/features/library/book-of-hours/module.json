@@ -1,0 +1,11 @@
+{
+  "id": "feature-book-of-hours",
+  "domain": "library",
+  "edition": "votum",
+  "providesFeature": true,
+  "entrypointClass": "com.verbum_minecraft.features.library.bookofhours.BookOfHoursFeature",
+  "dependsOn": [
+    "core-api",
+    "core-spi"
+  ]
+}

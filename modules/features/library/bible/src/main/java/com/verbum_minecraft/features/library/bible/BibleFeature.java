@@ -1,8 +1,8 @@
 package com.verbum_minecraft.features.library.bible;
 
-import com.verbum_minecraft.api.content.BookDef;
 import com.verbum_minecraft.api.content.FeatureContext;
 import com.verbum_minecraft.api.content.ItemDef;
+import com.verbum_minecraft.api.content.LibraryBookDef;
 import com.verbum_minecraft.api.content.VerbumId;
 import com.verbum_minecraft.spi.FeatureEntrypoint;
 
@@ -12,6 +12,7 @@ import com.verbum_minecraft.spi.FeatureEntrypoint;
  */
 public class BibleFeature implements FeatureEntrypoint {
     private static final VerbumId BIBLE_ID = VerbumId.of("verbum", "bible");
+    private static final String BIBLE_BOOK_ID = BIBLE_ID.namespace() + ":" + BIBLE_ID.path();
 
     @Override
     public String id() {
@@ -28,10 +29,11 @@ public class BibleFeature implements FeatureEntrypoint {
             "books"
         );
 
-        ctx.content().acceptBook(new BookDef(
+        ctx.content().acceptLibraryBook(new LibraryBookDef(
             item,
+            BIBLE_BOOK_ID,
             "The Holy Bible",
-            "Verbum",
+            "Douay-Rheims",
             null
         ));
     }

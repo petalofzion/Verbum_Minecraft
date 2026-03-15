@@ -24,6 +24,15 @@ def build_prompt(packet):
     lines.extend(f"- {item}" for item in packet["success_criteria"])
     lines.append("Stop conditions:")
     lines.extend(f"- {item}" for item in packet["stop_conditions"])
+    lines.append(f"Verification scope: {packet['verification_scope']}")
+    if packet["verification_scope"] == "capsule_local":
+        lines.append(
+            "You own only capsule-local verification. Do not treat repo-wide index updates or full repo builds as required for task completion."
+        )
+    else:
+        lines.append(
+            "You own repo integration verification for this task, including coordination metadata and repo-level checks listed below."
+        )
     lines.append("Required checks:")
     if packet["required_checks"]:
         lines.extend(f"- {item}" for item in packet["required_checks"])
@@ -31,6 +40,9 @@ def build_prompt(packet):
         lines.append("- none")
     lines.append(f"Return task_id exactly as: {packet['task_id']}")
     lines.append(f"Return a final report that matches {packet['report_schema']}.")
+    lines.append(
+        "Set blocker_category to one of: none, environment, scope, contract, verification, requirements, unknown."
+    )
     lines.append("End immediately after completion or when any stop condition fires.")
     return "\n".join(lines)
 

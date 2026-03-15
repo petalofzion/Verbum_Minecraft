@@ -70,13 +70,17 @@ Verbum carries a quiet devotional thread; beauty, clarity, and continuity. You c
 
 This project is not structured like a normal mod. We use a strictly tiered **Modular Monolith** to prevent spaghetti code and enforce performance budgets.
 
-### The Tiered Build: One Repo, Two Editions ("Vanilla+" & "Visions")
-Verbum is built as a single codebase that can produce **two editions**:
- 
-* **Verbum: Vanilla+** — a conservative Vanilla+ experience focused on prayer/book/Bible systems and lightweight quality-of-life improvements. Output: `verbum-vanilla.jar`.
-* **Verbum: Visions** — the full total conversion (tech, high magic, dimensions, etc.). **Visions is standalone and includes all Vanilla content**, so players install **either** Vanilla+ **or** Visions (not both). Output: `verbum-visions.jar`.
+### The Tiered Build: Live Profiles
+Verbum is built as a single codebase with build-time profile selection.
 
-This split is intentional: it enforces architectural boundaries early, allows the Vanilla edition to remain stable, and lets Visions evolve aggressively without dragging the core into complexity.
+* **Verbum: Veritas** — the refined baseline line: essential, minimal, optimized, and closest to the "true" Minecraft baseline. Output: `verbum-veritas.jar`.
+* **Verbum: Vocations** — the cozy and expansive line for slow-life play: decor, farming, building, atmosphere, stewardship, and lower-stress progression. Internal build id currently remains `votum`. **Vocations builds upward from Veritas.** Output: `verbum-votum.jar`.
+* **Verbum: Visions** — the full expanded profile (tech, high magic, dimensions, and the broader modded experience). **Visions is a superset of Vocations.** Output: `verbum-visions.jar`.
+* **Verbum: Vorago** — the brutal challenge profile. **Vorago is a superset of Visions**, intended for friction-heavy progression, pressure, and punitive play by design. Output: `verbum-vorago.jar`.
+
+This split is intentional: it enforces architectural boundaries early, keeps upward migrations simple, and lets each profile remain internally coherent.
+
+Module tier metadata follows the same ladder. Player-facing baseline content should be marked `veritas`, then inherited upward by `votum`, `visions`, and `vorago`. The internal `shared` tier is reserved only for non-player-facing core infrastructure such as API/SPI/runtime/kernel modules.
 
 ```mermaid
 graph TD
@@ -109,10 +113,11 @@ graph TD
 *   **`modules/core/api`**: Pure interfaces. No logic. The "Language" of the mod.
 *   **`modules/core/spi`**: The Feature Discovery layer. Used for self-registration.
 *   **`modules/core/sim-kernel`**: The engine. Optimized, batched logic loops (O(1)).
-*   **`modules/<category>/<baseline|visions-only>/`**: Feature modules. Content registration only.
-    *   **Baseline** is a content tier included in both editions; it is not an edition itself.
+*   **`modules/<category>/<tier>/`**: Feature modules. Content registration only.
+    *   **Baseline** is a content tier included in all shipped profiles; it is not a player-facing profile by itself.
 
 **Assembly wiring:** The `assemblies/*` projects are the only layer that touches Fabric/Minecraft classes, config/IO, and registry wiring. Feature modules stay pure logic/data and are discovered via SPI.
+Assembly membership is derived from module tier metadata, so profiles inherit lower tiers automatically instead of relying on hand-maintained module lists per assembly.
 
 ---
 
@@ -239,7 +244,7 @@ If you are assigned a single feature/mod or a contained bugfix, you are likely a
 
 If you are an AI agent contributing code:
 
-1. Read **docs/ARCHITECTURE_MAP.md** first.
+1. Start with `AGENTS.md`, then follow the role-specific read order. `docs/ARCHITECTURE_MAP.md` remains mandatory within that read path.
 2. **Never** place simulation logic in `modules/<category>/...`.
 3. Any change to kernel hot paths requires:
    - a benchmark update (`tools/benchmarks` or JMH), and
@@ -289,9 +294,11 @@ cd Verbum_Minecraft
 # Build (default)
 ./gradlew build
 
-# Optional: edition-specific artifacts
-./gradlew :assemblies:vanilla-plus:build
+# Optional: profile-specific artifacts
+./gradlew :assemblies:veritas:build
+./gradlew :assemblies:votum:build
 ./gradlew :assemblies:visions:build
+./gradlew :assemblies:vorago:build
 
 # Run the Client (with mixins applied)
 ./gradlew runClient
@@ -318,6 +325,8 @@ cd Verbum_Minecraft
 *   **[Architecture Map](docs/ARCHITECTURE_MAP.md):** Deep dive into the dependency graph.
 *   **[Runtime Constitution](docs/runtime-constitution.md):** Learn about the 5 Laws of Performance that govern this project.
 *   **[Contributing Guide](docs/CONTRIBUTING.md):** Guidelines for contributors (human or AI).
+*   **[Orchestration Spec](docs/agents/ORCHESTRATION_SPEC.md):** Control-loop rules, task packets, stop conditions, and report contracts for agent orchestration.
+*   **[Profile Model](docs/PROFILE_MODEL.md):** Current artifact names, live player-facing profiles, and migration rules.
 *   **[Clean Room Logs](docs/clean-room-logs/README.md):** The paper trail of our design decisions.
 *   **[Source Attribution](SOURCE_ATTRIBUTION.md):** Credits for open-source libraries adapted in this project.
 *   **[Security Policy](docs/SECURITY.md):** Vulnerability reporting. This is not a cryptography project; report crashes/exploits/dupes/RCE vectors.
@@ -328,25 +337,29 @@ cd Verbum_Minecraft
 <a id="for-players"></a>
 ## 🎮 For Players
 
-Verbum is published in **two player-facing editions**:
+Verbum publishes **four installable profiles**:
 
-- **Verbum: Vanilla+** — Vanilla+ (lightweight, conservative).
-- **Verbum: Visions** — full total conversion (includes everything from Vanilla).
+- **Verbum: Veritas** — essential, minimal, and conservative.
+- **Verbum: Vocations** — cozy and expansive; includes the Veritas foundation.
+- **Verbum: Visions** — expanded flagship line; includes Vocations and Veritas content.
+- **Verbum: Vorago** — brutal challenge line; includes Visions, Vocations, and Veritas content.
 
 ### Installation
-Choose **one** edition to install (do not install both at the same time):
+Choose **one** profile to install (do not install multiple Verbum profile jars at the same time):
 
-- **Vanilla+:** install `verbum-vanilla-X.X.X.jar`
-- **Visions:** install `verbum-visions-X.X.X.jar` (includes all Vanilla content)
+- **Veritas:** install `verbum-veritas-X.X.X.jar`
+- **Vocations:** install `verbum-votum-X.X.X.jar` (includes the Veritas foundation; internal build id currently remains `votum`)
+- **Visions:** install `verbum-visions-X.X.X.jar` (includes Vocations and Veritas content)
+- **Vorago:** install `verbum-vorago-X.X.X.jar` (includes Visions, Vocations, and Veritas content)
 
 1.  **Install Fabric Loader:** Download and run the [Fabric Installer](https://fabricmc.net/use/). Use the **Minecraft** + **Fabric Loader** versions listed in the Targets table above.
 2.  **Install Fabric API:** Download the appropriate **Fabric API** version listed in the Targets table and place it in your `mods` folder.
-3.  **Download Verbum:** Get the latest release from the [releases page](https://github.com/petalofzion/Verbum_Minecraft/releases) and place **either** `verbum-vanilla-X.X.X.jar` **or** `verbum-visions-X.X.X.jar` in your `mods` folder.
+3.  **Download Verbum:** Get the latest release from the [releases page](https://github.com/petalofzion/Verbum_Minecraft/releases) and place **one** of `verbum-veritas-X.X.X.jar`, `verbum-votum-X.X.X.jar`, `verbum-visions-X.X.X.jar`, or `verbum-vorago-X.X.X.jar` in your `mods` folder.
 
 ### Usage
 *   **Client & Server Support:** Verbum is designed to work seamlessly on both single-player clients and dedicated servers.
 *   **Configuration:** Configuration files for Verbum will be located in the `.minecraft/config/verbum/` directory.
-*   **Edition Choice:** If you want the smallest footprint and the most conservative gameplay changes, use **Vanilla+**. If you want the full total conversion, use **Visions**.
+*   **Profile Choice:** If you want the smallest footprint and the most conservative gameplay changes, use **Veritas**. If you want the cozy and expansive line, use **Vocations**. If you want the full expanded experience, use **Visions**. If you want the punitive line, use **Vorago**.
 
 ### ⚙️ Optional Recommended Mods (Performance Stack)
 
@@ -399,7 +412,7 @@ Replace these placeholders before publishing:
 ## 🐛 Issue Reporting
 When filing issues (crashes, exploits/dupes, performance regressions), include:
 - Minecraft + Fabric Loader + Fabric API versions (see Targets table)
-- Verbum edition + version (Vanilla/Visions)
+- Verbum profile line + version (Veritas / Vocations / Visions / Vorago)
 - Full mod list
 - Latest log (`.minecraft/logs/latest.log`) and crash report (if any)
 - Reproduction steps (minimal if possible)
@@ -411,7 +424,9 @@ Verbum follows **SemVer-style versioning** (MAJOR.MINOR.PATCH):
 - **MINOR**: new content/features; backward-compatible data changes via DataFixers when required
 - **MAJOR**: may include breaking changes; will be called out clearly in release notes
 
-Worlds are intended to upgrade **Vanilla → Visions** safely. Downgrading (Visions → Vanilla) is not supported.
+Worlds are intended to upgrade **upward** along the conservative-to-expanded line.
+The supported direction is **Veritas → Vocations → Visions → Vorago**.
+Downgrades are not supported.
 
 ## 🗒️ Changelog
 Releases serve as the project changelog (a `CHANGELOG.md` may be added later):

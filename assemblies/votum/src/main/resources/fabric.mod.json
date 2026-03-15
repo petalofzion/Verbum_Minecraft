@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "verbum_votum",
+  "version": "${version}",
+  "name": "Verbum: Votum",
+  "description": "The cozy and expansive line of Verbum Minecraft, built for slow-life play and atmosphere.",
+  "authors": [ "Auriella" ],
+  "contact": {
+    "email": "support@verbum-minecraft.org"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [ "com.verbum_minecraft.votum.VerbumVotum" ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

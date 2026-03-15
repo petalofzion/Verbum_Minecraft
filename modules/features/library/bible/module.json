@@ -1,7 +1,7 @@
 {
   "id": "feature-bible",
   "domain": "library",
-  "edition": "vanilla-plus",
+  "edition": "veritas",
   "providesFeature": true,
   "entrypointClass": "com.verbum_minecraft.features.library.bible.BibleFeature",
   "dependsOn": [

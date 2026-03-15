@@ -44,6 +44,7 @@ Required fields:
 - `success_criteria`: explicit completion checks.
 - `stop_conditions`: explicit reasons to stop and report instead of continuing.
 - `required_checks`: commands or validations that must be run before completion unless blocked.
+- `verification_scope`: whether delegated verification ends at capsule-local proof or includes repo integration.
 - `max_iterations`: maximum self-directed attempt count before the agent must report.
 - `report_schema`: path or identifier for the required final report schema.
 
@@ -87,6 +88,9 @@ Allowed `status` values:
 - `needs_review`
 - `failed`
 
+Required report classification:
+- `blocker_category`: `none`, `environment`, `scope`, `contract`, `verification`, `requirements`, or `unknown`.
+
 The orchestrator should reject unstructured or incomplete final reports for integration work.
 
 ## Stop Conditions
@@ -126,6 +130,10 @@ Minimum checks before integration:
 - Required checks actually ran, or the report explains why not.
 - Relevant indexes or generated docs are up to date.
 - The final diff matches the task objective instead of adjacent speculative work.
+
+Verification ownership:
+- `capsule_local`: the subagent proves only capsule-local structure and checks. Repo indexes, manifest refreshes, and full `./gradlew check build` remain repo-agent work.
+- `repo_integration`: the delegated task owns integration updates and repo-level verification in addition to local edits.
 
 Repo-local enforcement is available through `tools/scripts/verify_orchestration_run.py`.
 

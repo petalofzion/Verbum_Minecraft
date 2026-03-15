@@ -2,16 +2,16 @@
 **Copy-paste doc — single source of truth for how we build Verbum with parallel AI agents without breaking things.**
 
 This document defines:
-1) how the repo is organized (tiers/modules/editions),
+1) how the repo is organized (tiers/modules/profiles),
 2) how new features are added as “capsules” 🪽,
 3) how we run an async multi-agent swarm in parallel safely (minimal dependency hunting, minimal merge conflicts, high confidence).
 
-For capsule onboarding, start with `FUNNELING.md` and follow its steps. For role-specific rules, see `docs/agents/CAPSULE_AGENT.md` and `docs/agents/REPO_AGENT.md`. For available contracts and wiring, see `docs/contracts/CORE_API.md`, `docs/contracts/CONTRACT_INDEX.md`, and `docs/wiring/ASSEMBLY_WIRING.md`.
+For capsule onboarding, start with `FUNNELING.md` and follow its steps. For role-specific rules, see `docs/agents/CAPSULE_AGENT.md` and `docs/agents/REPO_AGENT.md`. For orchestration policy, see `docs/agents/ORCHESTRATION_SPEC.md`. For available contracts and wiring, see `docs/contracts/CORE_API.md`, `docs/contracts/CONTRACT_INDEX.md`, and `docs/wiring/ASSEMBLY_WIRING.md`.
 
 ---
 
 ## 0) Core Idea (One sentence)
-**One Fabric/Loom runtime + one modular monolith repo + many isolated feature capsules + strict contracts + edition gating + CI/bench evidence.**
+**One Fabric/Loom runtime + one modular monolith repo + many isolated feature capsules + strict contracts + profile gating + CI/bench evidence.**
 
 ---
 
@@ -44,15 +44,19 @@ We separate the codebase into tiers so content never pollutes hot loops:
 - **Verification Layer: `tools/*`**
   - Datagen, gametests, benchmark harness, baseline worlds, measurement protocol.
 
-### Axis B — **Editions (what ships)**
-Editions decide which features are included:
+### Axis B — **Profiles (what ships)**
+Profiles decide which features and behavior layers are included.
 
-- **Verbum Vanilla+**
-  - Minimal, “vanilla-adjacent,” low-intrusion features.
-- **Verbum Visions (Expanded)**
-  - Superset edition (adds larger systems).
+Current implementation state:
+- `veritas`
+- `votum`
+- `visions`
+- `vorago`
 
-**Important:** Editions are **build/distribution concerns**, not separate repos.
+See `docs/PROFILE_MODEL.md` for profile semantics and migration rules.
+
+**Important:** Profiles are **build/distribution concerns**, not separate repos.
+Assembly membership is derived from module tier metadata so each higher profile automatically contains the lower tiers.
 
 ---
 
@@ -61,7 +65,7 @@ A multi-agent swarm is safe when:
 - every agent has a strict, small “blast radius” (a capsule folder),
 - cross-capsule communication is done only via stable contracts (`modules/core/api`),
 - hot path edits are gated by benchmarks and extra review,
-- edition wiring avoids one shared “registry file” that everyone edits.
+- profile wiring avoids one shared “registry file” that everyone edits.
 
 This is “organizational concurrency control.”
 
@@ -76,7 +80,7 @@ A **feature capsule** is the smallest unit that can be implemented by one agent 
 - May depend on:
   - `modules/core/api`
   - optionally `modules/core/sim-kernel` and/or `modules/core/ux-framework`
-- Must be enable/disable-able at the edition/build level.
+- Must be enable/disable-able at the profile/build level.
 - Must carry its own:
   - minimal docs
   - tests (or test plan)
@@ -106,7 +110,7 @@ modules/features/library/bible/
 ### `module.json` Fields:
 - `id`: unique module identifier.
 - `domain`: core/qol/world/magic/tech/ui/etc.
-- `edition`: vanilla-plus/visions.
+- `edition`: current build target metadata. Use `veritas`, `votum`, `visions`, or `vorago` for player-facing content modules. Reserve `shared` for non-player-facing core infrastructure under `modules/core/**`; see `docs/PROFILE_MODEL.md`.
 - `providesFeature`: boolean (true if it implements `FeatureEntrypoint`).
 - `entrypointClass`: FQCN of the `FeatureEntrypoint` implementation (optional).
 - `dependsOn`: list of module IDs.
@@ -120,7 +124,7 @@ Create one doc per feature **inside the capsule** (use templates in `docs/templa
 - User stories
 - Data model (save schema impacts)
 - Performance notes (hot path? yes/no)
-- Edition target (Vanilla+ / Visions / both)
+- Build/profile target (current assemblies and intended player-facing profile)
 - Test plan + benchmark needs
 - API needs (new contracts in `modules/core/api`?)
 
@@ -136,25 +140,27 @@ Repo agent creates the folder layout and stubs (see `docs/templates/capsule/` an
 
 ### Step 3 — Assign the capsule to an implementation agent (swarm)
 Each agent is told:
+- the task packet or equivalent structured prompt
 - the PRD link/path
 - the **exact allowed directories**
 - the commands they must run before finishing
+- the `verification_scope` they own (`capsule_local` for capsule implementation, `repo_integration` only for deliberate integration tasks)
 - what evidence to report
+- the stop conditions that require it to report and end
 
 ### Step 4 — Implementation + local verification
-Agent implements inside the capsule only, then runs:
-- `./gradlew build`
-- `./gradlew check`
-- plus any capsule-specific tests
-- plus benchmarks if kernel-hot paths were touched
+For capsule tasks, the agent implements inside the capsule only, then runs capsule-local checks only.
+Repo-wide verification remains repo-agent work unless the packet explicitly sets `verification_scope: repo_integration`.
 
 ### Step 5 — Review + merge (repo agent)
 Repo agent checks:
 - directory constraints were respected
 - no forbidden imports
-- edition wiring is correct
+- profile/build wiring is correct
+- repo integration follow-through is complete (`modules/modules.toml`, `docs/TODO_INDEX.md`, and any other generated indexes)
 - test/benchmark evidence exists
 - ADRs/attribution updated if required
+- final report satisfies the required schema
 
 ---
 
@@ -176,6 +182,9 @@ Each PR includes a final report:
 - commands run
 - results summary
 - any risks/follow-ups
+
+Structured reports are preferred.
+See `docs/agents/ORCHESTRATION_SPEC.md`.
 
 ### 5.3 Dependency hunting is forbidden (replace with contracts)
 If a feature needs something from another feature:
@@ -221,11 +230,31 @@ Then `assemblies` discovers feature entries at runtime using one of:
 
 ---
 
-## 7) Edition Gating vs Runtime Toggles (Safety)
-### 7.1 Edition gating (build-time, safest)
-Use editions to include/exclude entire capsules:
-- Vanilla+ includes a curated set
-- Visions includes superset
+### 5.5 Control Loop Rules (Required)
+Every delegated task must have:
+- a bounded task packet,
+- explicit stop conditions,
+- a structured final report,
+- a `blocker_category` that distinguishes environment blocks from real code/scope/contract blocks,
+- a maximum iteration count.
+
+Repo agents should validate:
+- touched paths versus allowed paths,
+- repeated blocker loops,
+- repeated no-progress loops,
+- overlapping ownership between active agents,
+- required command evidence before integration.
+
+Do not use executor-specific prompts as the source of truth.
+The source of truth is `docs/agents/ORCHESTRATION_SPEC.md`.
+
+## 7) Profile Gating vs Runtime Toggles (Safety)
+### 7.1 Profile gating (build-time, safest)
+Use build profiles to include/exclude entire capsules:
+- `Veritas` is the refined baseline profile
+- `Votum` layers cozy and expansive content above `Veritas`
+- `Visions` layers the broader flagship feature set above `Votum`
+- `Vorago` layers punitive challenge content above `Visions`
 
 This avoids world corruption from removing registries.
 
@@ -241,7 +270,7 @@ Runtime config MUST NOT:
 - remove registry entries post-save
 
 **Rule of thumb:**
-- “Removing content” = edition/build concern
+- “Removing content” = profile/build concern
 - “Disabling behavior” = runtime config concern
 
 **Feature toggle wiring:** Config/IO lives in `assemblies/*` only. Assemblies load toggles at startup and pass precomputed, allocation-free data into hot paths. Capsules remain pure logic/data and do not read config or touch Fabric/Minecraft APIs.
@@ -309,7 +338,7 @@ Why:
 - later book features (manuals, grimoires, indexing, shelves) extend the same domain without new scaffolding
 
 If “book overhaul” becomes large, split within the domain by capsules:
-- `library/book-core/` (shared book engine)
+- `library/book-enhancement/` (Veritas-level book engine that is inherited upward by every profile)
 - `library/bible/`
 - `library/manuals/`
 - `library/library-blocks/`

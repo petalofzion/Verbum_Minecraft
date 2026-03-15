@@ -1,6 +1,7 @@
 {
   "task_id": "feature-bible-review",
   "status": "done",
+  "blocker_category": "none",
   "summary": "Reviewed the Bible capsule and identified no missing integration steps for the current scope.",
   "files_touched": [],
   "files_read": [
@@ -10,7 +11,7 @@
     "docs/contracts/CORE_API.md"
   ],
   "commands_run": [
-    "./gradlew check"
+    "sed -n '1,200p' modules/features/library/bible/README.md"
   ],
   "evidence": [
     "Capsule metadata is present.",

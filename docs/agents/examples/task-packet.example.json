@@ -23,6 +23,7 @@
   "required_checks": [
     "none"
   ],
+  "verification_scope": "capsule_local",
   "max_iterations": 1,
   "report_schema": "docs/agents/schemas/agent-report.schema.json",
   "priority": "normal"

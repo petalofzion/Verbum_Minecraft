@@ -22,3 +22,7 @@
 
 // ## Template:
 // Use the `adr-template.md` file as a starting point for new ADRs.
+
+## Archive
+Superseded ADRs that are no longer part of the active decision surface may be moved under
+`docs/archive/` when keeping them in the live ADR set would create naming or workflow drift.
