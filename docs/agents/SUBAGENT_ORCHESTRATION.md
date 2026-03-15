@@ -20,6 +20,16 @@ python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
 ```
 
 The wrapper validates the task packet before execution and validates the final report after execution.
+For guarded autonomous runs, also pass active-packet and report-history directories so overlap and loop-brake checks are enforced in code:
+
+```bash
+python3 tools/scripts/codex_exec_from_packet.py path/to/task-packet.json \
+  --model gpt-5.2-codex \
+  --reasoning-effort medium \
+  --report-output subagent_temp/reports/<TASK_ID>.json \
+  --active-packets-dir subagent_temp/active_packets \
+  --history-dir subagent_temp/report_history
+```
 
 Required command shape:
 
@@ -43,6 +53,12 @@ Every subagent run must include:
 
 Do not send vague freeform prompts for integration work.
 Use [`tools/scripts/validate_agent_json.py`](../../tools/scripts/validate_agent_json.py) if you need to validate packets or reports manually.
+Use [`tools/scripts/verify_orchestration_run.py`](../../tools/scripts/verify_orchestration_run.py) to enforce:
+- allowed-path ownership,
+- active packet overlap checks,
+- required-check evidence,
+- loop-brake history checks,
+- optional git diff vs `files_touched` validation.
 
 ## Required Subagent Temp Folder
 All final report files must be written under `subagent_temp/` in repo root.
@@ -53,6 +69,10 @@ mkdir -p subagent_temp
 
 Use one unique report filename per run.
 Do not reuse a prior report path for a new task.
+Recommended layout:
+- `subagent_temp/active_packets/` for packets currently in flight
+- `subagent_temp/reports/` for the latest report artifact
+- `subagent_temp/report_history/` for prior report snapshots used by loop-brake checks
 
 ## Model Selection (Required)
 Pick the model explicitly for every run.
@@ -140,6 +160,15 @@ Minimum validation:
 - inspect the changed files,
 - compare `files_touched` in the report to the actual diff,
 - run the required checks from the task packet or stronger local checks.
+
+Recommended command:
+
+```bash
+python3 tools/scripts/verify_orchestration_run.py path/to/task-packet.json \
+  --report subagent_temp/reports/<TASK_ID>.json \
+  --active-packets-dir subagent_temp/active_packets \
+  --history-dir subagent_temp/report_history
+```
 
 ## Loop Brakes
 Do not let a subagent continue indefinitely.

@@ -127,6 +127,8 @@ Minimum checks before integration:
 - Relevant indexes or generated docs are up to date.
 - The final diff matches the task objective instead of adjacent speculative work.
 
+Repo-local enforcement is available through `tools/scripts/verify_orchestration_run.py`.
+
 Recommended checks:
 - Compare the report summary to the actual diff.
 - Re-run the highest-signal verification locally.

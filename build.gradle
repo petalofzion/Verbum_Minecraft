@@ -59,6 +59,9 @@ tasks.register('verifyModuleMetadata') {
                 if (!allowedModuleEditions.contains(json.edition)) {
                     errors.add("Invalid module edition [${json.edition}] in ${path}. Allowed: ${allowedModuleEditions}")
                 }
+                if (json.edition == 'shared' && !path.startsWith('modules/core/')) {
+                    errors.add("Module edition 'shared' is reserved for non-player-facing core infrastructure under modules/core/**. Use 'veritas', 'votum', 'visions', or 'vorago' for feature/content modules: ${path}")
+                }
             } else if (path.startsWith('assemblies/')) {
                 if (!allowedAssemblyEditions.contains(json.edition)) {
                     errors.add("Invalid assembly edition [${json.edition}] in ${path}. Allowed: ${allowedAssemblyEditions}")
@@ -122,6 +125,7 @@ tasks.register('verifyAgentProtocolAssets') {
             'tools/scripts/json_schema_utils.py',
             'tools/scripts/validate_agent_json.py',
             'tools/scripts/codex_exec_from_packet.py',
+            'tools/scripts/verify_orchestration_run.py',
             'tools/scripts/update_module_manifest.py'
         ])
         runPythonCheck([
@@ -136,6 +140,60 @@ tasks.register('verifyAgentProtocolAssets') {
             'docs/agents/schemas/agent-report.schema.json',
             'docs/agents/examples/agent-report.example.json'
         ])
+        runPythonCheck([
+            'python3',
+            'tools/scripts/verify_orchestration_run.py',
+            'docs/agents/examples/task-packet.example.json',
+            '--report',
+            'docs/agents/examples/agent-report.example.json'
+        ])
+    }
+}
+
+tasks.register('verifyLegacyNamingIsolation') {
+    group = 'verification'
+    description = 'Ensures retired profile names appear only in approved archive locations.'
+    doLast {
+        def legacyPatterns = [
+            ~/(?i)vanilla\+/,
+            ~/(?i)vanilla-plus/,
+            ~/(?i)\bsanctuary\b/,
+            ~/(?i)\bpurgatory\b/
+        ]
+        def allowedArchivePrefixes = [
+            'docs/archive/',
+            'modules/features/library/bible/docs/agent-logs/archive/',
+            'modules/features/library/book-enhancement/docs/agent-logs/archive/'
+        ]
+        def scanTargets = files(
+            'README.md',
+            'WORKFLOW.md',
+            fileTree(dir: 'docs', include: '**/*.md', exclude: '**/build/**'),
+            fileTree(dir: 'modules', include: '**/*.md', exclude: '**/build/**'),
+            fileTree(dir: 'assemblies', include: '**/fabric.mod.json', exclude: '**/build/**')
+        )
+
+        def violations = []
+        scanTargets.each { file ->
+            def relativePath = rootDir.toPath().relativize(file.toPath()).toString().replace(File.separator, '/')
+            if (allowedArchivePrefixes.any { relativePath.startsWith(it) }) {
+                return
+            }
+            def text = file.getText('UTF-8')
+            legacyPatterns.each { pattern ->
+                if ((text =~ pattern).find()) {
+                    violations.add(relativePath)
+                }
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                "Retired profile naming found outside approved archive locations:\n" +
+                    violations.unique().sort().join('\n')
+            )
+        }
+        println "Verified: Retired profile names are isolated to archive locations."
     }
 }
 
@@ -320,6 +378,7 @@ def rootVerificationTaskNames = [
     'verifyNoNamedElements',
     'verifySpiRegistration',
     'verifyAgentProtocolAssets',
+    'verifyLegacyNamingIsolation',
     'verifyItemAssets',
     'verifyTodoIndex',
     'verifyContractIndex'

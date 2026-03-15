@@ -1,7 +1,7 @@
 {
   "id": "feature-book-enhancement",
   "domain": "library",
-  "edition": "shared",
+  "edition": "veritas",
   "providesFeature": true,
   "entrypointClass": "com.verbum_minecraft.features.library.bookenhancement.BookEnhancementFeature",
   "dependsOn": [

@@ -27,11 +27,13 @@ You have broader scope and must read broader context.
 - Maintain `TODO.md` and `docs/TODO_INDEX.md`.
 - Maintain `docs/contracts/contract_wiring.tsv` and regenerate `docs/contracts/CONTRACT_INDEX.md` when contracts or wiring change.
 - Prepare task packets and validate structured final reports when orchestrating subagents.
+- Use `tools/scripts/verify_orchestration_run.py` when dispatching or integrating autonomous subagent work.
 
 ## Repo Agent Setup
 - Run `tools/scripts/install-git-hooks.sh` to enable the TODO index pre-commit hook.
 - The pre-commit hook also keeps `docs/contracts/CONTRACT_INDEX.md` and `modules/modules.toml` up to date.
 - `tools/scripts/update_contract_index.sh` requires `python3` in PATH.
+- For multi-agent runs, use `subagent_temp/active_packets/` and `subagent_temp/report_history/` so overlap and loop-brake checks are durable across runs.
 
 ## Conventions (must follow)
 - **Java 21** only for code.

@@ -73,12 +73,14 @@ This project is not structured like a normal mod. We use a strictly tiered **Mod
 ### The Tiered Build: Live Profiles
 Verbum is built as a single codebase with build-time profile selection.
 
-* **Verbum: Veritas** — the refined Vanilla+ line: essential, minimal, optimized, and closest to the "true" Minecraft baseline. Output: `verbum-veritas.jar`.
+* **Verbum: Veritas** — the refined baseline line: essential, minimal, optimized, and closest to the "true" Minecraft baseline. Output: `verbum-veritas.jar`.
 * **Verbum: Votum** — the cozy and expansive line for slow-life play: decor, farming, atmosphere, and lower-stress progression. **Votum builds upward from Veritas.** Output: `verbum-votum.jar`.
 * **Verbum: Visions** — the full expanded profile (tech, high magic, dimensions, and the broader modded experience). **Visions is a superset of Votum.** Output: `verbum-visions.jar`.
 * **Verbum: Vorago** — the brutal challenge profile. **Vorago is a superset of Visions**, intended for friction-heavy progression, pressure, and punitive play by design. Output: `verbum-vorago.jar`.
 
 This split is intentional: it enforces architectural boundaries early, keeps upward migrations simple, and lets each profile remain internally coherent.
+
+Module tier metadata follows the same ladder. Player-facing baseline content should be marked `veritas`, then inherited upward by `votum`, `visions`, and `vorago`. The internal `shared` tier is reserved only for non-player-facing core infrastructure such as API/SPI/runtime/kernel modules.
 
 ```mermaid
 graph TD
@@ -337,7 +339,7 @@ cd Verbum_Minecraft
 
 Verbum publishes **four installable profiles**:
 
-- **Verbum: Veritas** — essential Vanilla+, minimal, and conservative.
+- **Verbum: Veritas** — essential, minimal, and conservative.
 - **Verbum: Votum** — cozy and expansive; includes the Veritas foundation.
 - **Verbum: Visions** — expanded flagship line; includes Votum and Veritas content.
 - **Verbum: Vorago** — brutal challenge line; includes Visions, Votum, and Veritas content.

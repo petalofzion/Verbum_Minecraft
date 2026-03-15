@@ -4,10 +4,9 @@
 Accepted
 
 ## Context
-ADR 0004 moved the project away from the original `Vanilla+ / Visions` split and into a stronger player-facing naming system.
-That simplified the product line, but it also collapsed two different intents into one conservative profile:
+An earlier profile-model ADR simplified the product line, but it also collapsed two different intents into one conservative profile:
 
-- a refined Vanilla+ baseline,
+- a refined baseline profile,
 - and a broader cozy / slow-life line.
 
 Those are not the same design target.
@@ -28,7 +27,7 @@ Adopt a four-profile player-facing model:
 4. `Vorago`
 
 Semantics:
-- `Veritas` is the refined Vanilla+ baseline.
+- `Veritas` is the refined baseline profile.
 - `Votum` is the cozy and expansive profile.
 - `Visions` is the flagship full profile.
 - `Vorago` is the punitive challenge profile.
@@ -43,7 +42,8 @@ Compatibility direction:
 - `Veritas -> Votum -> Visions -> Vorago`
 
 Metadata guidance:
-- shared modules use `shared`
+- only non-player-facing core infrastructure under `modules/core/**` uses `shared`
+- Veritas-baseline modules use `veritas`
 - Votum-layer modules use `votum`
 - Visions-layer modules use `visions`
 - Vorago-layer modules use `vorago`
@@ -56,4 +56,4 @@ Metadata guidance:
 - Until profile-specific modules land, some assemblies may temporarily share the same module set while still serving as stable public targets.
 
 ## Supersedes
-This decision supersedes ADR 0004 while preserving the build-time profile-selection model established in ADR 0002.
+This decision supersedes the earlier archived profile-model ADRs while preserving the build-time profile-selection model they introduced.

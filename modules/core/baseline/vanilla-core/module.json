@@ -1,7 +1,7 @@
 {
   "id": "core-vanilla-core",
   "domain": "core",
-  "edition": "shared",
+  "edition": "veritas",
   "providesFeature": false,
   "dependsOn": []
 }

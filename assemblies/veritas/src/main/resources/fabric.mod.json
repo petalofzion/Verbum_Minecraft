@@ -3,7 +3,7 @@
   "id": "verbum_veritas",
   "version": "${version}",
   "name": "Verbum: Veritas",
-  "description": "The refined Vanilla+ baseline of Verbum Minecraft: essential, minimal, and optimized.",
+  "description": "The refined baseline of Verbum Minecraft: essential, minimal, and optimized.",
   "authors": [ "Auriella" ],
   "contact": {
     "email": "support@verbum-minecraft.org"

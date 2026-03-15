@@ -38,6 +38,19 @@ def main():
     parser.add_argument("--sandbox", default="workspace-write", help="Codex sandbox mode")
     parser.add_argument("--color", default="never", help="Codex color mode")
     parser.add_argument("--executor", default="codex", help="Executor binary name")
+    parser.add_argument(
+        "--active-packets-dir",
+        help="Directory containing other active task packets for overlap validation",
+    )
+    parser.add_argument(
+        "--history-dir",
+        help="Directory containing prior report JSON files for loop-brake validation",
+    )
+    parser.add_argument(
+        "--check-git",
+        action="store_true",
+        help="Validate files_touched against actual git changes within allowed_paths",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Print the command without running it")
     args = parser.parse_args()
 
@@ -56,6 +69,16 @@ def main():
 
     report_output = (repo_root / args.report_output).resolve() if not Path(args.report_output).is_absolute() else Path(args.report_output)
     report_output.parent.mkdir(parents=True, exist_ok=True)
+
+    preflight_command = [
+        "python3",
+        "tools/scripts/verify_orchestration_run.py",
+        str(packet_path.relative_to(repo_root)),
+    ]
+    if args.active_packets_dir:
+        preflight_command.extend(["--active-packets-dir", args.active_packets_dir])
+
+    subprocess.run(preflight_command, cwd=repo_root, check=True)
 
     prompt = build_prompt(packet)
     command = [
@@ -82,10 +105,26 @@ def main():
 
     subprocess.run(command, cwd=repo_root, check=True)
 
+    postflight_command = [
+        "python3",
+        "tools/scripts/verify_orchestration_run.py",
+        str(packet_path.relative_to(repo_root)),
+        "--report",
+        str(report_output.relative_to(repo_root)),
+    ]
+    if args.active_packets_dir:
+        postflight_command.extend(["--active-packets-dir", args.active_packets_dir])
+    if args.history_dir:
+        postflight_command.extend(["--history-dir", args.history_dir])
+    if args.check_git:
+        postflight_command.append("--check-git")
+
     try:
         validate_file(report_schema, report_output)
     except SchemaValidationError as exc:
         raise SystemExit(f"Generated report failed validation:\n{exc}")
+
+    subprocess.run(postflight_command, cwd=repo_root, check=True)
 
 
 if __name__ == "__main__":

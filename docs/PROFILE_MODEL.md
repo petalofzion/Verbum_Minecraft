@@ -24,7 +24,7 @@ Player-facing profiles:
 
 ## Profile Semantics
 ### Veritas
-The refined Vanilla+ line. This is the "truth" profile: essential, optimized, and close to baseline Minecraft.
+The refined baseline line. This is the "truth" profile: essential, optimized, and close to baseline Minecraft.
 
 Design intent:
 - minimal but intentional changes,
@@ -82,11 +82,17 @@ Current assembly ids and artifacts:
 4. `assemblies/vorago` → `verbum-vorago.jar`
 
 Metadata guidance:
-- Modules shared by every profile should be marked `shared`.
-- Modules that define the player-facing Veritas baseline may be marked `veritas`.
+- `shared` is reserved for non-player-facing core infrastructure under `modules/core/**`.
+- Modules that define the player-facing Veritas baseline should be marked `veritas`.
 - Modules that ship in `Votum`, `Visions`, and `Vorago` but not `Veritas` should be marked `votum`.
 - Modules that ship in `Visions` and `Vorago` but not the calmer lines should be marked `visions`.
 - Modules that ship only in `Vorago` should be marked `vorago`.
+
+Interpretation rule:
+- If a module is player-facing content or directly contributes to the identity of the shipped experience, it should not use `shared`.
+- `veritas` is the default tier for anything that belongs in all four products because it starts at the bottom of the ladder and is inherited upward.
+- If a support module exists primarily to serve `veritas` content, it should usually also be `veritas` rather than `shared`.
+- `shared` exists only for foundational platform modules that make every profile function at all, such as API/SPI/runtime/kernel infrastructure.
 
 Current implementation note:
 - The repo already ships four assemblies.

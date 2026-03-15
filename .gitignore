@@ -53,3 +53,6 @@ local.properties
 # You might want to ignore large assets, local data, etc.
 # assets/temp/
 # data/local/
+subagent_temp/active_packets/
+subagent_temp/reports/
+subagent_temp/report_history/
