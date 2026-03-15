@@ -27,4 +27,7 @@
 - [ ] `./gradlew check`
 
 ## 6) Index
+- [ ] Run `python3 tools/scripts/update_module_manifest.py`
+- [ ] Run `python3 tools/scripts/update_capsule_index.py`
 - [ ] Run `tools/scripts/update_todo_index.sh`
+- [ ] Run `tools/scripts/update_contract_index.sh` if contracts or wiring changed

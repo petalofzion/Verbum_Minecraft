@@ -14,6 +14,7 @@ Stay siloed. Do not touch wiring or cross-module code.
 8. `docs/contracts/CONTRACT_INDEX.md`
 9. `docs/GOTCHAS.md` (version-specific pitfalls that affect assets and data)
 10. Capsule docs: `README.md`, `docs/PRD.md`, `docs/MVP.md`, `docs/TODO.md`, `docs/agent-logs/`
+11. `docs/agents/CAPABILITY_REQUEST_PROTOCOL.md` when a real scope boundary appears
 
 ## Allowed Paths
 - Only your capsule folder (example: `modules/features/library/bible/**`)
@@ -46,3 +47,4 @@ Stay siloed. Do not touch wiring or cross-module code.
 
 ## If You Need Cross-Module Changes
 Run a **capability sweep** first, log all needs in one entry, then stop and notify the repo agent.
+Use `docs/agents/CAPABILITY_REQUEST_PROTOCOL.md` for the request shape.

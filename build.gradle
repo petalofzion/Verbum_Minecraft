@@ -114,6 +114,14 @@ tasks.register('verifyModuleManifest') {
     }
 }
 
+tasks.register('verifyCapsuleIndex') {
+    group = 'verification'
+    description = 'Verifies that docs/CAPSULE_INDEX.* matches current module metadata and contract usage scans.'
+    doLast {
+        runPythonCheck(['python3', 'tools/scripts/update_capsule_index.py', '--check'])
+    }
+}
+
 tasks.register('verifyAgentProtocolAssets') {
     group = 'verification'
     description = 'Validates orchestration schemas, examples, and executor wrapper scripts.'
@@ -441,6 +449,7 @@ def rootVerificationTaskNames = [
     'verifyNoMinecraftImports',
     'verifyModuleMetadata',
     'verifyModuleManifest',
+    'verifyCapsuleIndex',
     'verifyNoNamedElements',
     'verifySpiRegistration',
     'verifyAgentProtocolAssets',

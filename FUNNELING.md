@@ -22,6 +22,7 @@ This document is the **single, fast path** for agents working inside a capsule. 
 7. Implement **only inside the capsule**.
 8. Log any issues/questions/decisions in the capsule `docs/agent-logs/` (see below).
 9. Run the capsule commands listed in its `AGENTS.md`.
+10. If you hit a real scope boundary, use `docs/agents/CAPABILITY_REQUEST_PROTOCOL.md`.
 
 ## Scope Guardrails (Do / Don’t)
 **Do**
@@ -42,6 +43,7 @@ If any of the following occurs, **stop and log it**:
 - You think a change belongs in `assemblies/*` or `modules/core/*`.
 - You discover a performance hot-path issue.
 - You are unsure about data/asset placement.
+- You need a repo-agent capability outside your allowed paths.
 
 ## Issue / Question Logging (Required for Ambiguities)
 Create a log entry under:

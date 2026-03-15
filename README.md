@@ -231,6 +231,9 @@ All agents **must** start with `AGENTS.md`, then read the appropriate role guide
 - Capsule agents: `docs/agents/CAPSULE_AGENT.md`
 - Repo agents: `docs/agents/REPO_AGENT.md`
 
+Fast repo-agent runbook: `docs/agents/ORCHESTRATOR_QUICKSTART.md`
+Current inventory and repo update obligations: `docs/CAPSULE_INDEX.md`, `docs/UPDATE_SURFACES.md`
+
 If you are unsure which role you are:
 - Only touching `modules/features/<domain>/<feature>/` → Capsule Agent
 - Touching `assemblies/*`, `modules/core/*`, or cross‑module contracts → Repo Agent

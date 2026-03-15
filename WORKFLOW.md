@@ -6,7 +6,7 @@ This document defines:
 2) how new features are added as “capsules” 🪽,
 3) how we run an async multi-agent swarm in parallel safely (minimal dependency hunting, minimal merge conflicts, high confidence).
 
-For capsule onboarding, start with `FUNNELING.md` and follow its steps. For role-specific rules, see `docs/agents/CAPSULE_AGENT.md` and `docs/agents/REPO_AGENT.md`. For orchestration policy, see `docs/agents/ORCHESTRATION_SPEC.md`. For available contracts and wiring, see `docs/contracts/CORE_API.md`, `docs/contracts/CONTRACT_INDEX.md`, and `docs/wiring/ASSEMBLY_WIRING.md`.
+For capsule onboarding, start with `FUNNELING.md` and follow its steps. For role-specific rules, see `docs/agents/CAPSULE_AGENT.md` and `docs/agents/REPO_AGENT.md`. For a one-page repo-agent runbook, see `docs/agents/ORCHESTRATOR_QUICKSTART.md`. For orchestration policy, see `docs/agents/ORCHESTRATION_SPEC.md`. For available contracts and wiring, see `docs/contracts/CORE_API.md`, `docs/contracts/CONTRACT_INDEX.md`, and `docs/wiring/ASSEMBLY_WIRING.md`. For current inventory and update obligations, see `docs/CAPSULE_INDEX.md` and `docs/UPDATE_SURFACES.md`.
 
 ---
 
