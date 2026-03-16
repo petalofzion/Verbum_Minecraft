@@ -1,0 +1,11 @@
+{
+  "operations": [
+    { "op": "shade_zone", "zone": "cover", "color": "#654733" },
+    { "op": "shade_zone", "zone": "spine", "color": "#3A2A20" },
+    { "op": "fill_region", "x": 5, "y": 2, "width": 7, "height": 1, "color": "#C5A17D" },
+    { "op": "fill_region", "x": 5, "y": 13, "width": 7, "height": 1, "color": "#16110E" },
+    { "op": "fill_region", "x": 7, "y": 5, "width": 1, "height": 4, "color": "#C5A17D" },
+    { "op": "fill_region", "x": 6, "y": 6, "width": 3, "height": 1, "color": "#C5A17D" },
+    { "op": "fill_region", "x": 10, "y": 3, "width": 1, "height": 10, "color": "#8B654B" }
+  ]
+}

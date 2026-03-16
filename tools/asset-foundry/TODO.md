@@ -1,191 +1,136 @@
 # Asset Foundry TODO
 
-This is the detailed implementation plan for `tools/asset-foundry`.
+This TODO is for the next milestone: the preset/template upgrade.
 
-The two primary goals are:
-1. convert rough PNGs into proper pixel art for Minecraft assets
-2. support pixel-native drawing where an agent paints actual pixels under strict rules
+The previous milestone is complete and delivered:
+- PNG-to-pixel conversion
+- pixel-native drawing
+- validation
+- preview-first review flow
+- thin MCP wrapper
 
-## Sprint 1: Conversion Path MVP
-Goal: the tool can take an input PNG and emit a real pixel-art output that avoids mixels and pseudo-pixel blur.
+## Sprint 1: Preset Schema and Loader
+Goal: add a first-class preset/template layer above asset types and masks.
 
-### Request and Spec Expansion
-- [x] Add a source-image input field to the request model or a dedicated conversion command input.
-- [x] Add asset-type rules for:
-  - [x] target dimensions
-  - [x] palette source
-  - [x] transparency policy
-  - [x] mixel tolerance policy
-  - [x] readability hints
-- [x] Add one or two more real asset types beyond current scaffolds:
-  - [x] `book_cover_16`
-  - [x] `book_cover_32`
-  - [x] `simple_block_face_16`
+### Schema
+- [ ] Add `preset.schema.json`.
+- [ ] Define required preset fields:
+  - [ ] `id`
+  - [ ] `asset_type`
+  - [ ] `base_mask`
+  - [ ] `palette_roles`
+  - [ ] `regions`
+  - [ ] `locked_regions`
+  - [ ] `free_paint_regions`
+  - [ ] `symmetry`
+  - [ ] `engine_support`
+- [ ] Add `tools/asset-foundry/specs/presets/` folder.
 
-### Conversion Engine
-- [x] Choose the first image-processing dependency path and review license fit.
-- [x] Implement image load and export.
-- [x] Implement dimension normalization:
-  - [x] resize to exact target canvas
-  - [x] preserve nearest-neighbor semantics where appropriate
-- [x] Implement palette quantization:
-  - [x] map to explicit palette file
-  - [x] reject uncontrolled colors
-- [x] Implement alpha cleanup:
-  - [x] remove unintended semi-transparent haze
-  - [x] snap alpha according to asset type
-- [x] Implement anti-mixel cleanup:
-  - [x] detect isolated off-palette fuzz
-  - [x] normalize noisy edge transitions
-  - [x] avoid turning intended contrast into mush
+### Loader
+- [ ] Add preset loading to `asset_foundry.py`.
+- [ ] Validate preset compatibility against asset type and mask.
+- [ ] Add `describe-preset` CLI command.
 
-### Conversion Commands
-- [x] Add `repair-generated-png` CLI command.
-- [x] Add output-path selection consistent with the manifest/request flow.
-- [x] Add dry-run mode that reports what would be changed.
-- [x] Add optional side-by-side before/after preview output.
+### Acceptance
+- [ ] Presets can be loaded and validated by id.
+- [ ] The CLI can describe a preset cleanly.
 
-### Validation
-- [x] Add `validate-texture` CLI command.
-- [x] Validate:
-  - [x] dimensions
-  - [x] palette membership
-  - [x] alpha policy
-  - [x] forbidden pixels outside the mask
-  - [x] output path conventions
-- [x] Emit clear diagnostics instead of generic pass/fail only.
+## Sprint 2: Role-Aware Palettes
+Goal: make presets express semantic color roles instead of only flat palette lists.
 
-### Acceptance for Sprint 1
-- [x] A rough PNG can be converted into a true pixel-art output.
-- [x] The output is visibly cleaner and Minecraft-usable.
-- [x] The validator can explain why an output fails.
-- [x] The tool emits provenance for the conversion.
+### Palette Upgrade
+- [ ] Extend palette schema to support role names.
+- [ ] Preserve compatibility with existing flat color arrays.
+- [ ] Add role-aware palettes for:
+  - [ ] `veritas_leather`
+  - [ ] `vocations_oak`
 
-## Sprint 2: Pixel-Native Drawing MVP
-Goal: the tool can generate pixel art directly through exact pixel placement and constrained rules.
+### Acceptance
+- [ ] Presets can request palette roles such as `cover_dark`, `spine_dark`, `page_tone`, `metal_accent`.
 
-### Mask System
-- [x] Replace placeholder mask metadata with a real mask format.
-- [x] Define mask semantics:
-  - [x] allowed pixels
-  - [x] forbidden pixels
-  - [x] optional zones
-  - [x] symmetry rules
-  - [x] reserved highlight/shadow regions
-- [x] Add first real masks for:
-  - [x] simple item icon
-  - [x] book cover
-  - [x] bench/block item silhouette
+## Sprint 3: Region-Aware Drawing Engine
+Goal: make pixel-native drawing operate through preset regions, not just raw coordinates.
 
-### Drawing Model
-- [x] Define a pixel-operation schema:
-  - [x] set pixel
-  - [x] fill region
-  - [x] shade zone
-  - [x] mirror/symmetry helper
-- [x] Add an internal canvas representation.
-- [x] Enforce:
-  - [x] exact palette use
-  - [x] exact coordinate placement
-  - [x] mask boundaries
-  - [x] allowed transparency rules
+### New Ops
+- [ ] Add region-aware operations:
+  - [ ] `fill_region_role`
+  - [ ] `recolor_region`
+  - [ ] `apply_motif`
+  - [ ] `shade_region`
+- [ ] Keep raw pixel ops available as an advanced path.
 
-### Drawing Commands
-- [x] Add `paint-item-icon` or equivalent first drawing command.
-- [x] Add a JSON input shape for agent-driven pixel operations.
-- [x] Add output PNG export.
-- [x] Add manifest integration for pixel-native outputs.
+### Enforcement
+- [ ] Enforce region mode restrictions:
+  - [ ] locked
+  - [ ] recolor_only
+  - [ ] motif
+  - [ ] free_paint
+  - [ ] shade_only
 
-### Acceptance for Sprint 2
-- [x] A small item icon can be created without any raster-image-generation step.
-- [x] The output contains only exact pixel placements.
-- [x] The tool can reject out-of-mask or out-of-palette drawing attempts.
+### Acceptance
+- [ ] A preset-driven item can be drawn without specifying every pixel by hand.
 
-## Sprint 3: Preview and Review Loop
-Goal: make the outputs easy to inspect and iterate on.
+## Sprint 4: Region-Aware PNG Conversion
+Goal: make the PNG-ingest engine honor preset regions and locked structure.
 
-### Preview Outputs
-- [x] Add magnified preview rendering.
-- [x] Add simple contact-sheet output for variants.
-- [x] Add optional grid overlay for debugging masks and pixel placement.
+### Conversion Constraints
+- [ ] Add preset-aware conversion rules:
+  - [ ] source image can influence only editable regions
+  - [ ] locked regions stay fixed
+  - [ ] motif extraction happens only in motif regions
+  - [ ] recolor-only regions map into palette roles
 
-### Review Metadata
-- [x] Expand manifest review fields if needed:
-  - [x] reviewer
-  - [x] review timestamp
-  - [x] approved/rejected reason
-- [x] Add status transitions:
-  - [x] draft
-  - [x] approved
-  - [x] rejected
+### Acceptance
+- [ ] Rough input images can be converted into preset-consistent results instead of loosely constrained recolors.
 
-### Acceptance for Sprint 3
-- [x] A human can review an asset quickly from generated previews.
-- [x] The manifest can record review outcomes cleanly.
+## Sprint 5: Base Asset -> Preset Workflow
+Goal: promote an approved base asset into a reusable template family.
 
-## Sprint 4: Agent and MCP Integration
-Goal: expose the engine to Codex-style agents without turning MCP into the core.
+### Workflow
+- [ ] Define how a reviewed asset becomes a preset seed.
+- [ ] Add a manifest field or preset-export command to mark a generated asset as a preset candidate.
+- [ ] Add a `promote-to-preset` workflow or equivalent documented process.
 
-### Stable Tool Surface
-- [x] Freeze a small CLI contract.
-- [x] Document the CLI commands clearly for agents.
-- [x] Add example requests and example pixel-op inputs.
+### Acceptance
+- [ ] A newly invented item family can be iterated once, then reused for many variants.
 
-### MCP Wrapper
-- [x] Design a thin wrapper around the CLI or core library.
-- [x] Expose only focused operations:
-  - [x] `repair_generated_png`
-  - [x] `paint_item_icon`
-  - [x] `validate_texture`
-  - [x] maybe `emit_manifest`
-- [x] Keep provenance and path validation mandatory even through MCP.
+## Sprint 6: Book Family Presets
+Goal: implement the first robust family you actually need for the mod.
 
-### Acceptance for Sprint 4
-- [x] A Codex-style agent can call the tool deterministically.
-- [x] MCP use does not bypass masks, palettes, or provenance.
+### Required Presets
+- [ ] `vanilla_book_icon_16`
+- [ ] `manual_book_icon_32`
 
-## Sprint 5: First Real Asset Families
-Goal: prove the tool works on actual Verbum-shaped assets, not just abstract test cases.
+### Required Regions
+- [ ] spine
+- [ ] cover
+- [ ] page_edge
+- [ ] clasp
+- [ ] emblem
+- [ ] optional wear/shadow/highlight roles
 
-### Asset Families
-- [x] Book/manual cover flow
-- [x] Simple item icon flow
-- [x] Furniture/block texture flow
+### First Outputs
+- [ ] regenerate Bible through the preset system
+- [ ] generate at least two more manual/book variants through the same family
 
-### Example Bundles
-- [x] one book/manual example
-- [x] one item example
-- [x] one block/furniture example
-
-### Acceptance for Sprint 5
-- [x] At least three concrete assets can be produced through the tool flow.
-- [x] Outputs land in correct module resource paths.
-- [x] The assets are good enough for in-game review.
+### Acceptance
+- [ ] Bible/manual item assets can be produced as a coherent family instead of one-off icons.
 
 ## Cross-Cutting Work
 
-### Repo Fit
-- [ ] Keep update obligations in sync if the workflow expands.
-- [ ] Add attribution if any external algorithm/library is adopted.
-- [ ] Keep this tool under `tools/asset-foundry`, not runtime code.
-
 ### Testing
-- [ ] Add automated tests for:
-  - [ ] schema validation
-  - [ ] path validation
-  - [ ] manifest validation
-  - [ ] palette enforcement
-  - [ ] alpha enforcement
-  - [ ] mask enforcement
+- [ ] Add tests for preset validation.
+- [ ] Add tests for palette-role lookup.
+- [ ] Add tests for region-aware drawing enforcement.
+- [ ] Add tests for region-aware conversion enforcement.
 
 ### Documentation
-- [x] Keep README aligned to actual implemented capabilities.
-- [ ] Add example docs only after commands are real.
-- [ ] Avoid promising image-generation features before they exist.
+- [ ] Keep README aligned to the preset system as it lands.
+- [ ] Extend `PRESET_TEMPLATE_SPEC.md` only as decisions become implemented.
+- [ ] Keep examples current with the new preset-driven flows.
 
 ## Definition of "Complete Enough"
-- [x] Conversion path works on real PNG input and outputs true pixel art.
-- [x] Pixel-native drawing works for at least one asset family.
-- [x] Validation catches common mistakes automatically.
-- [x] Provenance and review metadata are preserved.
-- [x] A Codex-style agent can use the tool without bypassing repo guardrails.
+- [ ] Presets are real files the tool can load.
+- [ ] Both engines can use the same preset id.
+- [ ] A base item can become a reusable family template.
+- [ ] Vanilla-like book families can be generated consistently from the preset system.

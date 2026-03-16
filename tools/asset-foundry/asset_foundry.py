@@ -16,6 +16,7 @@ except ImportError:  # pragma: no cover
 
 ASSET_ID_PATTERN = re.compile(r"^[a-z0-9_]+$")
 RESOURCE_ROOT_PATTERN = re.compile(r"^modules/[^/]+/[^/]+/[^/]+/src/main/resources/assets/[a-z0-9_.-]+$")
+RESOURCE_ROOT_PREFIX_PATTERN = re.compile(r"^modules/[^/]+/[^/]+/[^/]+/src/main/resources/assets/[a-z0-9_.-]+/")
 
 
 def repo_root() -> Path:
@@ -512,7 +513,9 @@ def output_path_diagnostic(path: Path) -> str | None:
     path_str = str(path.relative_to(repo_root()))
     if path_str.startswith("tools/asset-foundry/previews/"):
         return None
-    if RESOURCE_ROOT_PATTERN.search(path_str):
+    if RESOURCE_ROOT_PATTERN.fullmatch(path_str):
+        return None
+    if RESOURCE_ROOT_PREFIX_PATTERN.match(path_str):
         return None
     return "output path violation: expected preview output or module asset path"
 

@@ -1,70 +1,48 @@
 # Asset Foundry Roadmap
 
-This roadmap is for the local `tools/asset-foundry` tool only.
+The previous milestone is complete:
+- preview-first PNG conversion works
+- pixel-native item drawing works
+- validation, manifests, and the thin MCP wrapper exist
 
-It is intentionally short and directional. The detailed execution plan lives in [TODO.md](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/TODO.md).
+This roadmap is now for the **preset/template upgrade**.
 
-## End State
-Asset Foundry should let Verbum define an asset request, then either:
-- convert a rough PNG into true Minecraft-style pixel art, or
-- generate pixel-native art directly through constrained rules,
+## Next End State
+Asset Foundry should support reusable preset families that both engines can load and obey.
 
-while preserving:
-- palette discipline
-- mask/type constraints
-- resource-path correctness
-- provenance and review metadata
+That means:
+- one base preset can define a whole family such as vanilla-style books
+- rough PNG conversion can be constrained by the preset
+- pixel-native drawing can paint by region and role instead of only raw coordinates
+- approved base assets can become reusable templates for fast variation generation
 
 ## Major Work Streams
 
-### 1. Spec and Provenance Foundation
-Keep requests, masks, palettes, asset types, and manifests structured and validated.
+### 1. Preset Family Layer
+Add a new preset schema and preset loader above asset types and masks.
 
-Status: started
+### 2. Role-Aware Palettes
+Upgrade palettes so presets can refer to semantic color roles, not just flat lists.
 
-### 2. PNG-to-Pixel Conversion
-Build the first major production feature:
-- take source PNG input
-- resize and normalize
-- quantize to approved palette
-- eliminate mixels and pseudo-pixel artifacts
-- export a true pixel-art PNG
+### 3. Region-Aware Engines
+Teach both the PNG-ingest path and the pixel-native path to work through preset regions and region rules.
 
-Status: next priority
+### 4. Family Variation Workflow
+Support turning a successful base asset into a reusable preset and generating variants from it.
 
-### 3. Pixel-Native Drawing
-Build the second major production feature:
-- let an agent or CLI instruction operate on a strict pixel grid
-- enforce mask and palette rules
-- emit only exact pixel placements
+### 5. First-Class Book Family
+Implement the first robust family:
+- vanilla-like book preset
+- manual/codex preset
+- reusable Bible/manual variation flow
 
-Status: after conversion path is stable
-
-### 4. Validation and Preview
-Add:
-- texture validation
-- readability checks
-- preview sheets / magnified previews
-- failure diagnostics that help iteration
-
-Status: tied to both production paths
-
-### 5. Agent and MCP Integration
-Expose the tool cleanly so Codex-style agents can call it without bypassing the spec/provenance flow.
-
-Status: later, after the core engine is stable
-
-## Near-Term Completion Target
-The first "complete enough" version should support:
-- one real conversion flow from rough PNG -> valid pixel-art PNG
-- one real pixel-native drawing flow for a small asset type
-- one validation command with actionable diagnostics
-- one preview output path
-- one end-to-end example bundle landed through the tool
+## Near-Term Target
+The next "complete enough" version should let you:
+- create a preset from a base asset concept
+- load the preset by id
+- generate multiple consistent book variations from it
+- use the same preset in both the conversion and drawing engines
 
 ## Scope Discipline
-Do not expand into:
-- full generic image generation platform
-- model editor replacement
-- runtime rendering features
-- unreviewed external dependency sprawl
+Do not start the 3D model foundry in this milestone.
+Finish the 2D preset/template system first.

@@ -154,3 +154,4 @@ If the output still looks like resized digital painting, the tool has failed.
 ## Local Docs
 - [ROADMAP.md](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/ROADMAP.md)
 - [TODO.md](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/TODO.md)
+- [PRESET_TEMPLATE_SPEC.md](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/PRESET_TEMPLATE_SPEC.md)

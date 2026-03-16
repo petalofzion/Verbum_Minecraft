@@ -56,6 +56,19 @@ class AssetFoundryTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.tool.execute_pixel_ops(request, asset_type, mask, ops)
 
+    def test_validate_texture_reports_alpha_violation(self):
+        from PIL import Image
+
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-icon.json")
+        image = Image.new("RGBA", (asset_type["canvas"]["width"], asset_type["canvas"]["height"]), (168, 122, 83, 128))
+        diagnostics = self.tool.texture_diagnostics(
+            image,
+            request=request,
+            asset_type=asset_type,
+            mask=self.tool.load_mask(request["mask_id"]),
+        )
+        self.assertTrue(any("alpha violation" in item for item in diagnostics))
+
     def test_cli_plan_bundle(self):
         result = subprocess.run(
             [sys.executable, str(TOOL_PATH), "plan-bundle", "tools/asset-foundry/requests/example-devotional-cover.json"],
@@ -65,6 +78,21 @@ class AssetFoundryTests(unittest.TestCase):
             check=True,
         )
         self.assertIn("dusty_devotional_cover", result.stdout)
+
+    def test_output_path_diagnostic_allows_module_asset_file(self):
+        path = REPO_ROOT / "modules/features/library/bible/src/main/resources/assets/verbum/textures/item/bible.png"
+        self.assertIsNone(self.tool.output_path_diagnostic(path))
+
+    def test_manifest_validation_accepts_generated_manifest(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
+        manifest = self.tool.build_manifest(
+            request,
+            asset_type,
+            preview_files=["tools/asset-foundry/previews/generated/bible_preview.png"],
+            generated_files=["modules/features/library/bible/src/main/resources/assets/verbum/textures/item/bible.png"],
+        )
+        errors = self.tool.validate_manifest(manifest)
+        self.assertEqual(errors, [])
 
     def test_agent_wrapper_dispatch_validate_texture(self):
         wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"
