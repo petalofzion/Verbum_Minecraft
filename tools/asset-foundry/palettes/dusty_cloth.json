@@ -1,0 +1,29 @@
+{
+  "id": "dusty_cloth",
+  "profile": "veritas",
+  "colors": [
+    "#171413",
+    "#413532",
+    "#6B5B55",
+    "#96827A",
+    "#CBB8AC"
+  ],
+  "roles": {
+    "cover_dark": "#413532",
+    "cover_mid": "#6B5B55",
+    "cover_light": "#96827A",
+    "spine_dark": "#171413",
+    "page_tone": "#CBB8AC",
+    "metal_accent": "#CBB8AC",
+    "shadow": "#171413",
+    "highlight": "#CBB8AC",
+    "base_dark": "#413532",
+    "base_mid": "#6B5B55",
+    "base_light": "#96827A",
+    "accent": "#CBB8AC"
+  },
+  "notes": [
+    "Muted cloth-and-dust palette for worn devotional items.",
+    "Designed for recolor-only reskins that should stay quiet and subdued."
+  ]
+}

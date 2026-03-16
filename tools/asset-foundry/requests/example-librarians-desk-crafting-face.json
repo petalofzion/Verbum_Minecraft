@@ -1,0 +1,26 @@
+{
+  "asset_id": "librarians_desk_face",
+  "display_name": "Librarians Desk Face",
+  "asset_type": "simple_block_face_16",
+  "profile": "visions",
+  "material_palette": "librarians_desk_visions",
+  "style_tags": [
+    "desk",
+    "crafted",
+    "recolor_only",
+    "vanilla_derivative"
+  ],
+  "mask_id": "simple_block_face_16_mask",
+  "template_id": "minecraft_crafting_table_front_16",
+  "source_image": {
+    "path": "tools/asset-foundry/previews/generated/crafting_table_front_base_source.png"
+  },
+  "output": {
+    "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "repair_generated_png",
+    "prompt_summary": "Recolor the vanilla crafting table front into a clearly distinct Librarian's Desk face while preserving the original front-face structure."
+  }
+}

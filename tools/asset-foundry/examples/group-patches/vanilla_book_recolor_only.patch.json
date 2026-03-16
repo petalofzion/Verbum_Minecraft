@@ -1,382 +1,43 @@
 {
-  "id": "minecraft_vanilla_book_16",
-  "asset_type": "book_cover_16",
-  "base_mask": "vanilla_book_16_mask",
-  "base_image": {
-    "kind": "minecraft_vanilla_asset",
-    "asset_path": "assets/minecraft/textures/item/book.png",
-    "version": "1.21.11"
-  },
-  "analysis": {
-    "source_summary": "Neutral pixel analysis for 16x16 image using 'book' hint",
-    "color_clusters": [
-      {
-        "hex": "#654B17",
-        "count": 46
-      },
-      {
-        "hex": "#312104",
-        "count": 24
-      },
-      {
-        "hex": "#44250A",
-        "count": 21
-      },
-      {
-        "hex": "#161005",
-        "count": 16
-      },
-      {
-        "hex": "#522E10",
-        "count": 14
-      },
-      {
-        "hex": "#B7B7B7",
-        "count": 12
-      },
-      {
-        "hex": "#999999",
-        "count": 9
-      },
-      {
-        "hex": "#543E13",
-        "count": 5
-      }
-    ],
-    "components": [
-      {
-        "hex": "#654B17",
-        "count": 46,
-        "bounds": {
-          "x": 3,
+  "regions": [
+    {
+      "name": "book_body",
+      "mode": "recolor_only",
+      "rects": [
+        {
+          "x": 1,
           "y": 2,
-          "width": 11,
-          "height": 8
+          "width": 14,
+          "height": 12
         }
-      },
-      {
-        "hex": "#312104",
-        "count": 7,
-        "bounds": {
-          "x": 0,
-          "y": 5,
-          "width": 2,
-          "height": 4
-        }
-      },
-      {
-        "hex": "#161005",
-        "count": 3,
-        "bounds": {
-          "x": 5,
-          "y": 14,
-          "width": 3,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#312104",
-        "count": 3,
-        "bounds": {
-          "x": 8,
-          "y": 1,
-          "width": 3,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#312104",
-        "count": 2,
-        "bounds": {
+      ],
+      "allowed_palette_roles": [
+        "cover_dark",
+        "cover_mid",
+        "cover_light",
+        "shadow"
+      ],
+      "default_palette_role": "cover_mid",
+      "optional": false
+    },
+    {
+      "name": "page_edges",
+      "mode": "recolor_only",
+      "rects": [
+        {
           "x": 2,
-          "y": 4,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#312104",
-        "count": 2,
-        "bounds": {
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#312104",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 2,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#44250A",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 10,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#44250A",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 13,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#B7B7B7",
-        "count": 2,
-        "bounds": {
-          "x": 7,
-          "y": 11,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#44250A",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 9,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#44250A",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 12,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#161005",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 13,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#B7B7B7",
-        "count": 2,
-        "bounds": {
-          "x": 9,
-          "y": 10,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "hex": "#44250A",
-        "count": 2,
-        "bounds": {
-          "x": 10,
           "y": 8,
-          "width": 2,
-          "height": 1
+          "width": 12,
+          "height": 5
         }
-      },
-      {
-        "hex": "#161005",
-        "count": 2,
-        "bounds": {
-          "x": 10,
-          "y": 12,
-          "width": 2,
-          "height": 1
-        }
-      }
-    ],
-    "detail_candidates": [
-      {
-        "name": "detail_candidate_01",
-        "count": 7,
-        "bounds": {
-          "x": 0,
-          "y": 5,
-          "width": 2,
-          "height": 4
-        }
-      },
-      {
-        "name": "detail_candidate_02",
-        "count": 3,
-        "bounds": {
-          "x": 5,
-          "y": 14,
-          "width": 3,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_03",
-        "count": 3,
-        "bounds": {
-          "x": 8,
-          "y": 1,
-          "width": 3,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_04",
-        "count": 2,
-        "bounds": {
-          "x": 2,
-          "y": 4,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_05",
-        "count": 2,
-        "bounds": {
-          "x": 4,
-          "y": 3,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_06",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 2,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_07",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 10,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_08",
-        "count": 2,
-        "bounds": {
-          "x": 6,
-          "y": 13,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_09",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 9,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_10",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 12,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_11",
-        "count": 2,
-        "bounds": {
-          "x": 8,
-          "y": 13,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_12",
-        "count": 2,
-        "bounds": {
-          "x": 10,
-          "y": 8,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_13",
-        "count": 2,
-        "bounds": {
-          "x": 10,
-          "y": 12,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_14",
-        "count": 2,
-        "bounds": {
-          "x": 12,
-          "y": 7,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_15",
-        "count": 2,
-        "bounds": {
-          "x": 12,
-          "y": 11,
-          "width": 2,
-          "height": 1
-        }
-      },
-      {
-        "name": "detail_candidate_16",
-        "count": 2,
-        "bounds": {
-          "x": 14,
-          "y": 10,
-          "width": 2,
-          "height": 1
-        }
-      }
-    ]
-  },
-  "palette_roles": [
-    "cover_dark",
-    "cover_mid",
-    "cover_light",
-    "spine_dark",
-    "page_tone",
-    "metal_accent",
-    "shadow",
-    "highlight"
+      ],
+      "allowed_palette_roles": [
+        "page_tone",
+        "highlight"
+      ],
+      "default_palette_role": "page_tone",
+      "optional": true
+    }
   ],
   "pixel_groups": [
     {
@@ -1082,56 +743,17 @@
     ]
   },
   "detail_replacements": {},
-  "regions": [
-    {
-      "name": "book_body",
-      "mode": "recolor_only",
-      "rects": [
-        {
-          "x": 1,
-          "y": 2,
-          "width": 14,
-          "height": 12
-        }
-      ],
-      "allowed_palette_roles": [
-        "cover_dark",
-        "cover_mid",
-        "cover_light",
-        "shadow"
-      ],
-      "default_palette_role": "cover_mid",
-      "optional": false
-    },
-    {
-      "name": "page_edges",
-      "mode": "recolor_only",
-      "rects": [
-        {
-          "x": 2,
-          "y": 8,
-          "width": 12,
-          "height": 5
-        }
-      ],
-      "allowed_palette_roles": [
-        "page_tone",
-        "highlight"
-      ],
-      "default_palette_role": "page_tone",
-      "optional": true
-    }
-  ],
   "locked_regions": [],
   "free_paint_regions": [],
   "symmetry": "none",
-  "engine_support": {
-    "repair_generated_png": true,
-    "pixel_native": true
-  },
-  "exact_base_output": true,
-  "transparent_outside_mask": true,
-  "notes": [
-    "Neutral template seed created from analysis for minecraft_vanilla_book_16."
+  "palette_roles": [
+    "cover_dark",
+    "cover_mid",
+    "cover_light",
+    "spine_dark",
+    "page_tone",
+    "metal_accent",
+    "shadow",
+    "highlight"
   ]
 }

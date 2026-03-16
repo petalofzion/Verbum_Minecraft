@@ -1,0 +1,29 @@
+{
+  "id": "hours_amber",
+  "profile": "vocations",
+  "colors": [
+    "#20130A",
+    "#5A3313",
+    "#946129",
+    "#C8944E",
+    "#E1C588"
+  ],
+  "roles": {
+    "cover_dark": "#5A3313",
+    "cover_mid": "#946129",
+    "cover_light": "#C8944E",
+    "spine_dark": "#20130A",
+    "page_tone": "#E1C588",
+    "metal_accent": "#E1C588",
+    "shadow": "#20130A",
+    "highlight": "#E1C588",
+    "base_dark": "#5A3313",
+    "base_mid": "#946129",
+    "base_light": "#C8944E",
+    "accent": "#E1C588"
+  },
+  "notes": [
+    "Warm amber devotional palette for the Book of Hours.",
+    "Designed to read clearly distinct from the darker Bible leather."
+  ]
+}

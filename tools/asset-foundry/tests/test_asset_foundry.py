@@ -30,7 +30,7 @@ class AssetFoundryTests(unittest.TestCase):
             "tools/asset-foundry/requests/example-librarians-desk-face.json",
             "tools/asset-foundry/requests/example-bible-icon.json",
             "tools/asset-foundry/requests/example-book-of-hours-icon.json",
-            "tools/asset-foundry/requests/example-ashen-sword-icon.json",
+            "tools/asset-foundry/requests/example-librarians-desk-crafting-face.json",
         ):
             request, asset_type = self.tool.load_request_and_type(rel)
             self.assertEqual(request["asset_type"], asset_type["id"])
@@ -175,6 +175,52 @@ class AssetFoundryTests(unittest.TestCase):
         template = self.tool.load_json(output)
         self.assertEqual(template["id"], "test_created_book_template")
         self.assertEqual(template["base_image"]["asset_path"], "assets/minecraft/textures/item/book.png")
+        self.assertEqual(template["regions"][0]["name"], "authoring_workspace")
+
+    def test_analyze_image_is_neutral(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "book")
+        group_ids = {group["id"] for group in analysis["pixel_groups"]}
+        self.assertTrue(group_ids)
+        self.assertTrue(all(name.startswith(("component_", "tone_ramp_", "tone_group_", "detail_candidate_", "zone_candidate_", "edge_band_")) for name in group_ids))
+        self.assertNotIn("cover", group_ids)
+        self.assertNotIn("spine", group_ids)
+
+    def test_create_template_seed_from_analysis_generates_valid_template(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "book")
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_created_template_seed.json"
+        ns = type(
+            "Args",
+            (),
+            {
+                "analysis": "tools/asset-foundry/previews/generated/vanilla_book.analysis.json",
+                "image": None,
+                "minecraft_asset": "assets/minecraft/textures/item/book.png",
+                "minecraft_version": "1.21.11",
+                "asset_type": "book_cover_16",
+                "base_mask": "vanilla_book_16_mask",
+                "template_id": "test_created_book_seed",
+                "output": str(output.relative_to(REPO_ROOT)),
+            },
+        )()
+        self.tool.save_json(REPO_ROOT / ns.analysis, analysis)
+        self.tool.cmd_create_template_seed_from_analysis(ns)
+        template = self.tool.load_json(output)
+        self.assertEqual(template["id"], "test_created_book_seed")
+        self.assertEqual(template["regions"][0]["name"], "authoring_workspace")
 
     def test_zero_op_template_draw_equals_base(self):
         request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
@@ -182,6 +228,71 @@ class AssetFoundryTests(unittest.TestCase):
         image = self.tool.execute_pixel_ops(request, asset_type, mask, {"operations": []})
         base = self.tool.template_base_image(self.tool.load_template(request["template_id"]), self.tool.load_palette(request["material_palette"]))
         self.assertEqual(list(image.getdata()), list(base.getdata()))
+
+    def test_remap_group_set_role_changes_only_body_groups(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
+        template = self.tool.load_template(request["template_id"])
+        base = self.tool.template_base_image(template, self.tool.load_palette(request["material_palette"]))
+        mask = self.tool.load_mask(request["mask_id"])
+        image = self.tool.execute_pixel_ops(
+            request,
+            asset_type,
+            mask,
+            {"operations": [{"op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid"}]},
+        )
+        editable = set()
+        for group in self.tool.template_group_set(template, "body_all"):
+            editable.update(self.tool.pixel_group_pixels(group))
+        diffs = {
+            (x, y)
+            for x in range(image.width)
+            for y in range(image.height)
+            if image.getpixel((x, y)) != base.getpixel((x, y))
+        }
+        self.assertTrue(diffs)
+        self.assertTrue(diffs.issubset(editable))
+
+    def test_remap_pages_group_set_changes_only_page_groups(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
+        template = self.tool.load_template(request["template_id"])
+        base = self.tool.template_base_image(template, self.tool.load_palette(request["material_palette"]))
+        mask = self.tool.load_mask(request["mask_id"])
+        image = self.tool.execute_pixel_ops(
+            request,
+            asset_type,
+            mask,
+            {"operations": [{"op": "remap_group_set_role", "group_set": "pages_all", "role": "page_tone"}]},
+        )
+        detail = set()
+        for group in self.tool.template_group_set(template, "pages_all"):
+            detail.update(self.tool.pixel_group_pixels(group))
+        changed_outside = [
+            (x, y)
+            for x in range(image.width)
+            for y in range(image.height)
+            if image.getpixel((x, y)) != base.getpixel((x, y)) and (x, y) not in detail
+        ]
+        self.assertEqual(changed_outside, [])
+
+    def test_clear_group_to_base_restores_outline(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
+        template = self.tool.load_template(request["template_id"])
+        base = self.tool.template_base_image(template, self.tool.load_palette(request["material_palette"]))
+        mask = self.tool.load_mask(request["mask_id"])
+        image = self.tool.execute_pixel_ops(
+            request,
+            asset_type,
+            mask,
+            {
+                "operations": [
+                    {"op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid"},
+                    {"op": "clear_group_to_base", "group": "outline"},
+                ]
+            },
+        )
+        outline = self.tool.pixel_group_pixels(self.tool.pixel_group_by_name(template, "outline"))
+        for x, y in outline:
+            self.assertEqual(image.getpixel((x, y)), base.getpixel((x, y)))
 
     def test_agent_wrapper_dispatch_validate_texture(self):
         wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"

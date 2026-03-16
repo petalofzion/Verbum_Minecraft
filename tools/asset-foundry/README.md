@@ -50,9 +50,9 @@ This is the future MCP-facing half of the tool.
 
 ## Current Scope
 Asset Foundry now has three working layers:
-- rough PNG -> validated pixel-art preview
-- pixel-op JSON -> validated pixel-native icon preview
-- raster-backed templates -> exact-base family variation workflows
+- neutral PNG analysis -> reviewable analysis artifacts
+- authored templates -> semantic family definitions on top of a base raster
+- transformation engines -> conversion and pixel-native generation from those templates
 
 Included now:
 - request schema
@@ -70,10 +70,11 @@ Included now:
   - manifest emission
   - manifest validation
   - image inspection
-  - image region analysis
-  - region overlay rendering
-  - raster-backed template creation
-  - template region refinement
+  - neutral image analysis
+  - topology inspection
+  - analysis overlay rendering
+  - raster-backed template seed creation
+  - template patch export/application
   - preset inspection
   - template inspection
   - rough PNG repair / conversion
@@ -99,9 +100,15 @@ Deferred:
 4. Run one of the production flows:
    - inspect/analyze a source image:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11`
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image-regions --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book --output tools/asset-foundry/previews/generated/book_analysis.json`
-   - create a raster-backed template:
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family --heuristic book`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book --output tools/asset-foundry/previews/generated/book_analysis.json`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book`
+   - create a raster-backed template seed:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed --heuristic book`
+   - promote neutral analysis into an editable template seed:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-seed-from-analysis --analysis tools/asset-foundry/previews/generated/book_analysis.json --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed`
+   - export/apply a semantic patch:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py export-group-patch --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --output tools/asset-foundry/previews/generated/book_patch.json`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py apply-group-patch --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --patch tools/asset-foundry/previews/generated/book_patch.json --output tools/asset-foundry/previews/generated/book_template_patched.json`
    - conversion:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py repair-generated-png <request.json> --grid`
    - pixel-native:
@@ -123,10 +130,10 @@ Deferred:
   - profile/material palette definitions
 - `masks/`
   - silhouette/UV mask metadata
-- `specs/presets/`
-  - reusable family definitions shared by both engines
 - `specs/templates/`
   - raster-backed family templates
+- `specs/presets/`
+  - legacy compatibility family definitions
 - `requests/`
   - local asset request inputs
 - `previews/`
@@ -142,8 +149,9 @@ Deferred:
 - Requests and manifests are both schema-validated.
 - Provenance is mandatory even before real image generation exists.
 - Preview-first output is the default.
-- Presets are optional overlays; non-preset flows still work.
-- Templates are the preferred family abstraction for new work.
+- Analysis artifacts are mechanically neutral and disposable.
+- Templates are the authored semantic bridge between analysis and generation.
+- Presets are compatibility data; templates are the preferred family abstraction for new work.
 - This tool plans and validates outputs; it does not bypass normal module resource ownership.
 
 ## Quality Standard for "Proper Pixel Art"
@@ -158,6 +166,9 @@ For this tool, "proper pixel art" means:
 If the output still looks like resized digital painting, the tool has failed.
 
 ## Design Notes
+- The intended architecture is `Analyze -> Label -> Transform`.
+- The analyzer is not allowed to assign semantic names like `cover` or `pages`.
+- Semantic names belong in authored templates and patches.
 - Python is used for the first MVP because Verbum already has a Python tooling surface under `tools/scripts/`.
 - The thin wrapper at `asset_foundry_mcp.py` exposes the stable operations without moving logic out of the CLI/core engine.
 - The generated manifest is intended to become the repo memory for how an asset was requested, validated, and reviewed.
@@ -169,15 +180,21 @@ If the output still looks like resized digital painting, the tool has failed.
 - `emit-manifest`
 - `validate-manifest`
 - `inspect-image`
-- `analyze-image-regions`
+- `analyze-image`
+- `analyze-image-regions` (compatibility alias)
+- `inspect-topology`
 - `render-region-overlay`
+- `render-group-overlay`
 - `create-template-from-image`
+- `create-template-seed-from-analysis`
 - `refine-template-regions`
 - `repair-generated-png`
 - `validate-texture`
 - `paint-item-icon`
 - `describe-template`
 - `describe-preset`
+- `export-group-patch`
+- `apply-group-patch`
 - `export-preset-seed`
 - `promote-to-template`
 

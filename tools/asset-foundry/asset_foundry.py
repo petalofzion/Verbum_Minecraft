@@ -4,7 +4,7 @@ import copy
 import json
 import re
 import zipfile
-from collections import Counter, deque
+from collections import Counter, defaultdict, deque
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -139,6 +139,10 @@ def template_schema_path() -> Path:
 
 def preset_schema_path() -> Path:
     return foundry_root() / "specs" / "preset.schema.json"
+
+
+def analysis_schema_path() -> Path:
+    return foundry_root() / "specs" / "analysis.schema.json"
 
 
 def load_request(path: Path) -> dict[str, Any]:
@@ -288,11 +292,20 @@ def manifest_output(asset_id: str) -> Path:
     return preview_output_base(asset_id).with_suffix(".manifest.json")
 
 
+def delta_output(asset_id: str) -> Path:
+    return preview_root() / f"{asset_id}_delta.png"
+
+
+def delta_summary_output(asset_id: str) -> Path:
+    return preview_root() / f"{asset_id}_delta.json"
+
+
 def build_manifest(
     request: dict[str, Any],
     asset_type: dict[str, Any],
     *,
     preview_files: list[str] | None = None,
+    delta_files: list[str] | None = None,
     source_image: str | None = None,
     generated_files: list[str] | None = None,
 ) -> dict[str, Any]:
@@ -320,12 +333,43 @@ def build_manifest(
         manifest["generated_files"] = generated_files
     if preview_files:
         manifest["preview_files"] = preview_files
+    if delta_files:
+        manifest["delta_files"] = delta_files
     template_id = request_template_id(request)
     if template_id:
         manifest["template_id"] = template_id
     if request.get("preset_id"):
         manifest["preset_id"] = request["preset_id"]
     return manifest
+
+
+def render_delta_image(base: Image.Image, generated: Image.Image) -> Image.Image:
+    require_pillow()
+    delta = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    dst = delta.load()
+    for x in range(base.width):
+        for y in range(base.height):
+            if base.getpixel((x, y)) != generated.getpixel((x, y)):
+                dst[x, y] = (255, 64, 64, 255)
+    return delta
+
+
+def delta_summary(base: Image.Image, generated: Image.Image, template: dict[str, Any] | None = None) -> dict[str, Any]:
+    changed = []
+    for x in range(base.width):
+        for y in range(base.height):
+            if base.getpixel((x, y)) != generated.getpixel((x, y)):
+                changed.append({"x": x, "y": y})
+    payload: dict[str, Any] = {"changed_count": len(changed), "changed_pixels": changed}
+    if template and template_has_pixel_groups(template):
+        per_group: dict[str, int] = {}
+        for group in template["pixel_groups"]:
+            pixels = pixel_group_pixels(group)
+            count = sum(1 for item in changed if (item["x"], item["y"]) in pixels)
+            if count:
+                per_group[group["name"]] = count
+        payload["changed_groups"] = per_group
+    return payload
 
 
 def validate_manifest(manifest: dict[str, Any]) -> list[str]:
@@ -382,6 +426,28 @@ def region_pixels(region: dict[str, Any]) -> set[tuple[int, int]]:
     return pixels
 
 
+def pixel_group_pixels(group: dict[str, Any]) -> set[tuple[int, int]]:
+    return {(pixel["x"], pixel["y"]) for pixel in group["pixels"]}
+
+
+def pixel_group_by_name(template: dict[str, Any], name: str) -> dict[str, Any]:
+    for group in template.get("pixel_groups", []):
+        if group["name"] == name:
+            return group
+    raise SystemExit(f"Unknown template pixel group: {name}")
+
+
+def template_has_pixel_groups(template: dict[str, Any]) -> bool:
+    return bool(template.get("pixel_groups"))
+
+
+def template_group_set(template: dict[str, Any], group_set_name: str) -> list[dict[str, Any]]:
+    names = template.get("group_sets", {}).get(group_set_name)
+    if not names:
+        raise SystemExit(f"Unknown template group set: {group_set_name}")
+    return [pixel_group_by_name(template, name) for name in names]
+
+
 def validate_template_against_asset_type(template: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if template["asset_type"] != asset_type["id"]:
@@ -418,6 +484,28 @@ def validate_template_against_asset_type(template: dict[str, Any], asset_type: d
     for entry in template.get("free_paint_regions", []):
         if entry not in region_names:
             errors.append(f"free_paint_regions references unknown region '{entry}'")
+
+    group_names: set[str] = set()
+    group_pixels_seen: dict[tuple[int, int], str] = {}
+    for group in template.get("pixel_groups", []):
+        name = group["name"]
+        if name in group_names:
+            errors.append(f"duplicate template pixel group: {name}")
+            continue
+        group_names.add(name)
+        pixels = pixel_group_pixels(group)
+        if allowed and not pixels.issubset(allowed):
+            errors.append(f"template pixel group '{name}' extends outside the base mask")
+        for pixel in pixels:
+            previous = group_pixels_seen.get(pixel)
+            if previous is not None:
+                errors.append(f"template pixel group '{name}' overlaps pixel group '{previous}' at {pixel}")
+            else:
+                group_pixels_seen[pixel] = name
+    for set_name, members in template.get("group_sets", {}).items():
+        for entry in members:
+            if entry not in group_names:
+                errors.append(f"group_sets.{set_name} references unknown pixel group '{entry}'")
     base_image = template.get("base_image")
     if base_image is not None:
         try:
@@ -656,6 +744,339 @@ def connected_components(image: Image.Image) -> list[dict[str, Any]]:
     return sorted(components, key=lambda item: item["count"], reverse=True)
 
 
+def connected_components_with_pixels(image: Image.Image) -> list[dict[str, Any]]:
+    pixels = image.load()
+    visited: set[tuple[int, int]] = set()
+    components: list[dict[str, Any]] = []
+    index = 1
+    for x in range(image.width):
+        for y in range(image.height):
+            if (x, y) in visited or pixels[x, y][3] == 0:
+                continue
+            color = pixels[x, y]
+            queue: deque[tuple[int, int]] = deque([(x, y)])
+            visited.add((x, y))
+            points: set[tuple[int, int]] = set()
+            while queue:
+                cx, cy = queue.popleft()
+                points.add((cx, cy))
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if not (0 <= nx < image.width and 0 <= ny < image.height):
+                        continue
+                    if (nx, ny) in visited or pixels[nx, ny] != color:
+                        continue
+                    visited.add((nx, ny))
+                    queue.append((nx, ny))
+            components.append(
+                {
+                    "id": component_id(index),
+                    "hex": f"#{color[0]:02X}{color[1]:02X}{color[2]:02X}",
+                    "count": len(points),
+                    "bounds": bounds_from_pixels(points),
+                    "pixels": pixel_points_payload(points),
+                }
+            )
+            index += 1
+    return sorted(components, key=lambda item: item["count"], reverse=True)
+
+
+def component_adjacency(components: list[dict[str, Any]]) -> list[dict[str, str]]:
+    pixel_to_component: dict[tuple[int, int], str] = {}
+    for component in components:
+        for pixel in {(p["x"], p["y"]) for p in component["pixels"]}:
+            pixel_to_component[pixel] = component["id"]
+    edges: set[tuple[str, str]] = set()
+    for (x, y), component_name in pixel_to_component.items():
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            neighbor = pixel_to_component.get((x + dx, y + dy))
+            if neighbor and neighbor != component_name:
+                edges.add(tuple(sorted((component_name, neighbor))))
+    return [{"a": a, "b": b} for a, b in sorted(edges)]
+
+
+def color_inventory(image: Image.Image) -> list[dict[str, Any]]:
+    pixels = image.load()
+    colors: dict[tuple[int, int, int, int], set[tuple[int, int]]] = defaultdict(set)
+    for x in range(image.width):
+        for y in range(image.height):
+            pixel = pixels[x, y]
+            if pixel[3] > 0:
+                colors[pixel].add((x, y))
+    ordered = sorted(colors.items(), key=lambda item: (-len(item[1]), item[0]))
+    payload = []
+    for index, (color, coords) in enumerate(ordered, start=1):
+        payload.append(
+            {
+                "id": color_id(index),
+                "hex": f"#{color[0]:02X}{color[1]:02X}{color[2]:02X}",
+                "rgba": [color[0], color[1], color[2], color[3]],
+                "count": len(coords),
+                "luminance": pixel_luma(color),
+                "bounds": bounds_from_pixels(coords),
+                "pixels": pixel_points_payload(coords),
+            }
+        )
+    return payload
+
+
+def tone_ramps_from_colors(colors: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ordered = sorted(colors, key=lambda item: item["luminance"])
+    ramps = []
+    for index, color in enumerate(ordered, start=1):
+        ramps.append(
+            {
+                "id": tone_group_id(index),
+                "source_color_id": color["id"],
+                "hex": color["hex"],
+                "luminance": color["luminance"],
+                "count": color["count"],
+                "pixels": color["pixels"],
+                "bounds": color["bounds"],
+                "rank": index - 1,
+            }
+        )
+    return ramps
+
+
+def topology_map_from_components(image: Image.Image, components: list[dict[str, Any]]) -> list[str]:
+    pixel_to_component: dict[tuple[int, int], int] = {}
+    for index, component in enumerate(components, start=1):
+        for pixel in {(p["x"], p["y"]) for p in component["pixels"]}:
+            pixel_to_component[pixel] = index % 10
+    rows: list[str] = []
+    for y in range(image.height):
+        row = []
+        for x in range(image.width):
+            marker = pixel_to_component.get((x, y))
+            row.append("." if marker is None else str(marker))
+        rows.append("".join(row))
+    return rows
+
+
+def neutral_detail_candidates(components: list[dict[str, Any]], tone_ramps: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    candidates = []
+    dark_half = {entry["hex"] for entry in tone_ramps[: max(1, len(tone_ramps) // 2)]}
+    index = 1
+    for component in components:
+        if component["count"] <= 8 and component["hex"] in dark_half:
+            candidates.append(
+                {
+                    "id": detail_candidate_id(index),
+                    "source_component_id": component["id"],
+                    "bounds": component["bounds"],
+                    "count": component["count"],
+                }
+            )
+            index += 1
+    return candidates
+
+
+def neutral_zone_candidates(components: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    candidates = []
+    for index, component in enumerate(components[:8], start=1):
+        candidates.append(
+            {
+                "id": zone_candidate_id(index),
+                "bounds": component["bounds"],
+                "source_component_id": component["id"],
+            }
+        )
+    return candidates
+
+
+def pixel_luma(pixel: tuple[int, int, int, int]) -> int:
+    return int(pixel[0] * 0.299 + pixel[1] * 0.587 + pixel[2] * 0.114)
+
+
+def pixel_points_payload(pixels: set[tuple[int, int]]) -> list[dict[str, int]]:
+    return [{"x": x, "y": y} for x, y in sorted(pixels, key=lambda item: (item[1], item[0]))]
+
+
+def rect_payload(x: int, y: int, width: int, height: int) -> dict[str, int]:
+    return {"x": x, "y": y, "width": width, "height": height}
+
+
+def outline_pixels(image: Image.Image) -> set[tuple[int, int]]:
+    pixels = image.load()
+    outline: set[tuple[int, int]] = set()
+    for x in range(image.width):
+        for y in range(image.height):
+            if pixels[x, y][3] == 0:
+                continue
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = x + dx, y + dy
+                if not (0 <= nx < image.width and 0 <= ny < image.height) or pixels[nx, ny][3] == 0:
+                    outline.add((x, y))
+                    break
+    return outline
+
+
+def bounds_from_pixels(points: set[tuple[int, int]]) -> dict[str, int]:
+    if not points:
+        return {"x": 0, "y": 0, "width": 1, "height": 1}
+    xs = [x for x, _ in points]
+    ys = [y for _, y in points]
+    return {"x": min(xs), "y": min(ys), "width": max(xs) - min(xs) + 1, "height": max(ys) - min(ys) + 1}
+
+
+def color_id(index: int) -> str:
+    return f"color_{index:02d}"
+
+
+def component_id(index: int) -> str:
+    return f"component_{index:02d}"
+
+
+def tone_group_id(index: int) -> str:
+    return f"tone_group_{index:02d}"
+
+
+def detail_candidate_id(index: int) -> str:
+    return f"detail_candidate_{index:02d}"
+
+
+def zone_candidate_id(index: int) -> str:
+    return f"zone_candidate_{index:02d}"
+
+
+def nearest_group_neighbor_color(base: Image.Image, group_pixels: set[tuple[int, int]]) -> dict[tuple[int, int], tuple[int, int, int, int]]:
+    base_px = base.load()
+    resolved: dict[tuple[int, int], tuple[int, int, int, int]] = {}
+    for x, y in group_pixels:
+        candidates: list[tuple[int, int, int, int]] = []
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < base.width and 0 <= ny < base.height and (nx, ny) not in group_pixels:
+                pixel = base_px[nx, ny]
+                if pixel[3] > 0:
+                    candidates.append(pixel)
+        resolved[(x, y)] = candidates[0] if candidates else base_px[x, y]
+    return resolved
+
+
+def infer_group_role(requested_role: str, group_name: str) -> str:
+    if requested_role.startswith("cover_"):
+        if "shadow" in group_name or "spine" in group_name:
+            return "cover_dark" if requested_role != "cover_dark" else requested_role
+        if "light" in group_name:
+            return "cover_light"
+    if requested_role.startswith("base_"):
+        if "shadow" in group_name or "handle" in group_name:
+            return "base_dark"
+        if "light" in group_name:
+            return "base_light"
+    if "page" in group_name:
+        return requested_role
+    return requested_role
+
+
+ROLE_VARIANTS = {
+    "cover": ["cover_dark", "cover_mid", "cover_light"],
+    "base": ["base_dark", "base_mid", "base_light"],
+}
+
+
+def palette_role_variant(role_name: str) -> tuple[str, int] | None:
+    for family, roles in ROLE_VARIANTS.items():
+        if role_name in roles:
+            return family, roles.index(role_name)
+    return None
+
+
+def ranked_group_role(requested_role: str, group: dict[str, Any], groups: list[dict[str, Any]]) -> str:
+    variant = palette_role_variant(requested_role)
+    if variant is None:
+        return infer_group_role(requested_role, group["name"])
+    family, default_index = variant
+    palette_roles = ROLE_VARIANTS[family]
+    ranks = [entry.get("rank") for entry in groups if entry.get("rank") is not None]
+    if not ranks:
+        return infer_group_role(requested_role, group["name"])
+    group_rank = group.get("rank")
+    if group_rank is None:
+        return infer_group_role(requested_role, group["name"])
+    min_rank = min(ranks)
+    max_rank = max(ranks)
+    if min_rank == max_rank:
+        return palette_roles[min(default_index, len(palette_roles) - 1)]
+    normalized = (group_rank - min_rank) / (max_rank - min_rank)
+    target_index = round(normalized * (len(palette_roles) - 1))
+    return palette_roles[max(0, min(target_index, len(palette_roles) - 1))]
+
+
+def book_pixel_groups(image: Image.Image) -> dict[str, Any]:
+    pixels = image.load()
+    opaque = {(x, y) for x in range(image.width) for y in range(image.height) if pixels[x, y][3] > 0}
+    outline = outline_pixels(image)
+    non_outline = opaque - outline
+
+    page_pixels = {(x, y) for (x, y) in non_outline if pixel_luma(pixels[x, y]) >= 140}
+    remaining = non_outline - page_pixels
+
+    spine_pixels = {(x, y) for (x, y) in remaining if x <= 4}
+    clasp_pixels = {(x, y) for (x, y) in remaining if x in (10, 11) and 3 <= y <= 12}
+    remaining -= spine_pixels | clasp_pixels
+
+    emblem_zone = {(x, y) for (x, y) in remaining if 6 <= x <= 9 and 5 <= y <= 8}
+    detail_pixels = {(x, y) for (x, y) in emblem_zone if pixel_luma(pixels[x, y]) <= 75}
+    remaining -= detail_pixels
+
+    cover_pixels = remaining
+
+    def split_by_luma(points: set[tuple[int, int]], low_name: str, mid_name: str, high_name: str) -> list[tuple[str, set[tuple[int, int]]]]:
+        if not points:
+            return [(low_name, set()), (mid_name, set()), (high_name, set())]
+        colors = [pixel_luma(pixels[x, y]) for x, y in points]
+        low = min(colors)
+        high = max(colors)
+        threshold1 = low + (high - low) // 3
+        threshold2 = low + 2 * ((high - low) // 3)
+        low_points = {(x, y) for (x, y) in points if pixel_luma(pixels[x, y]) <= threshold1}
+        high_points = {(x, y) for (x, y) in points if pixel_luma(pixels[x, y]) > threshold2}
+        mid_points = points - low_points - high_points
+        return [(low_name, low_points), (mid_name, mid_points), (high_name, high_points)]
+
+    page_groups = split_by_luma(page_pixels, "page_shadow", "page_mid", "page_light")
+    spine_groups = split_by_luma(spine_pixels, "spine_shadow", "spine_mid", "spine_light")
+    cover_groups = split_by_luma(cover_pixels, "cover_shadow", "cover_mid", "cover_light")
+
+    pixel_groups: list[dict[str, Any]] = [
+        {"name": "outline", "mode": "locked", "pixels": pixel_points_payload(outline), "allowed_palette_roles": ["shadow"], "default_palette_role": "shadow"},
+        *[
+            {"name": name, "mode": "recolor_only", "pixels": pixel_points_payload(group_pixels), "allowed_palette_roles": ["page_tone", "highlight"], "default_palette_role": "page_tone"}
+            for name, group_pixels in page_groups
+        ],
+        *[
+            {"name": name, "mode": "recolor_only", "pixels": pixel_points_payload(group_pixels), "allowed_palette_roles": ["spine_dark", "shadow", "cover_dark"], "default_palette_role": "spine_dark"}
+            for name, group_pixels in spine_groups
+        ],
+        *[
+            {"name": name, "mode": "recolor_only", "pixels": pixel_points_payload(group_pixels), "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"], "default_palette_role": "cover_dark" if "shadow" in name else ("cover_light" if "light" in name else "cover_mid")}
+            for name, group_pixels in cover_groups
+        ],
+        {"name": "clasp_pixels", "mode": "recolor_only", "pixels": pixel_points_payload(clasp_pixels), "allowed_palette_roles": ["metal_accent", "shadow", "highlight"], "default_palette_role": "metal_accent"},
+        {"name": "cover_detail_pixels", "mode": "detail", "pixels": pixel_points_payload(detail_pixels), "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "metal_accent", "highlight"], "default_palette_role": "cover_mid"},
+    ]
+    pixel_groups = [group for group in pixel_groups if group["pixels"]]
+    return {
+        "pixel_groups": pixel_groups,
+        "group_sets": {
+            "cover_all": [group["name"] for group in pixel_groups if group["name"].startswith("cover_") and group["name"] != "cover_detail_pixels"],
+            "spine_all": [group["name"] for group in pixel_groups if group["name"].startswith("spine_")],
+            "pages_all": [group["name"] for group in pixel_groups if group["name"].startswith("page_")],
+            "metal_all": [group["name"] for group in pixel_groups if group["name"] in {"clasp_pixels"}],
+            "detail_all": [group["name"] for group in pixel_groups if group["name"] in {"cover_detail_pixels"}],
+        },
+        "detail_replacements": {
+            "cover_detail_pixels": {"fallback_role": "cover_mid"}
+        },
+        "emblem_zone": {"x": 6, "y": 5, "width": 4, "height": 4},
+        "detail_candidates": [{"name": "cover_detail_pixels", "bounds": bounds_from_pixels(detail_pixels), "count": len(detail_pixels)}],
+        "group_summary": [{"name": group["name"], "count": len(group["pixels"]), "mode": group["mode"]} for group in pixel_groups],
+    }
+
+
 def heuristic_regions(image: Image.Image, heuristic: str) -> list[dict[str, Any]]:
     summary = image_summary(image)
     bounds = summary["non_transparent_bounds"]
@@ -670,9 +1091,10 @@ def heuristic_regions(image: Image.Image, heuristic: str) -> list[dict[str, Any]
         return [
             {"name": "spine", "mode": "recolor_only", "rects": [{"x": x, "y": y, "width": spine_w, "height": height}], "allowed_palette_roles": ["spine_dark", "shadow"], "default_palette_role": "spine_dark", "optional": False},
             {"name": "cover", "mode": "recolor_only", "rects": [{"x": x + spine_w, "y": y, "width": max(1, width - spine_w - page_w), "height": height}], "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"], "default_palette_role": "cover_mid", "optional": False},
-            {"name": "page_edge", "mode": "locked", "rects": [{"x": x + width - page_w, "y": y + 1, "width": page_w, "height": max(1, height - 3)}], "allowed_palette_roles": ["page_tone"], "default_palette_role": "page_tone", "optional": False},
+            {"name": "page_edge", "mode": "recolor_only", "rects": [{"x": x + width - page_w, "y": y + 1, "width": page_w, "height": max(1, height - 3)}], "allowed_palette_roles": ["page_tone", "highlight"], "default_palette_role": "page_tone", "optional": False},
             {"name": "clasp", "mode": "recolor_only", "rects": [{"x": x + width - page_w - clasp_w - 1, "y": y + 2, "width": clasp_w, "height": max(1, height - 4)}], "allowed_palette_roles": ["metal_accent", "shadow"], "default_palette_role": "metal_accent", "optional": True},
-            {"name": "emblem", "mode": "motif", "rects": [{"x": x + width // 3, "y": y + height // 3, "width": max(2, width // 4), "height": max(2, height // 4)}], "allowed_palette_roles": ["metal_accent", "highlight"], "default_palette_role": "metal_accent", "optional": True},
+            {"name": "cover_detail", "mode": "shade_only", "rects": [{"x": x + width // 3, "y": y + height // 3, "width": max(4, width // 4), "height": max(4, height // 4)}], "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light"], "default_palette_role": "cover_mid", "optional": True},
+            {"name": "emblem_zone", "mode": "motif", "rects": [{"x": x + width // 3, "y": y + height // 3, "width": max(4, width // 4), "height": max(4, height // 4)}], "allowed_palette_roles": ["metal_accent", "highlight"], "default_palette_role": "metal_accent", "optional": True},
             {"name": "highlight", "mode": "shade_only", "rects": [{"x": x + spine_w + 1, "y": y + 1, "width": max(1, width - spine_w - page_w - 2), "height": 1}], "allowed_palette_roles": ["highlight", "cover_light"], "default_palette_role": "highlight", "optional": True},
         ]
     if heuristic == "sword":
@@ -699,13 +1121,34 @@ def heuristic_regions(image: Image.Image, heuristic: str) -> list[dict[str, Any]
 
 def analyze_image(image: Image.Image, heuristic: str) -> dict[str, Any]:
     summary = image_summary(image)
-    return {
-        "heuristic": heuristic,
-        "source_summary": f"{heuristic} analysis for {image.width}x{image.height} image",
-        "color_clusters": summary["color_histogram"][:8],
-        "components": connected_components(image)[:16],
-        "candidate_regions": heuristic_regions(image, heuristic),
+    colors = color_inventory(image)
+    components = connected_components_with_pixels(image)
+    tone_ramps = tone_ramps_from_colors(colors)
+    analysis = {
+        "source_summary": f"Neutral pixel analysis for {image.width}x{image.height} image using '{heuristic}' hint",
+        "canvas": summary["canvas"],
+        "opaque_bounds": summary["non_transparent_bounds"],
+        "colors": colors,
+        "components": components,
+        "adjacency": component_adjacency(components),
+        "tone_ramps": tone_ramps,
+        "detail_candidates": neutral_detail_candidates(components, tone_ramps),
+        "zone_candidates": neutral_zone_candidates(components),
+        "pixel_groups": [
+            {
+                "id": group["id"],
+                "kind": "tone_group",
+                "source_color_id": group["source_color_id"],
+                "rank": group["rank"],
+                "count": group["count"],
+                "bounds": group["bounds"],
+                "pixels": group["pixels"],
+            }
+            for group in tone_ramps
+        ],
+        "topology_map": topology_map_from_components(image, components),
     }
+    return analysis
 
 
 def region_by_name(template: dict[str, Any], name: str) -> dict[str, Any]:
@@ -778,6 +1221,25 @@ def apply_template_regions(
     dst = result.load()
     allow_partial_alpha = asset_type["rules"]["allow_partial_alpha"] == "yes"
 
+    if template_has_pixel_groups(template):
+        editable_groups = [
+            group for group in template["pixel_groups"]
+            if group["mode"] not in {"locked", "detail", "motif"} and not group["name"].startswith("page_")
+        ]
+        for group in editable_groups:
+            pixels = pixel_group_pixels(group)
+            if not pixels:
+                continue
+            allowed_colors = [palette_role_color(palette, role) for role in group["allowed_palette_roles"]]
+            for x, y in pixels:
+                pixel = src[x, y]
+                alpha = normalize_alpha(pixel[3], allow_partial_alpha=allow_partial_alpha)
+                if alpha == 0:
+                    continue
+                nearest = nearest_color(pixel, allowed_colors)
+                dst[x, y] = (nearest[0], nearest[1], nearest[2], alpha)
+        return result
+
     for region in template["regions"]:
         mode = region["mode"]
         pixels = region_pixels(region)
@@ -830,6 +1292,12 @@ def repair_generated_png(request: dict[str, Any], asset_type: dict[str, Any]) ->
         base = template_base_image(template, load_palette(request["material_palette"]))
         base_px = base.load()
         cleaned_px = cleaned.load()
+        if template_has_pixel_groups(template):
+            for group in template["pixel_groups"]:
+                if group["mode"] != "locked":
+                    continue
+                for x, y in pixel_group_pixels(group):
+                    cleaned_px[x, y] = base_px[x, y]
         for region_name in template.get("locked_regions", []):
             for x, y in region_pixels(region_by_name(template, region_name)):
                 cleaned_px[x, y] = base_px[x, y]
@@ -883,12 +1351,28 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
         base_px = base.load()
         px = image.load()
         mismatches = 0
+        pixel_group_mismatches = 0
         for region_name in template.get("locked_regions", []):
             for x, y in region_pixels(region_by_name(template, region_name)):
                 if px[x, y] != base_px[x, y]:
                     mismatches += 1
+        if template_has_pixel_groups(template):
+            editable = set()
+            for group in template["pixel_groups"]:
+                if group["mode"] == "locked":
+                    for x, y in pixel_group_pixels(group):
+                        if px[x, y] != base_px[x, y]:
+                            mismatches += 1
+                else:
+                    editable.update(pixel_group_pixels(group))
+            for x in range(image.width):
+                for y in range(image.height):
+                    if px[x, y] != base_px[x, y] and (x, y) not in editable:
+                        pixel_group_mismatches += 1
         if mismatches:
             diagnostics.append(f"template locked-region mismatch: {mismatches} pixels differ from the base raster")
+        if pixel_group_mismatches:
+            diagnostics.append(f"template pixel-group mismatch: {pixel_group_mismatches} changed pixels fall outside editable pixel groups")
     return diagnostics
 
 
@@ -951,6 +1435,32 @@ def render_region_overlay(image: Image.Image, regions: list[dict[str, Any]], *, 
     return preview
 
 
+def render_group_overlay(image: Image.Image, groups: list[dict[str, Any]], *, grid: bool) -> Image.Image:
+    preview = magnify_image(image, scale=16, grid=grid)
+    draw = ImageDraw.Draw(preview)
+    palette = [
+        (220, 84, 84, 255),
+        (84, 156, 220, 255),
+        (112, 190, 84, 255),
+        (220, 183, 84, 255),
+        (184, 84, 220, 255),
+        (84, 220, 198, 255),
+    ]
+    for index, group in enumerate(groups):
+        color = palette[index % len(palette)]
+        if "pixels" in group and group["pixels"] and isinstance(group["pixels"][0], dict):
+            pixels = {(p["x"], p["y"]) for p in group["pixels"]}
+        else:
+            pixels = pixel_group_pixels(group)
+        for x, y in pixels:
+            x0 = x * 16
+            y0 = y * 16
+            draw.rectangle([(x0, y0), (x0 + 15, y0 + 15)], outline=color, width=1)
+        bounds = bounds_from_pixels(pixels)
+        draw.text((bounds["x"] * 16 + 2, bounds["y"] * 16 + 2), group.get("name") or group.get("id", "group"), fill=color)
+    return preview
+
+
 def default_palette_roles_for_asset_type(asset_type_id: str) -> list[str]:
     if asset_type_id.startswith("book_cover"):
         return ["cover_dark", "cover_mid", "cover_light", "spine_dark", "page_tone", "metal_accent", "shadow", "highlight"]
@@ -977,11 +1487,77 @@ def template_payload(
             "source_summary": analysis["source_summary"],
             "color_clusters": analysis["color_clusters"],
             "components": analysis["components"],
+            "group_summary": analysis.get("group_summary", []),
+            "detail_candidates": analysis.get("detail_candidates", []),
         },
         "palette_roles": default_palette_roles_for_asset_type(asset_type["id"]),
+        "pixel_groups": analysis.get("pixel_groups", []),
+        "group_sets": analysis.get("group_sets", {}),
+        "detail_replacements": analysis.get("detail_replacements", {}),
         "regions": regions,
         "locked_regions": [region["name"] for region in regions if region["mode"] == "locked"],
         "free_paint_regions": [region["name"] for region in regions if region["mode"] == "free_paint"],
+        "symmetry": "none",
+        "engine_support": {"repair_generated_png": True, "pixel_native": True},
+        "exact_base_output": True,
+        "transparent_outside_mask": True,
+        "notes": notes,
+    }
+
+
+def template_seed_payload(
+    *,
+    template_id: str,
+    asset_type: dict[str, Any],
+    mask_id: str,
+    base_image: dict[str, Any],
+    analysis: dict[str, Any],
+    notes: list[str],
+) -> dict[str, Any]:
+    palette_roles = default_palette_roles_for_asset_type(asset_type["id"])
+    seed_region_bounds = analysis.get("opaque_bounds") or {"x": 0, "y": 0, "width": asset_type["canvas"]["width"], "height": asset_type["canvas"]["height"]}
+    regions = [
+        {
+            "name": "authoring_workspace",
+            "mode": "free_paint",
+            "rects": [rect_payload(seed_region_bounds["x"], seed_region_bounds["y"], seed_region_bounds["width"], seed_region_bounds["height"])],
+            "allowed_palette_roles": palette_roles,
+            "default_palette_role": palette_roles[0],
+            "optional": True,
+        }
+    ]
+    pixel_groups = []
+    for group in analysis.get("pixel_groups", []):
+        pixel_groups.append(
+            {
+                "name": group["id"],
+                "kind": group.get("kind", "analysis_candidate"),
+                "mode": "free_paint",
+                "source_color_id": group.get("source_color_id"),
+                "rank": group.get("rank"),
+                "pixels": group["pixels"],
+                "allowed_palette_roles": palette_roles,
+                "default_palette_role": palette_roles[0],
+            }
+        )
+    return {
+        "id": template_id,
+        "asset_type": asset_type["id"],
+        "base_mask": mask_id,
+        "base_image": base_image,
+        "analysis": {
+            "source_summary": analysis["source_summary"],
+            "color_clusters": [{"hex": color["hex"], "count": color["count"]} for color in analysis.get("colors", [])[:8]],
+            "components": [{"hex": component["hex"], "count": component["count"], "bounds": component["bounds"]} for component in analysis.get("components", [])[:16]],
+            "detail_candidates": [{"name": detail["id"], "count": detail["count"], "bounds": detail["bounds"]} for detail in analysis.get("detail_candidates", [])[:16]],
+        },
+        "palette_roles": palette_roles,
+        "pixel_groups": pixel_groups,
+        "group_sets": {},
+        "detail_replacements": {},
+        "regions": regions,
+        "locked_regions": [],
+        "free_paint_regions": ["authoring_workspace"],
         "symmetry": "none",
         "engine_support": {"repair_generated_png": True, "pixel_native": True},
         "exact_base_output": True,
@@ -1037,14 +1613,27 @@ def cmd_inspect_image(args: argparse.Namespace) -> None:
     print(json.dumps(image_summary(image), indent=2))
 
 
-def cmd_analyze_image_regions(args: argparse.Namespace) -> None:
+def cmd_analyze_image(args: argparse.Namespace) -> None:
     image = load_image_from_source(image_source_from_args(args))
     analysis = analyze_image(image, args.heuristic)
+    errors = validate_instance(analysis, load_json(analysis_schema_path()))
+    if errors:
+        raise SystemExit("\n".join(errors))
     if args.output:
         save_json(resolve_repo_path(Path(args.output)), analysis)
         print(f"Wrote analysis: {resolve_repo_path(Path(args.output))}")
         return
     print(json.dumps(analysis, indent=2))
+
+
+def cmd_analyze_image_regions(args: argparse.Namespace) -> None:
+    cmd_analyze_image(args)
+
+
+def cmd_inspect_topology(args: argparse.Namespace) -> None:
+    image = load_image_from_source(image_source_from_args(args))
+    analysis = analyze_image(image, args.heuristic)
+    print("\n".join(analysis["topology_map"]))
 
 
 def cmd_render_region_overlay(args: argparse.Namespace) -> None:
@@ -1054,6 +1643,16 @@ def cmd_render_region_overlay(args: argparse.Namespace) -> None:
     output = resolve_repo_path(Path(args.output))
     write_image(overlay, output)
     print(f"Wrote region overlay: {output}")
+
+
+def cmd_render_group_overlay(args: argparse.Namespace) -> None:
+    image = load_image_from_source(image_source_from_args(args))
+    analysis = load_json(resolve_repo_path(Path(args.analysis)))
+    groups = analysis.get("pixel_groups", [])
+    overlay = render_group_overlay(image, groups, grid=args.grid)
+    output = resolve_repo_path(Path(args.output))
+    write_image(overlay, output)
+    print(f"Wrote group overlay: {output}")
 
 
 def cmd_create_template_from_image(args: argparse.Namespace) -> None:
@@ -1067,13 +1666,13 @@ def cmd_create_template_from_image(args: argparse.Namespace) -> None:
     if mask_errors:
         raise SystemExit("\n".join(mask_errors))
     analysis = analyze_image(image, args.heuristic)
-    template = template_payload(
+    template = template_seed_payload(
         template_id=args.template_id,
         asset_type=asset_type,
         mask_id=args.base_mask,
         base_image=image_source,
         analysis=analysis,
-        notes=[f"Template created from image source for {args.template_id} using heuristic '{args.heuristic}'."],
+        notes=[f"Neutral template seed created from image source for {args.template_id} using heuristic hint '{args.heuristic}'."],
     )
     errors = validate_instance(template, load_json(template_schema_path()))
     errors.extend(validate_template_against_asset_type(template, asset_type, mask))
@@ -1082,6 +1681,34 @@ def cmd_create_template_from_image(args: argparse.Namespace) -> None:
     output = template_output_path(args.template_id, args.output)
     save_json(output, template)
     print(f"Wrote template: {output}")
+
+
+def cmd_create_template_seed_from_analysis(args: argparse.Namespace) -> None:
+    analysis = load_json(resolve_repo_path(Path(args.analysis)))
+    errors = validate_instance(analysis, load_json(analysis_schema_path()))
+    if errors:
+        raise SystemExit("\n".join(errors))
+    asset_type = load_asset_type(args.asset_type)
+    mask = load_mask(args.base_mask)
+    mask_errors = validate_mask_against_asset_type(mask, asset_type)
+    if mask_errors:
+        raise SystemExit("\n".join(mask_errors))
+    image_source = image_source_from_args(args)
+    template = template_seed_payload(
+        template_id=args.template_id,
+        asset_type=asset_type,
+        mask_id=args.base_mask,
+        base_image=image_source,
+        analysis=analysis,
+        notes=[f"Neutral template seed created from analysis for {args.template_id}."],
+    )
+    validation_errors = validate_instance(template, load_json(template_schema_path()))
+    validation_errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    if validation_errors:
+        raise SystemExit("\n".join(validation_errors))
+    output = template_output_path(args.template_id, args.output)
+    save_json(output, template)
+    print(f"Wrote template seed: {output}")
 
 
 def cmd_refine_template_regions(args: argparse.Namespace) -> None:
@@ -1106,6 +1733,41 @@ def cmd_refine_template_regions(args: argparse.Namespace) -> None:
     print(f"Wrote refined template: {output}")
 
 
+def cmd_export_group_patch(args: argparse.Namespace) -> None:
+    template = load_json(resolve_repo_path(Path(args.template)))
+    payload = {
+        "regions": template.get("regions", []),
+        "pixel_groups": template.get("pixel_groups", []),
+        "group_sets": template.get("group_sets", {}),
+        "detail_replacements": template.get("detail_replacements", {}),
+        "locked_regions": template.get("locked_regions", []),
+        "free_paint_regions": template.get("free_paint_regions", []),
+        "symmetry": template.get("symmetry", "none"),
+        "palette_roles": template.get("palette_roles", []),
+    }
+    output = resolve_repo_path(Path(args.output))
+    save_json(output, payload)
+    print(f"Wrote group patch: {output}")
+
+
+def cmd_apply_group_patch(args: argparse.Namespace) -> None:
+    template_path = resolve_repo_path(Path(args.template))
+    template = load_json(template_path)
+    patch = load_json(resolve_repo_path(Path(args.patch)))
+    for field in ("regions", "pixel_groups", "group_sets", "detail_replacements", "locked_regions", "free_paint_regions", "symmetry", "palette_roles"):
+        if field in patch:
+            template[field] = patch[field]
+    output = resolve_repo_path(Path(args.output)) if args.output else template_path
+    mask = load_mask(template["base_mask"])
+    asset_type = load_asset_type(template["asset_type"])
+    errors = validate_instance(template, load_json(template_schema_path()))
+    errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    if errors:
+        raise SystemExit("\n".join(errors))
+    save_json(output, template)
+    print(f"Wrote patched template: {output}")
+
+
 def cmd_repair_generated_png(args: argparse.Namespace) -> None:
     request, asset_type = load_request_and_type(args.request)
     if request["provenance"]["generator_mode"] != "repair_generated_png":
@@ -1126,14 +1788,27 @@ def cmd_repair_generated_png(args: argparse.Namespace) -> None:
 
     write_image(cleaned, output_path)
     preview_files: list[str] = []
+    delta_files: list[str] = []
     if not args.no_preview:
         preview = create_preview_sheet(original, cleaned, grid=args.grid)
         write_image(preview, preview_path)
         preview_files.append(str(preview_path.relative_to(repo_root())))
+    template = load_template(request_template_id(request)) if request_template_id(request) else None
+    if template is not None:
+        base = template_base_image(template, load_palette(request["material_palette"]))
+        delta_path = delta_output(request["asset_id"])
+        delta_json_path = delta_summary_output(request["asset_id"])
+        write_image(render_delta_image(base, cleaned), delta_path)
+        save_json(delta_json_path, delta_summary(base, cleaned, template))
+        delta_files.extend([
+            str(delta_path.relative_to(repo_root())),
+            str(delta_json_path.relative_to(repo_root())),
+        ])
     manifest = build_manifest(
         request,
         asset_type,
         preview_files=preview_files,
+        delta_files=delta_files,
         source_image=request["source_image"]["path"],
         generated_files=[str(output_path.relative_to(repo_root()))],
     )
@@ -1143,6 +1818,8 @@ def cmd_repair_generated_png(args: argparse.Namespace) -> None:
     print(f"Wrote manifest: {manifest_path}")
     if preview_files:
         print(f"Wrote preview: {preview_path}")
+    for delta_file in delta_files:
+        print(f"Wrote delta artifact: {resolve_repo_path(Path(delta_file))}")
 
 
 def cmd_validate_texture(args: argparse.Namespace) -> None:
@@ -1215,6 +1892,46 @@ def motif_pixels(op: dict[str, Any], region: dict[str, Any]) -> set[tuple[int, i
     else:
         pixels = region_set
     return pixels
+
+
+def region_bounds(region: dict[str, Any]) -> tuple[int, int]:
+    pixels = region_pixels(region)
+    return min(x for x, _ in pixels), min(y for _, y in pixels)
+
+
+def emblem_motif_pixels(op: dict[str, Any], region: dict[str, Any]) -> set[tuple[int, int]]:
+    min_x, min_y = region_bounds(region)
+    return {
+        (min_x + point["x"], min_y + point["y"])
+        for point in op.get("points", [])
+        if (min_x + point["x"], min_y + point["y"]) in region_pixels(region)
+    }
+
+
+def group_allowed_role(group: dict[str, Any], role: str) -> None:
+    if role not in group["allowed_palette_roles"]:
+        raise SystemExit(f"Role {role} is not allowed in pixel group {group['name']}")
+
+
+def fill_group_pixels(image: Image.Image, group: dict[str, Any], color: tuple[int, int, int, int]) -> None:
+    fill_pixels(image, pixel_group_pixels(group), color)
+
+
+def remap_group_to_role(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
+    group_allowed_role(group, role)
+    fill_group_pixels(image, group, palette_role_color(palette_def, role))
+
+
+def clear_group_to_role(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
+    remap_group_to_role(image, template, palette_def, group, role)
+
+
+def clear_group_to_base(image: Image.Image, template: dict[str, Any], group: dict[str, Any], palette_def: dict[str, Any]) -> None:
+    base = template_base_image(template, palette_def)
+    base_px = base.load()
+    dst = image.load()
+    for x, y in pixel_group_pixels(group):
+        dst[x, y] = base_px[x, y]
 
 
 def execute_pixel_ops(request: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any], ops_payload: dict[str, Any]) -> Image.Image:
@@ -1291,6 +2008,48 @@ def execute_pixel_ops(request: dict[str, Any], asset_type: dict[str, Any], mask:
                 raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
             color = palette_role_color(palette_def, role)
             pixels_to_fill = motif_pixels(op, region)
+        elif name == "remap_group_role":
+            if template is None or not template_has_pixel_groups(template):
+                raise SystemExit("remap_group_role requires a template with pixel_groups")
+            group = pixel_group_by_name(template, op["group"])
+            if group["mode"] not in {"recolor_only", "shade_only", "detail"}:
+                raise SystemExit(f"remap_group_role is not allowed for pixel group mode {group['mode']}")
+            remap_group_to_role(canvas, template, palette_def, group, op["role"])
+            continue
+        elif name == "remap_group_set_role":
+            if template is None or not template_has_pixel_groups(template):
+                raise SystemExit("remap_group_set_role requires a template with pixel_groups")
+            groups = template_group_set(template, op["group_set"])
+            for group in groups:
+                inferred_role = ranked_group_role(op["role"], group, groups)
+                remap_group_to_role(canvas, template, palette_def, group, inferred_role)
+            continue
+        elif name == "replace_detail_group":
+            if template is None or not template_has_pixel_groups(template):
+                raise SystemExit("replace_detail_group requires a template with pixel_groups")
+            group = pixel_group_by_name(template, op["group"])
+            if group["mode"] != "detail":
+                raise SystemExit(f"replace_detail_group requires a detail pixel group, got {group['mode']}")
+            role = op.get("role") or template.get("detail_replacements", {}).get(group["name"], {}).get("fallback_role")
+            if role is None:
+                raise SystemExit(f"replace_detail_group requires a role or template detail replacement for {group['name']}")
+            clear_group_to_role(canvas, template, palette_def, group, role)
+            continue
+        elif name == "apply_emblem_motif":
+            if template is None:
+                raise SystemExit("apply_emblem_motif requires a template")
+            region = region_by_name(template, "emblem_zone")
+            role = op["role"]
+            if role not in region["allowed_palette_roles"]:
+                raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
+            color = palette_role_color(palette_def, role)
+            pixels_to_fill = emblem_motif_pixels(op, region)
+        elif name == "clear_group_to_base":
+            if template is None or not template_has_pixel_groups(template):
+                raise SystemExit("clear_group_to_base requires a template with pixel_groups")
+            group = pixel_group_by_name(template, op["group"])
+            clear_group_to_base(canvas, template, group, palette_def)
+            continue
         else:
             raise SystemExit(f"Unsupported op: {name}")
         for pixel in pixels_to_fill:
@@ -1318,10 +2077,24 @@ def cmd_paint_item_icon(args: argparse.Namespace) -> None:
     write_image(image, output_path)
     preview = magnify_image(image, scale=16, grid=args.grid)
     write_image(preview, preview_path)
+    delta_files: list[str] = []
+    template_id = request_template_id(request)
+    if template_id:
+        template = load_template(template_id)
+        base = template_base_image(template, load_palette(request["material_palette"]))
+        delta_path = delta_output(request["asset_id"])
+        delta_json_path = delta_summary_output(request["asset_id"])
+        write_image(render_delta_image(base, image), delta_path)
+        save_json(delta_json_path, delta_summary(base, image, template))
+        delta_files.extend([
+            str(delta_path.relative_to(repo_root())),
+            str(delta_json_path.relative_to(repo_root())),
+        ])
     manifest = build_manifest(
         request,
         asset_type,
         preview_files=[str(preview_path.relative_to(repo_root()))],
+        delta_files=delta_files,
         generated_files=[str(output_path.relative_to(repo_root()))],
     )
     manifest["provenance"]["generated_at"] = datetime.now(UTC).isoformat()
@@ -1330,6 +2103,8 @@ def cmd_paint_item_icon(args: argparse.Namespace) -> None:
     print(f"Wrote pixel-native PNG: {output_path}")
     print(f"Wrote manifest: {manifest_path}")
     print(f"Wrote preview: {preview_path}")
+    for delta_file in delta_files:
+        print(f"Wrote delta artifact: {resolve_repo_path(Path(delta_file))}")
 
 
 def cmd_describe_template(args: argparse.Namespace) -> None:
@@ -1361,6 +2136,12 @@ def cmd_promote_to_template(args: argparse.Namespace) -> None:
     )
     if region_map:
         template["regions"] = region_map["regions"]
+        if "pixel_groups" in region_map:
+            template["pixel_groups"] = region_map["pixel_groups"]
+        if "group_sets" in region_map:
+            template["group_sets"] = region_map["group_sets"]
+        if "detail_replacements" in region_map:
+            template["detail_replacements"] = region_map["detail_replacements"]
         template["locked_regions"] = region_map.get("locked_regions", [])
         template["free_paint_regions"] = region_map.get("free_paint_regions", [])
         if "palette_roles" in region_map:
@@ -1393,6 +2174,9 @@ def cmd_export_preset_seed(args: argparse.Namespace) -> None:
         "base_mask": args.base_mask,
         "base_image": {"kind": "repo_path", "path": str(generated_asset.relative_to(repo_root()))},
         "palette_roles": region_map["palette_roles"],
+        "pixel_groups": region_map.get("pixel_groups", []),
+        "group_sets": region_map.get("group_sets", {}),
+        "detail_replacements": region_map.get("detail_replacements", {}),
         "regions": region_map["regions"],
         "locked_regions": region_map.get("locked_regions", []),
         "free_paint_regions": region_map.get("free_paint_regions", []),
@@ -1445,13 +2229,28 @@ def main() -> None:
     inspect_parser.add_argument("--minecraft-version")
     inspect_parser.set_defaults(func=cmd_inspect_image)
 
-    analyze_parser = subparsers.add_parser("analyze-image-regions", help="Analyze an image and propose template regions")
+    analyze_parser = subparsers.add_parser("analyze-image", help="Analyze an image and emit a neutral analysis artifact")
     analyze_parser.add_argument("--image")
     analyze_parser.add_argument("--minecraft-asset")
     analyze_parser.add_argument("--minecraft-version")
     analyze_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
     analyze_parser.add_argument("--output")
-    analyze_parser.set_defaults(func=cmd_analyze_image_regions)
+    analyze_parser.set_defaults(func=cmd_analyze_image)
+
+    analyze_regions_parser = subparsers.add_parser("analyze-image-regions", help="Compatibility alias for analyze-image")
+    analyze_regions_parser.add_argument("--image")
+    analyze_regions_parser.add_argument("--minecraft-asset")
+    analyze_regions_parser.add_argument("--minecraft-version")
+    analyze_regions_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    analyze_regions_parser.add_argument("--output")
+    analyze_regions_parser.set_defaults(func=cmd_analyze_image_regions)
+
+    topology_parser = subparsers.add_parser("inspect-topology", help="Print a text topology map from neutral analysis")
+    topology_parser.add_argument("--image")
+    topology_parser.add_argument("--minecraft-asset")
+    topology_parser.add_argument("--minecraft-version")
+    topology_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    topology_parser.set_defaults(func=cmd_inspect_topology)
 
     overlay_parser = subparsers.add_parser("render-region-overlay", help="Render a labeled overlay from analysis output")
     overlay_parser.add_argument("--image")
@@ -1461,6 +2260,15 @@ def main() -> None:
     overlay_parser.add_argument("--output", required=True)
     overlay_parser.add_argument("--grid", action="store_true")
     overlay_parser.set_defaults(func=cmd_render_region_overlay)
+
+    group_overlay_parser = subparsers.add_parser("render-group-overlay", help="Render a labeled overlay from template pixel-group analysis")
+    group_overlay_parser.add_argument("--image")
+    group_overlay_parser.add_argument("--minecraft-asset")
+    group_overlay_parser.add_argument("--minecraft-version")
+    group_overlay_parser.add_argument("--analysis", required=True)
+    group_overlay_parser.add_argument("--output", required=True)
+    group_overlay_parser.add_argument("--grid", action="store_true")
+    group_overlay_parser.set_defaults(func=cmd_render_group_overlay)
 
     create_template_parser = subparsers.add_parser("create-template-from-image", help="Create a raster-backed template from an image source")
     create_template_parser.add_argument("--image")
@@ -1473,11 +2281,33 @@ def main() -> None:
     create_template_parser.add_argument("--output")
     create_template_parser.set_defaults(func=cmd_create_template_from_image)
 
+    create_template_seed_parser = subparsers.add_parser("create-template-seed-from-analysis", help="Create a neutral template seed from an analysis artifact")
+    create_template_seed_parser.add_argument("--analysis", required=True)
+    create_template_seed_parser.add_argument("--image")
+    create_template_seed_parser.add_argument("--minecraft-asset")
+    create_template_seed_parser.add_argument("--minecraft-version")
+    create_template_seed_parser.add_argument("--asset-type", required=True)
+    create_template_seed_parser.add_argument("--base-mask", required=True)
+    create_template_seed_parser.add_argument("--template-id", required=True)
+    create_template_seed_parser.add_argument("--output")
+    create_template_seed_parser.set_defaults(func=cmd_create_template_seed_from_analysis)
+
     refine_template_parser = subparsers.add_parser("refine-template-regions", help="Apply a reviewed region-map patch to a template")
     refine_template_parser.add_argument("--template", required=True)
     refine_template_parser.add_argument("--region-map", required=True)
     refine_template_parser.add_argument("--output")
     refine_template_parser.set_defaults(func=cmd_refine_template_regions)
+
+    export_group_patch_parser = subparsers.add_parser("export-group-patch", help="Export a small editable group patch from a template")
+    export_group_patch_parser.add_argument("--template", required=True)
+    export_group_patch_parser.add_argument("--output", required=True)
+    export_group_patch_parser.set_defaults(func=cmd_export_group_patch)
+
+    apply_group_patch_parser = subparsers.add_parser("apply-group-patch", help="Apply a group patch to a template")
+    apply_group_patch_parser.add_argument("--template", required=True)
+    apply_group_patch_parser.add_argument("--patch", required=True)
+    apply_group_patch_parser.add_argument("--output")
+    apply_group_patch_parser.set_defaults(func=cmd_apply_group_patch)
 
     describe_template_parser = subparsers.add_parser("describe-template", help="Print a template definition by id")
     describe_template_parser.add_argument("template_id")

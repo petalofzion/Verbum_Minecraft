@@ -1,0 +1,7 @@
+{
+  "operations": [
+    { "op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid" },
+    { "op": "remap_group_set_role", "group_set": "pages_all", "role": "page_tone" },
+    { "op": "clear_group_to_base", "group": "outline" }
+  ]
+}

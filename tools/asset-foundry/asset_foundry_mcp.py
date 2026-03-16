@@ -34,7 +34,7 @@ TOOLS = [
     },
     {
         "name": "analyze_image_regions",
-        "description": "Analyze an image and propose template regions.",
+        "description": "Analyze an image and emit a neutral analysis artifact.",
         "inputSchema": {
             "type": "object",
             "required": ["heuristic"],
@@ -48,8 +48,37 @@ TOOLS = [
         }
     },
     {
+        "name": "analyze_image",
+        "description": "Analyze an image and emit a neutral analysis artifact.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["heuristic"],
+            "properties": {
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "inspect_topology",
+        "description": "Print a text topology map for an image using neutral component ids.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["heuristic"],
+            "properties": {
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "heuristic": {"type": "string"}
+            }
+        }
+    },
+    {
         "name": "create_template_from_image",
-        "description": "Create a raster-backed template from a source image.",
+        "description": "Create a neutral raster-backed template seed from a source image.",
         "inputSchema": {
             "type": "object",
             "required": ["asset_type", "base_mask", "template_id", "heuristic"],
@@ -61,6 +90,24 @@ TOOLS = [
                 "base_mask": {"type": "string"},
                 "template_id": {"type": "string"},
                 "heuristic": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "create_template_seed_from_analysis",
+        "description": "Create a neutral raster-backed template seed from an analysis artifact.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["analysis", "asset_type", "base_mask", "template_id"],
+            "properties": {
+                "analysis": {"type": "string"},
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "asset_type": {"type": "string"},
+                "base_mask": {"type": "string"},
+                "template_id": {"type": "string"},
                 "output": {"type": "string"}
             }
         }
@@ -201,6 +248,25 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             )
             TOOL.cmd_analyze_image_regions(ns)
             return text_result("analyze_image_regions completed")
+        if name == "analyze_image":
+            ns = SimpleNamespace(
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                heuristic=arguments["heuristic"],
+                output=arguments.get("output"),
+            )
+            TOOL.cmd_analyze_image(ns)
+            return text_result("analyze_image completed")
+        if name == "inspect_topology":
+            ns = SimpleNamespace(
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                heuristic=arguments["heuristic"],
+            )
+            TOOL.cmd_inspect_topology(ns)
+            return text_result("inspect_topology completed")
         if name == "create_template_from_image":
             ns = SimpleNamespace(
                 image=arguments.get("image"),
@@ -214,6 +280,19 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             )
             TOOL.cmd_create_template_from_image(ns)
             return text_result("create_template_from_image completed")
+        if name == "create_template_seed_from_analysis":
+            ns = SimpleNamespace(
+                analysis=arguments["analysis"],
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                asset_type=arguments["asset_type"],
+                base_mask=arguments["base_mask"],
+                template_id=arguments["template_id"],
+                output=arguments.get("output"),
+            )
+            TOOL.cmd_create_template_seed_from_analysis(ns)
+            return text_result("create_template_seed_from_analysis completed")
         if name == "repair_generated_png":
             ns = SimpleNamespace(
                 request=arguments["request"],

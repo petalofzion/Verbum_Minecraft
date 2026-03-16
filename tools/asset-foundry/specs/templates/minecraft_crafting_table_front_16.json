@@ -1,0 +1,1513 @@
+{
+  "id": "minecraft_crafting_table_front_16",
+  "asset_type": "simple_block_face_16",
+  "base_mask": "simple_block_face_16_mask",
+  "base_image": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/block/crafting_table_front.png",
+    "version": "1.21.11"
+  },
+  "analysis": {
+    "source_summary": "Neutral pixel analysis for 16x16 image using 'generic' hint",
+    "color_clusters": [
+      {
+        "hex": "#AF8F55",
+        "count": 33
+      },
+      {
+        "hex": "#19140C",
+        "count": 31
+      },
+      {
+        "hex": "#B8945F",
+        "count": 30
+      },
+      {
+        "hex": "#9F844D",
+        "count": 26
+      },
+      {
+        "hex": "#C29D62",
+        "count": 23
+      },
+      {
+        "hex": "#7E6237",
+        "count": 19
+      },
+      {
+        "hex": "#382116",
+        "count": 18
+      },
+      {
+        "hex": "#67502C",
+        "count": 14
+      }
+    ],
+    "components": [
+      {
+        "hex": "#19140C",
+        "count": 15,
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 15
+        }
+      },
+      {
+        "hex": "#19140C",
+        "count": 15,
+        "bounds": {
+          "x": 15,
+          "y": 0,
+          "width": 1,
+          "height": 15
+        }
+      },
+      {
+        "hex": "#D8D8D8",
+        "count": 8,
+        "bounds": {
+          "x": 12,
+          "y": 7,
+          "width": 2,
+          "height": 5
+        }
+      },
+      {
+        "hex": "#281E0B",
+        "count": 5,
+        "bounds": {
+          "x": 11,
+          "y": 4,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#B8945F",
+        "count": 4,
+        "bounds": {
+          "x": 1,
+          "y": 1,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#D8D8D8",
+        "count": 4,
+        "bounds": {
+          "x": 2,
+          "y": 9,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#C29D62",
+        "count": 4,
+        "bounds": {
+          "x": 3,
+          "y": 4,
+          "width": 4,
+          "height": 1
+        }
+      },
+      {
+        "hex": "#AF8F55",
+        "count": 4,
+        "bounds": {
+          "x": 4,
+          "y": 5,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#4B2B18",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 0,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#382116",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 5,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#382116",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 9,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#382116",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 13,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#AF8F55",
+        "count": 4,
+        "bounds": {
+          "x": 9,
+          "y": 9,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#AF8F55",
+        "count": 4,
+        "bounds": {
+          "x": 10,
+          "y": 1,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#9F844D",
+        "count": 4,
+        "bounds": {
+          "x": 11,
+          "y": 14,
+          "width": 4,
+          "height": 1
+        }
+      },
+      {
+        "hex": "#B8945F",
+        "count": 4,
+        "bounds": {
+          "x": 12,
+          "y": 1,
+          "width": 3,
+          "height": 2
+        }
+      }
+    ],
+    "detail_candidates": [
+      {
+        "name": "detail_candidate_01",
+        "count": 5,
+        "bounds": {
+          "x": 11,
+          "y": 4,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "name": "detail_candidate_02",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 0,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "name": "detail_candidate_03",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 5,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "name": "detail_candidate_04",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 9,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "name": "detail_candidate_05",
+        "count": 4,
+        "bounds": {
+          "x": 7,
+          "y": 13,
+          "width": 2,
+          "height": 2
+        }
+      },
+      {
+        "name": "detail_candidate_06",
+        "count": 3,
+        "bounds": {
+          "x": 3,
+          "y": 6,
+          "width": 1,
+          "height": 3
+        }
+      },
+      {
+        "name": "detail_candidate_07",
+        "count": 3,
+        "bounds": {
+          "x": 11,
+          "y": 3,
+          "width": 3,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_08",
+        "count": 3,
+        "bounds": {
+          "x": 12,
+          "y": 15,
+          "width": 3,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_09",
+        "count": 2,
+        "bounds": {
+          "x": 3,
+          "y": 15,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_10",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 2,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_11",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 3,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_12",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 4,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_13",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 7,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_14",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 8,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_15",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 11,
+          "width": 2,
+          "height": 1
+        }
+      },
+      {
+        "name": "detail_candidate_16",
+        "count": 2,
+        "bounds": {
+          "x": 7,
+          "y": 12,
+          "width": 2,
+          "height": 1
+        }
+      }
+    ]
+  },
+  "palette_roles": [
+    "base_dark",
+    "base_mid",
+    "base_light",
+    "accent",
+    "shadow",
+    "highlight"
+  ],
+  "pixel_groups": [
+    {
+      "name": "linework",
+      "kind": "semantic_group",
+      "mode": "locked",
+      "pixels": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 5,
+          "y": 0
+        },
+        {
+          "x": 7,
+          "y": 0
+        },
+        {
+          "x": 8,
+          "y": 0
+        },
+        {
+          "x": 10,
+          "y": 0
+        },
+        {
+          "x": 15,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 1
+        },
+        {
+          "x": 6,
+          "y": 1
+        },
+        {
+          "x": 7,
+          "y": 1
+        },
+        {
+          "x": 8,
+          "y": 1
+        },
+        {
+          "x": 9,
+          "y": 1
+        },
+        {
+          "x": 15,
+          "y": 1
+        },
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 7,
+          "y": 2
+        },
+        {
+          "x": 8,
+          "y": 2
+        },
+        {
+          "x": 15,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 7,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 12,
+          "y": 3
+        },
+        {
+          "x": 13,
+          "y": 3
+        },
+        {
+          "x": 15,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 7,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 13,
+          "y": 4
+        },
+        {
+          "x": 15,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 3,
+          "y": 5
+        },
+        {
+          "x": 7,
+          "y": 5
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 12,
+          "y": 5
+        },
+        {
+          "x": 13,
+          "y": 5
+        },
+        {
+          "x": 15,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 6
+        },
+        {
+          "x": 3,
+          "y": 6
+        },
+        {
+          "x": 7,
+          "y": 6
+        },
+        {
+          "x": 8,
+          "y": 6
+        },
+        {
+          "x": 15,
+          "y": 6
+        },
+        {
+          "x": 0,
+          "y": 7
+        },
+        {
+          "x": 3,
+          "y": 7
+        },
+        {
+          "x": 7,
+          "y": 7
+        },
+        {
+          "x": 8,
+          "y": 7
+        },
+        {
+          "x": 15,
+          "y": 7
+        },
+        {
+          "x": 0,
+          "y": 8
+        },
+        {
+          "x": 3,
+          "y": 8
+        },
+        {
+          "x": 7,
+          "y": 8
+        },
+        {
+          "x": 8,
+          "y": 8
+        },
+        {
+          "x": 15,
+          "y": 8
+        },
+        {
+          "x": 0,
+          "y": 9
+        },
+        {
+          "x": 7,
+          "y": 9
+        },
+        {
+          "x": 8,
+          "y": 9
+        },
+        {
+          "x": 15,
+          "y": 9
+        },
+        {
+          "x": 0,
+          "y": 10
+        },
+        {
+          "x": 7,
+          "y": 10
+        },
+        {
+          "x": 8,
+          "y": 10
+        },
+        {
+          "x": 15,
+          "y": 10
+        },
+        {
+          "x": 0,
+          "y": 11
+        },
+        {
+          "x": 7,
+          "y": 11
+        },
+        {
+          "x": 8,
+          "y": 11
+        },
+        {
+          "x": 15,
+          "y": 11
+        },
+        {
+          "x": 0,
+          "y": 12
+        },
+        {
+          "x": 7,
+          "y": 12
+        },
+        {
+          "x": 8,
+          "y": 12
+        },
+        {
+          "x": 15,
+          "y": 12
+        },
+        {
+          "x": 0,
+          "y": 13
+        },
+        {
+          "x": 7,
+          "y": 13
+        },
+        {
+          "x": 8,
+          "y": 13
+        },
+        {
+          "x": 15,
+          "y": 13
+        },
+        {
+          "x": 0,
+          "y": 14
+        },
+        {
+          "x": 7,
+          "y": 14
+        },
+        {
+          "x": 8,
+          "y": 14
+        },
+        {
+          "x": 15,
+          "y": 14
+        },
+        {
+          "x": 0,
+          "y": 15
+        },
+        {
+          "x": 7,
+          "y": 15
+        },
+        {
+          "x": 8,
+          "y": 15
+        },
+        {
+          "x": 15,
+          "y": 15
+        }
+      ],
+      "allowed_palette_roles": [
+        "shadow"
+      ],
+      "default_palette_role": "shadow"
+    },
+    {
+      "name": "paper_insets",
+      "kind": "semantic_group",
+      "mode": "locked",
+      "pixels": [
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 12,
+          "y": 6
+        },
+        {
+          "x": 13,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        },
+        {
+          "x": 12,
+          "y": 7
+        },
+        {
+          "x": 13,
+          "y": 7
+        },
+        {
+          "x": 11,
+          "y": 8
+        },
+        {
+          "x": 12,
+          "y": 8
+        },
+        {
+          "x": 13,
+          "y": 8
+        },
+        {
+          "x": 2,
+          "y": 9
+        },
+        {
+          "x": 3,
+          "y": 9
+        },
+        {
+          "x": 4,
+          "y": 9
+        },
+        {
+          "x": 12,
+          "y": 9
+        },
+        {
+          "x": 13,
+          "y": 9
+        },
+        {
+          "x": 2,
+          "y": 10
+        },
+        {
+          "x": 3,
+          "y": 10
+        },
+        {
+          "x": 4,
+          "y": 10
+        },
+        {
+          "x": 12,
+          "y": 10
+        },
+        {
+          "x": 13,
+          "y": 10
+        },
+        {
+          "x": 13,
+          "y": 11
+        },
+        {
+          "x": 13,
+          "y": 12
+        }
+      ],
+      "allowed_palette_roles": [
+        "highlight"
+      ],
+      "default_palette_role": "highlight"
+    },
+    {
+      "name": "wood_shadow",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "rank": 0,
+      "pixels": [
+        {
+          "x": 6,
+          "y": 0
+        },
+        {
+          "x": 9,
+          "y": 0
+        },
+        {
+          "x": 6,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 7
+        },
+        {
+          "x": 6,
+          "y": 7
+        },
+        {
+          "x": 9,
+          "y": 7
+        },
+        {
+          "x": 1,
+          "y": 11
+        },
+        {
+          "x": 6,
+          "y": 11
+        },
+        {
+          "x": 14,
+          "y": 11
+        },
+        {
+          "x": 3,
+          "y": 15
+        },
+        {
+          "x": 4,
+          "y": 15
+        },
+        {
+          "x": 10,
+          "y": 15
+        },
+        {
+          "x": 12,
+          "y": 15
+        },
+        {
+          "x": 13,
+          "y": 15
+        },
+        {
+          "x": 14,
+          "y": 15
+        }
+      ],
+      "allowed_palette_roles": [
+        "base_dark",
+        "base_mid",
+        "base_light",
+        "shadow"
+      ],
+      "default_palette_role": "base_dark"
+    },
+    {
+      "name": "wood_mid",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "rank": 1,
+      "pixels": [
+        {
+          "x": 1,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 1
+        },
+        {
+          "x": 3,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 1
+        },
+        {
+          "x": 5,
+          "y": 1
+        },
+        {
+          "x": 10,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 14,
+          "y": 1
+        },
+        {
+          "x": 4,
+          "y": 2
+        },
+        {
+          "x": 6,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 10,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 12,
+          "y": 2
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 3
+        },
+        {
+          "x": 3,
+          "y": 3
+        },
+        {
+          "x": 4,
+          "y": 3
+        },
+        {
+          "x": 5,
+          "y": 3
+        },
+        {
+          "x": 9,
+          "y": 3
+        },
+        {
+          "x": 14,
+          "y": 3
+        },
+        {
+          "x": 2,
+          "y": 4
+        },
+        {
+          "x": 12,
+          "y": 4
+        },
+        {
+          "x": 14,
+          "y": 4
+        },
+        {
+          "x": 4,
+          "y": 5
+        },
+        {
+          "x": 5,
+          "y": 5
+        },
+        {
+          "x": 6,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 1,
+          "y": 6
+        },
+        {
+          "x": 2,
+          "y": 6
+        },
+        {
+          "x": 4,
+          "y": 6
+        },
+        {
+          "x": 5,
+          "y": 6
+        },
+        {
+          "x": 6,
+          "y": 6
+        },
+        {
+          "x": 14,
+          "y": 6
+        },
+        {
+          "x": 2,
+          "y": 7
+        },
+        {
+          "x": 4,
+          "y": 7
+        },
+        {
+          "x": 5,
+          "y": 7
+        },
+        {
+          "x": 10,
+          "y": 7
+        },
+        {
+          "x": 14,
+          "y": 7
+        },
+        {
+          "x": 4,
+          "y": 8
+        },
+        {
+          "x": 5,
+          "y": 8
+        },
+        {
+          "x": 1,
+          "y": 9
+        },
+        {
+          "x": 6,
+          "y": 9
+        },
+        {
+          "x": 9,
+          "y": 9
+        },
+        {
+          "x": 10,
+          "y": 9
+        },
+        {
+          "x": 11,
+          "y": 9
+        },
+        {
+          "x": 14,
+          "y": 9
+        },
+        {
+          "x": 5,
+          "y": 10
+        },
+        {
+          "x": 6,
+          "y": 10
+        },
+        {
+          "x": 9,
+          "y": 10
+        },
+        {
+          "x": 10,
+          "y": 10
+        },
+        {
+          "x": 11,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 11
+        },
+        {
+          "x": 3,
+          "y": 11
+        },
+        {
+          "x": 4,
+          "y": 11
+        },
+        {
+          "x": 5,
+          "y": 11
+        },
+        {
+          "x": 9,
+          "y": 11
+        },
+        {
+          "x": 10,
+          "y": 11
+        },
+        {
+          "x": 11,
+          "y": 11
+        },
+        {
+          "x": 12,
+          "y": 11
+        },
+        {
+          "x": 1,
+          "y": 12
+        },
+        {
+          "x": 11,
+          "y": 12
+        },
+        {
+          "x": 1,
+          "y": 13
+        },
+        {
+          "x": 4,
+          "y": 13
+        },
+        {
+          "x": 5,
+          "y": 13
+        },
+        {
+          "x": 6,
+          "y": 13
+        },
+        {
+          "x": 11,
+          "y": 13
+        },
+        {
+          "x": 13,
+          "y": 13
+        },
+        {
+          "x": 14,
+          "y": 13
+        },
+        {
+          "x": 1,
+          "y": 14
+        },
+        {
+          "x": 2,
+          "y": 14
+        },
+        {
+          "x": 3,
+          "y": 14
+        },
+        {
+          "x": 5,
+          "y": 14
+        },
+        {
+          "x": 6,
+          "y": 14
+        },
+        {
+          "x": 10,
+          "y": 14
+        },
+        {
+          "x": 11,
+          "y": 14
+        },
+        {
+          "x": 12,
+          "y": 14
+        },
+        {
+          "x": 13,
+          "y": 14
+        },
+        {
+          "x": 14,
+          "y": 14
+        },
+        {
+          "x": 1,
+          "y": 15
+        },
+        {
+          "x": 2,
+          "y": 15
+        },
+        {
+          "x": 5,
+          "y": 15
+        },
+        {
+          "x": 6,
+          "y": 15
+        },
+        {
+          "x": 9,
+          "y": 15
+        },
+        {
+          "x": 11,
+          "y": 15
+        }
+      ],
+      "allowed_palette_roles": [
+        "base_dark",
+        "base_mid",
+        "base_light"
+      ],
+      "default_palette_role": "base_mid"
+    },
+    {
+      "name": "wood_light",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "rank": 2,
+      "pixels": [
+        {
+          "x": 2,
+          "y": 0
+        },
+        {
+          "x": 3,
+          "y": 0
+        },
+        {
+          "x": 4,
+          "y": 0
+        },
+        {
+          "x": 11,
+          "y": 0
+        },
+        {
+          "x": 12,
+          "y": 0
+        },
+        {
+          "x": 13,
+          "y": 0
+        },
+        {
+          "x": 14,
+          "y": 0
+        },
+        {
+          "x": 1,
+          "y": 1
+        },
+        {
+          "x": 12,
+          "y": 1
+        },
+        {
+          "x": 13,
+          "y": 1
+        },
+        {
+          "x": 1,
+          "y": 2
+        },
+        {
+          "x": 2,
+          "y": 2
+        },
+        {
+          "x": 3,
+          "y": 2
+        },
+        {
+          "x": 5,
+          "y": 2
+        },
+        {
+          "x": 13,
+          "y": 2
+        },
+        {
+          "x": 14,
+          "y": 2
+        },
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 3,
+          "y": 4
+        },
+        {
+          "x": 4,
+          "y": 4
+        },
+        {
+          "x": 5,
+          "y": 4
+        },
+        {
+          "x": 6,
+          "y": 4
+        },
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 10,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 5
+        },
+        {
+          "x": 14,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 6
+        },
+        {
+          "x": 1,
+          "y": 8
+        },
+        {
+          "x": 2,
+          "y": 8
+        },
+        {
+          "x": 6,
+          "y": 8
+        },
+        {
+          "x": 9,
+          "y": 8
+        },
+        {
+          "x": 10,
+          "y": 8
+        },
+        {
+          "x": 14,
+          "y": 8
+        },
+        {
+          "x": 5,
+          "y": 9
+        },
+        {
+          "x": 1,
+          "y": 10
+        },
+        {
+          "x": 14,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 12
+        },
+        {
+          "x": 3,
+          "y": 12
+        },
+        {
+          "x": 4,
+          "y": 12
+        },
+        {
+          "x": 5,
+          "y": 12
+        },
+        {
+          "x": 6,
+          "y": 12
+        },
+        {
+          "x": 9,
+          "y": 12
+        },
+        {
+          "x": 10,
+          "y": 12
+        },
+        {
+          "x": 12,
+          "y": 12
+        },
+        {
+          "x": 14,
+          "y": 12
+        },
+        {
+          "x": 2,
+          "y": 13
+        },
+        {
+          "x": 3,
+          "y": 13
+        },
+        {
+          "x": 9,
+          "y": 13
+        },
+        {
+          "x": 10,
+          "y": 13
+        },
+        {
+          "x": 12,
+          "y": 13
+        },
+        {
+          "x": 4,
+          "y": 14
+        },
+        {
+          "x": 9,
+          "y": 14
+        }
+      ],
+      "allowed_palette_roles": [
+        "base_mid",
+        "base_light",
+        "highlight"
+      ],
+      "default_palette_role": "base_light"
+    }
+  ],
+  "group_sets": {
+    "wood_all": [
+      "wood_shadow",
+      "wood_mid",
+      "wood_light"
+    ]
+  },
+  "detail_replacements": {},
+  "regions": [
+    {
+      "name": "wood_surface",
+      "mode": "recolor_only",
+      "rects": [
+        {
+          "x": 1,
+          "y": 0,
+          "width": 14,
+          "height": 16
+        }
+      ],
+      "allowed_palette_roles": [
+        "base_dark",
+        "base_mid",
+        "base_light",
+        "shadow",
+        "highlight"
+      ],
+      "default_palette_role": "base_mid",
+      "optional": false
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "exact_base_output": true,
+  "transparent_outside_mask": true,
+  "notes": [
+    "Neutral template seed created from analysis for minecraft_crafting_table_front_16."
+  ]
+}

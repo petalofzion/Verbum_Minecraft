@@ -1,21 +1,5 @@
 {
   "operations": [
-    { "op": "recolor_region", "region": "cover", "role": "cover_mid" },
-    { "op": "recolor_region", "region": "spine", "role": "spine_dark" },
-    { "op": "fill_region_role", "region": "clasp", "role": "metal_accent" },
-    { "op": "shade_region", "region": "highlight", "role": "cover_light" },
-    {
-      "op": "apply_motif",
-      "region": "emblem",
-      "role": "highlight",
-      "points": [
-        { "x": 1, "y": 0 },
-        { "x": 0, "y": 1 },
-        { "x": 1, "y": 1 },
-        { "x": 2, "y": 1 },
-        { "x": 1, "y": 2 },
-        { "x": 1, "y": 3 }
-      ]
-    }
+    { "op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid" }
   ]
 }

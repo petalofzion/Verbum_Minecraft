@@ -19,12 +19,19 @@
               "fill_region_role",
               "recolor_region",
               "shade_region",
-              "apply_motif"
+              "apply_motif",
+              "remap_group_role",
+              "remap_group_set_role",
+              "replace_detail_group",
+              "apply_emblem_motif",
+              "clear_group_to_base"
             ]
           },
           "color": { "type": "string", "minLength": 4 },
           "role": { "type": "string", "minLength": 1 },
           "region": { "type": "string", "minLength": 1 },
+          "group": { "type": "string", "minLength": 1 },
+          "group_set": { "type": "string", "minLength": 1 },
           "x": { "type": "integer", "minimum": 0 },
           "y": { "type": "integer", "minimum": 0 },
           "width": { "type": "integer", "minimum": 1 },

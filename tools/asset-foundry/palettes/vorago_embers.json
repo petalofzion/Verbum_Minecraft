@@ -1,0 +1,29 @@
+{
+  "id": "vorago_embers",
+  "profile": "vorago",
+  "colors": [
+    "#120A0A",
+    "#3A1816",
+    "#6A2621",
+    "#8F4735",
+    "#B4453B"
+  ],
+  "roles": {
+    "cover_dark": "#3A1816",
+    "cover_mid": "#6A2621",
+    "cover_light": "#8F4735",
+    "spine_dark": "#120A0A",
+    "page_tone": "#B4453B",
+    "metal_accent": "#8F4735",
+    "shadow": "#120A0A",
+    "highlight": "#B4453B",
+    "base_dark": "#3A1816",
+    "base_mid": "#6A2621",
+    "base_light": "#8F4735",
+    "accent": "#B4453B"
+  },
+  "notes": [
+    "Ash-dark leather and ember-red page palette for punitive Vorago manuals.",
+    "Use sparingly; keep ornament severe and low-noise."
+  ]
+}

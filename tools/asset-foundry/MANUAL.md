@@ -23,9 +23,32 @@ Its job is to:
 - generate coherent variants from those templates
 - keep outputs validated, preview-first, and provenance-tracked
 
+The intended architecture is:
+- Analyze
+- Label
+- Transform
+
 ## Core Mental Model
 
 There are three important layers:
+
+### 0. Analysis Artifact
+This is the mechanical view of a PNG.
+
+It contains:
+- canvas and bounds
+- color inventory
+- connected components
+- tone groups / ramps
+- detail candidates
+- zone candidates
+- topology text maps
+
+Important rule:
+- analysis artifacts are mechanically neutral
+- they do not get to decide that something is a `cover`, `spine`, `blade`, or `pages`
+
+Those meanings are added later when authoring a template.
 
 ### 1. Asset Type
 This is the coarse technical category.
@@ -64,6 +87,7 @@ This is the real reusable family unit.
 A template is:
 - a base raster image
 - a region map
+- optional exact pixel groups and group sets
 - edit rules
 - engine support rules
 
@@ -122,7 +146,7 @@ Purpose:
 
 When a template is present:
 - drawing starts from the exact base raster
-- region-aware ops can edit only legal regions
+- region-aware and group-aware ops can edit only legal template surfaces
 - zero-op draws are valid and should output the base raster exactly
 
 ## Current Template Workflow
@@ -137,11 +161,11 @@ Use this when the source already exists, such as:
 
 Flow:
 1. Inspect the image.
-2. Analyze it for regions.
-3. Render an overlay if helpful.
-4. Create a template from that image.
-5. Refine the region map if needed.
-6. Generate variants from the template.
+2. Analyze it into a neutral analysis artifact.
+3. Render overlays or topology maps if helpful.
+4. Create a template seed from the image or the analysis artifact.
+5. Author semantic groups, sets, and zones in the template patch.
+6. Generate variants from the authored template.
 
 ### B. Generated PNG -> Promoted Template
 Use this when a family does not exist yet and you invent a base asset first.
@@ -165,15 +189,22 @@ This is the workflow for totally new item families.
 
 ### Template Analysis
 - `inspect-image`
-- `analyze-image-regions`
+- `analyze-image`
+- `analyze-image-regions` (compatibility alias)
+- `inspect-topology`
 - `render-region-overlay`
+- `render-group-overlay`
 - `create-template-from-image`
+- `create-template-seed-from-analysis`
 - `refine-template-regions`
 - `describe-template`
 
 ### Generation
 - `repair-generated-png`
 - `paint-item-icon`
+- `render-group-overlay`
+- `export-group-patch`
+- `apply-group-patch`
 
 ### Promotion / Reuse
 - `promote-to-template`
@@ -193,6 +224,7 @@ The coarse allowed shape/layout.
 The preferred reusable family reference.
 
 This is the primary family mechanism for new work.
+Semantics belong here, not in the analysis artifact.
 
 ### `preset_id`
 Legacy compatibility field.
@@ -216,8 +248,20 @@ Examples for book families:
 - `cover`
 - `page_edge`
 - `clasp`
-- `emblem`
+- `cover_detail`
+- `emblem_zone`
 - `highlight`
+
+Templates can also define exact pixel groups, for example:
+- `cover_shadow`
+- `cover_mid`
+- `cover_light`
+- `spine_shadow`
+- `spine_mid`
+- `page_shadow`
+- `page_mid`
+- `clasp_pixels`
+- `cover_detail_pixels`
 
 Examples for sword families:
 - `blade`
@@ -291,6 +335,7 @@ Current proof requests:
 Important principle:
 - these should be variants of the vanilla book family
 - not one-off disconnected icons
+- true variations should remap the existing vanilla raster groups, not paint broad overlays over the base book
 
 ## Example: Vanilla Handheld Families
 
@@ -345,16 +390,24 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspec
   --minecraft-version 1.21.11
 ```
 
-### Analyze regions for the vanilla book
+### Analyze the vanilla book into a neutral artifact
 ```bash
-tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image-regions \
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
   --minecraft-version 1.21.11 \
   --heuristic book \
   --output tools/asset-foundry/previews/generated/book_analysis.json
 ```
 
-### Create a template from the vanilla book
+### Inspect the topology text map
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology \
+  --minecraft-asset assets/minecraft/textures/item/book.png \
+  --minecraft-version 1.21.11 \
+  --heuristic book
+```
+
+### Create a template seed from the vanilla book analysis
 ```bash
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
@@ -364,6 +417,18 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create
   --template-id analyzed_vanilla_book_16 \
   --heuristic book \
   --output tools/asset-foundry/previews/generated/analyzed_vanilla_book_16.json
+```
+
+### Create a seed directly from the saved analysis artifact
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-seed-from-analysis \
+  --analysis tools/asset-foundry/previews/generated/book_analysis.json \
+  --minecraft-asset assets/minecraft/textures/item/book.png \
+  --minecraft-version 1.21.11 \
+  --asset-type book_cover_16 \
+  --base-mask vanilla_book_16_mask \
+  --template-id analyzed_vanilla_book_16_from_analysis \
+  --output tools/asset-foundry/previews/generated/analyzed_vanilla_book_16_from_analysis.json
 ```
 
 ### Render the base vanilla book from the template exactly

@@ -1,8 +1,5 @@
 {
   "operations": [
-    { "op": "recolor_region", "region": "cover", "role": "cover_dark" },
-    { "op": "recolor_region", "region": "spine", "role": "spine_dark" },
-    { "op": "fill_region_role", "region": "clasp", "role": "shadow" },
-    { "op": "shade_region", "region": "highlight", "role": "cover_light" }
+    { "op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid" }
   ]
 }

@@ -1,9 +1,9 @@
 {
-  "asset_id": "dusty_devotional_icon",
+  "asset_id": "dusty_devotional",
   "display_name": "Dusty Devotional",
   "asset_type": "book_cover_16",
   "profile": "veritas",
-  "material_palette": "veritas_leather",
+  "material_palette": "dusty_cloth",
   "style_tags": [
     "worn",
     "restrained",
@@ -18,6 +18,6 @@
   "provenance": {
     "requested_by": "asset_foundry_example",
     "generator_mode": "pixel_native",
-    "prompt_summary": "Draw a worn devotional book icon with muted leather and a simple clasp."
+    "prompt_summary": "Recolor the vanilla book body into a worn dusty devotional variant while preserving the original vanilla pages."
   }
 }
