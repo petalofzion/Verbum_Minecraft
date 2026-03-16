@@ -12,8 +12,12 @@
   ],
   "rules": {
     "palette_required": "yes",
-    "mask_required": "no",
+    "mask_required": "yes",
     "allow_partial_alpha": "no",
+    "transparency_mode": "binary",
+    "mixel_policy": "strict",
+    "readability_hint": "Simple block faces should stay readable from world distance.",
+    "anti_mixel_passes": 2,
     "notes": [
       "Use for simple single-texture block faces.",
       "Prefer strong material readability over noise."

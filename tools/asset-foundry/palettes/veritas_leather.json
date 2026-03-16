@@ -1,0 +1,15 @@
+{
+  "id": "veritas_leather",
+  "profile": "veritas",
+  "colors": [
+    "#16110E",
+    "#3A2A20",
+    "#654733",
+    "#8B654B",
+    "#C5A17D"
+  ],
+  "notes": [
+    "Restrained leather and parchment palette for Veritas manuals.",
+    "Keep ornament subtle and low-noise."
+  ]
+}

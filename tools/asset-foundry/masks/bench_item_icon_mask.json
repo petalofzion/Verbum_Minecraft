@@ -5,8 +5,29 @@
     "width": 16,
     "height": 16
   },
+  "allowed_rects": [
+    { "x": 2, "y": 4, "width": 12, "height": 8 }
+  ],
+  "forbidden_rects": [
+    { "x": 0, "y": 0, "width": 2, "height": 16 },
+    { "x": 14, "y": 0, "width": 2, "height": 16 }
+  ],
+  "zones": {
+    "seat": {
+      "rects": [
+        { "x": 3, "y": 4, "width": 10, "height": 3 }
+      ]
+    },
+    "legs": {
+      "rects": [
+        { "x": 3, "y": 7, "width": 2, "height": 5 },
+        { "x": 11, "y": 7, "width": 2, "height": 5 }
+      ]
+    }
+  },
+  "symmetry": "vertical",
   "notes": [
-    "Bench silhouette mask for simple item-icon generation.",
-    "Use this as a shape constraint for pixel-native painting."
+    "Bench silhouette mask for item-icon generation.",
+    "Use seat and leg zones to keep the icon readable."
   ]
 }

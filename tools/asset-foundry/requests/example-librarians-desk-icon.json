@@ -1,0 +1,22 @@
+{
+  "asset_id": "librarians_desk_icon",
+  "display_name": "Librarians Desk Icon",
+  "asset_type": "simple_item_16",
+  "profile": "vocations",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "warm",
+    "domestic",
+    "handcrafted",
+    "desk"
+  ],
+  "mask_id": "bench_item_icon_mask",
+  "output": {
+    "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Draw a readable librarian's desk item icon in Vocations oak tones."
+  }
+}

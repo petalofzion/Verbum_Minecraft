@@ -29,6 +29,14 @@
     },
     "mask_id": { "type": "string", "minLength": 1 },
     "notes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "source_image": {
+      "type": "object",
+      "required": ["path"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
     "output": {
       "type": "object",
       "required": ["resource_root"],

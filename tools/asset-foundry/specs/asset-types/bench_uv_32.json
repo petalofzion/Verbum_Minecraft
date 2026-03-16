@@ -16,6 +16,10 @@
     "palette_required": "yes",
     "mask_required": "yes",
     "allow_partial_alpha": "no",
+    "transparency_mode": "binary",
+    "mixel_policy": "strict",
+    "readability_hint": "Furniture UV textures should feel handcrafted and readable in-world.",
+    "anti_mixel_passes": 2,
     "notes": [
       "Use with a predefined bench UV layout.",
       "Keep plank direction and seam edges consistent."

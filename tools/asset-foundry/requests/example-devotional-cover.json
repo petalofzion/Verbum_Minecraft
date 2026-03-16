@@ -1,0 +1,25 @@
+{
+  "asset_id": "dusty_devotional_cover",
+  "display_name": "Dusty Devotional Cover",
+  "asset_type": "book_cover_32",
+  "profile": "veritas",
+  "material_palette": "veritas_leather",
+  "style_tags": [
+    "worn",
+    "restrained",
+    "manual",
+    "quiet"
+  ],
+  "mask_id": "book_cover_32_mask",
+  "source_image": {
+    "path": "tools/asset-foundry/examples/source/dusty_devotional_rough.png"
+  },
+  "output": {
+    "resource_root": "modules/features/library/dusty-devotional/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "repair_generated_png",
+    "prompt_summary": "Convert a rough devotional cover into a restrained Veritas book cover."
+  }
+}

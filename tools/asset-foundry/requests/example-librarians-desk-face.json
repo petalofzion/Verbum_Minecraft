@@ -1,0 +1,25 @@
+{
+  "asset_id": "librarians_desk_face",
+  "display_name": "Librarians Desk Face",
+  "asset_type": "simple_block_face_16",
+  "profile": "vocations",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "warm",
+    "wood",
+    "domestic",
+    "desk"
+  ],
+  "mask_id": "simple_block_face_16_mask",
+  "source_image": {
+    "path": "tools/asset-foundry/examples/source/librarians_desk_face_rough.png"
+  },
+  "output": {
+    "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "repair_generated_png",
+    "prompt_summary": "Convert a rough wooden desk face into a usable block texture."
+  }
+}

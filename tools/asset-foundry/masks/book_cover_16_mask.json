@@ -1,0 +1,33 @@
+{
+  "id": "book_cover_16_mask",
+  "asset_type": "book_cover_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "allowed_rects": [
+    { "x": 2, "y": 1, "width": 11, "height": 14 }
+  ],
+  "forbidden_rects": [],
+  "zones": {
+    "spine": {
+      "rects": [
+        { "x": 2, "y": 1, "width": 2, "height": 14 }
+      ]
+    },
+    "cover": {
+      "rects": [
+        { "x": 4, "y": 1, "width": 9, "height": 14 }
+      ]
+    },
+    "emblem": {
+      "rects": [
+        { "x": 6, "y": 5, "width": 4, "height": 4 }
+      ]
+    }
+  },
+  "symmetry": "none",
+  "notes": [
+    "Compact book cover mask with spine and emblem zones."
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "id": "simple_item_16",
+  "id": "book_cover_16",
   "canvas": {
     "width": 16,
     "height": 16
@@ -14,11 +14,11 @@
     "allow_partial_alpha": "no",
     "transparency_mode": "binary",
     "mixel_policy": "strict",
-    "readability_hint": "High silhouette readability at inventory scale.",
+    "readability_hint": "Book covers need clear spine and emblem contrast at inventory size.",
     "anti_mixel_passes": 2,
     "notes": [
-      "Use for small inventory icons.",
-      "Silhouette and readability matter more than micro-detail."
+      "Use for compact book and manual icons.",
+      "Favor emblem readability over dense ornament."
     ]
   }
 }

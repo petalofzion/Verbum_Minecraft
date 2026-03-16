@@ -1,8 +1,8 @@
 {
-  "id": "simple_item_16",
+  "id": "book_cover_32",
   "canvas": {
-    "width": 16,
-    "height": 16
+    "width": 32,
+    "height": 32
   },
   "kind": "item_icon",
   "output_files": [
@@ -14,11 +14,11 @@
     "allow_partial_alpha": "no",
     "transparency_mode": "binary",
     "mixel_policy": "strict",
-    "readability_hint": "High silhouette readability at inventory scale.",
-    "anti_mixel_passes": 2,
+    "readability_hint": "Larger manual covers can carry detail but must still read as pixel art.",
+    "anti_mixel_passes": 3,
     "notes": [
-      "Use for small inventory icons.",
-      "Silhouette and readability matter more than micro-detail."
+      "Use for richer book and manual cover art.",
+      "Keep borders and central motifs intentional."
     ]
   }
 }

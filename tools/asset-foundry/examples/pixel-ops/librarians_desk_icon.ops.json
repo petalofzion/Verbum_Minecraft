@@ -1,0 +1,7 @@
+{
+  "operations": [
+    { "op": "shade_zone", "zone": "seat", "color": "#A87A53" },
+    { "op": "shade_zone", "zone": "legs", "color": "#4A3222" },
+    { "op": "fill_region", "x": 5, "y": 5, "width": 6, "height": 1, "color": "#D0AA7B" }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "bench_uv_32_mask",
+  "asset_type": "bench_uv_32",
+  "canvas": {
+    "width": 32,
+    "height": 32
+  },
+  "allowed_rects": [
+    { "x": 0, "y": 0, "width": 32, "height": 32 }
+  ],
+  "forbidden_rects": [],
+  "zones": {
+    "seat_top": {
+      "rects": [
+        { "x": 0, "y": 0, "width": 16, "height": 8 }
+      ]
+    },
+    "legs": {
+      "rects": [
+        { "x": 0, "y": 8, "width": 16, "height": 12 }
+      ]
+    },
+    "underside": {
+      "rects": [
+        { "x": 16, "y": 0, "width": 16, "height": 16 }
+      ]
+    }
+  },
+  "symmetry": "none",
+  "notes": [
+    "Simple permissive UV mask for bench texture scaffolding."
+  ]
+}
