@@ -1,0 +1,12 @@
+{
+  "id": "bench_item_icon_mask",
+  "asset_type": "simple_item_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "notes": [
+    "Bench silhouette mask for simple item-icon generation.",
+    "Use this as a shape constraint for pixel-native painting."
+  ]
+}

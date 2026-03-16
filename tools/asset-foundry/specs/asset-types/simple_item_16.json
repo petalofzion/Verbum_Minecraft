@@ -1,0 +1,20 @@
+{
+  "id": "simple_item_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "kind": "item_icon",
+  "output_files": [
+    "textures/item/{asset_id}.png"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "no",
+    "notes": [
+      "Use for small inventory icons.",
+      "Silhouette and readability matter more than micro-detail."
+    ]
+  }
+}

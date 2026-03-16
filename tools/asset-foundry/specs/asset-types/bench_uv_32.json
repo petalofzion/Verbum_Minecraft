@@ -1,0 +1,24 @@
+{
+  "id": "bench_uv_32",
+  "canvas": {
+    "width": 32,
+    "height": 32
+  },
+  "kind": "uv_texture",
+  "output_files": [
+    "textures/block/{asset_id}.png",
+    "models/block/{asset_id}.json",
+    "models/item/{asset_id}.json",
+    "blockstates/{asset_id}.json",
+    "items/{asset_id}.json"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "no",
+    "notes": [
+      "Use with a predefined bench UV layout.",
+      "Keep plank direction and seam edges consistent."
+    ]
+  }
+}

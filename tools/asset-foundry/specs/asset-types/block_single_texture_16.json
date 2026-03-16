@@ -1,0 +1,22 @@
+{
+  "id": "block_single_texture_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "kind": "block_texture",
+  "output_files": [
+    "textures/block/{asset_id}.png",
+    "models/item/{asset_id}.json",
+    "items/{asset_id}.json"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "no",
+    "allow_partial_alpha": "no",
+    "notes": [
+      "Use for simple single-texture block faces.",
+      "Prefer strong material readability over noise."
+    ]
+  }
+}

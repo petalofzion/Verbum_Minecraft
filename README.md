@@ -127,7 +127,7 @@ A brief explanation of the top-level directories:
 *   `docs/`: Project documentation, architectural guidelines, decision logs, and clean room logs.
 *   `modules/`: The core modular monolith, organized by category (core, tech, magic, world).
 *   `assemblies/`: Product distribution projects that bundle specific modules into JARs.
-*   `tools/`: Verification layers, including data generation, game tests, and performance benchmarks.
+*   `tools/`: Verification and generation layers, including data generation, asset-foundry tooling, game tests, and performance benchmarks.
 *   `build-logic/`: Custom Gradle convention plugins for enforcing architectural rules.
 *   `LICENSES/`: Contains license information for project dependencies.
 *   `third_party/`: Used for tracking external code or assets.

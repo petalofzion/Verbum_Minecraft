@@ -1,0 +1,26 @@
+{
+  "asset_id": "oak_bench",
+  "display_name": "Oak Bench",
+  "asset_type": "bench_uv_32",
+  "profile": "vocations",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "warm",
+    "domestic",
+    "worn",
+    "handcrafted"
+  ],
+  "mask_id": "bench_item_icon_mask",
+  "notes": [
+    "Bench for slow-life furniture set.",
+    "Keep the finish modest and practical."
+  ],
+  "output": {
+    "resource_root": "modules/features/furniture/oak-bench/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "user",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Warm handcrafted oak bench for Vocations."
+  }
+}
