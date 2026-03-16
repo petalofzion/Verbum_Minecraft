@@ -49,9 +49,10 @@ This is the future MCP-facing half of the tool.
 - This keeps asset generation aligned with repo architecture instead of becoming a separate disconnected workflow too early.
 
 ## Current Scope
-Asset Foundry now has two working production paths:
+Asset Foundry now has three working layers:
 - rough PNG -> validated pixel-art preview
 - pixel-op JSON -> validated pixel-native icon preview
+- raster-backed templates -> exact-base family variation workflows
 
 Included now:
 - request schema
@@ -59,22 +60,34 @@ Included now:
 - manifest schema
 - mask schema
 - pixel-op schema
+- preset schema
+- template schema
 - palette and mask examples
+- template family examples for books and handheld items
 - a Python CLI for:
   - request validation
   - asset-bundle planning
   - manifest emission
   - manifest validation
+  - image inspection
+  - image region analysis
+  - region overlay rendering
+  - raster-backed template creation
+  - template region refinement
+  - preset inspection
+  - template inspection
   - rough PNG repair / conversion
   - texture validation
   - pixel-native item icon painting
+  - preset-seed export
+  - promote-to-template
 - a thin MCP/agent wrapper script
 
 Deferred:
 - block/model template helpers beyond simple planning
 - richer variant contact sheets
 - Blockbench integration
-- broader MCP tool surface beyond the thin wrapper
+- richer MCP surface beyond the thin wrapper
 
 ## Suggested Flow
 1. Create an asset request JSON under `tools/asset-foundry/requests/`.
@@ -84,10 +97,21 @@ Deferred:
 3. Validate the request:
    - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-request <request.json>`
 4. Run one of the production flows:
+   - inspect/analyze a source image:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image-regions --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book --output tools/asset-foundry/previews/generated/book_analysis.json`
+   - create a raster-backed template:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family --heuristic book`
    - conversion:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py repair-generated-png <request.json> --grid`
    - pixel-native:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-item-icon <request.json> --ops <ops.json> --grid`
+   - inspect a template:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-template <template_id>`
+   - inspect a preset:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-preset <preset_id>`
+   - export a reusable preset scaffold:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py export-preset-seed <request.json> --generated-asset <image.png> --base-mask <mask_id> --region-map <region-map.json> --target-preset-id <preset_id> --output <preset.json>`
 5. Validate the result:
    - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-texture <request.json> <image.png>`
 6. Review preview-first outputs under `tools/asset-foundry/previews/generated/`.
@@ -99,6 +123,10 @@ Deferred:
   - profile/material palette definitions
 - `masks/`
   - silhouette/UV mask metadata
+- `specs/presets/`
+  - reusable family definitions shared by both engines
+- `specs/templates/`
+  - raster-backed family templates
 - `requests/`
   - local asset request inputs
 - `previews/`
@@ -114,6 +142,8 @@ Deferred:
 - Requests and manifests are both schema-validated.
 - Provenance is mandatory even before real image generation exists.
 - Preview-first output is the default.
+- Presets are optional overlays; non-preset flows still work.
+- Templates are the preferred family abstraction for new work.
 - This tool plans and validates outputs; it does not bypass normal module resource ownership.
 
 ## Quality Standard for "Proper Pixel Art"
@@ -138,11 +168,33 @@ If the output still looks like resized digital painting, the tool has failed.
 - `plan-bundle`
 - `emit-manifest`
 - `validate-manifest`
+- `inspect-image`
+- `analyze-image-regions`
+- `render-region-overlay`
+- `create-template-from-image`
+- `refine-template-regions`
 - `repair-generated-png`
 - `validate-texture`
 - `paint-item-icon`
+- `describe-template`
+- `describe-preset`
+- `export-preset-seed`
+- `promote-to-template`
 
 ## Example Flows
+- preset-driven scripture/manual family:
+  - [requests/example-bible-icon.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-bible-icon.json)
+  - [requests/example-book-of-hours-icon.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-book-of-hours-icon.json)
+  - [requests/example-dusty-devotional-icon.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-dusty-devotional-icon.json)
+- template definitions:
+  - [specs/templates/minecraft_vanilla_book_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json)
+  - [specs/templates/minecraft_vanilla_sword_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_sword_16.json)
+  - [specs/templates/minecraft_vanilla_pickaxe_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_pickaxe_16.json)
+  - [specs/templates/minecraft_vanilla_bow_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_bow_16.json)
+- preset definitions:
+  - [specs/presets/vanilla_book_icon_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/presets/vanilla_book_icon_16.json)
+  - [specs/presets/manual_book_icon_32.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/presets/manual_book_icon_32.json)
+  - [specs/presets/generated_item_basic_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/presets/generated_item_basic_16.json)
 - book/manual cover conversion:
   - [requests/example-devotional-cover.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-devotional-cover.json)
 - simple icon drawing:

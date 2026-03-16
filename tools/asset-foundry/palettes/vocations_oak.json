@@ -8,6 +8,20 @@
     "#A87A53",
     "#D0AA7B"
   ],
+  "roles": {
+    "cover_dark": "#4A3222",
+    "cover_mid": "#7A563A",
+    "cover_light": "#A87A53",
+    "spine_dark": "#1D140D",
+    "page_tone": "#D0AA7B",
+    "metal_accent": "#D0AA7B",
+    "shadow": "#1D140D",
+    "highlight": "#D0AA7B",
+    "base_dark": "#4A3222",
+    "base_mid": "#7A563A",
+    "base_light": "#A87A53",
+    "accent": "#D0AA7B"
+  },
   "notes": [
     "Warm domestic oak palette.",
     "Use restrained highlights; avoid glossy finish."

@@ -3,6 +3,8 @@ import argparse
 import copy
 import json
 import re
+import zipfile
+from collections import Counter, deque
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -131,6 +133,14 @@ def pixel_ops_schema_path() -> Path:
     return foundry_root() / "specs" / "pixel-ops.schema.json"
 
 
+def template_schema_path() -> Path:
+    return foundry_root() / "specs" / "template.schema.json"
+
+
+def preset_schema_path() -> Path:
+    return foundry_root() / "specs" / "preset.schema.json"
+
+
 def load_request(path: Path) -> dict[str, Any]:
     request = load_json(path)
     schema = load_json(request_schema_path())
@@ -157,6 +167,30 @@ def load_palette(palette_id: str) -> dict[str, Any]:
     if not path.exists():
         raise SystemExit(f"Unknown palette: {palette_id}")
     return load_json(path)
+
+
+def load_template(template_id: str) -> dict[str, Any]:
+    path = foundry_root() / "specs" / "templates" / f"{template_id}.json"
+    if path.exists():
+        template = load_json(path)
+        schema = load_json(template_schema_path())
+        errors = validate_instance(template, schema)
+        if errors:
+            raise SystemExit("\n".join(errors))
+        return template
+    return load_preset(template_id)
+
+
+def load_preset(preset_id: str) -> dict[str, Any]:
+    path = foundry_root() / "specs" / "presets" / f"{preset_id}.json"
+    if not path.exists():
+        raise SystemExit(f"Unknown preset: {preset_id}")
+    preset = load_json(path)
+    schema = load_json(preset_schema_path())
+    errors = validate_instance(preset, schema)
+    if errors:
+        raise SystemExit("\n".join(errors))
+    return preset
 
 
 def load_mask(mask_id: str) -> dict[str, Any]:
@@ -189,6 +223,43 @@ def hex_to_rgba(hex_value: str) -> tuple[int, int, int, int]:
 
 def palette_rgba(palette: dict[str, Any]) -> list[tuple[int, int, int, int]]:
     return [hex_to_rgba(color) for color in palette["colors"]]
+
+
+def palette_role_color(palette: dict[str, Any], role_name: str) -> tuple[int, int, int, int]:
+    role_value = palette.get("roles", {}).get(role_name)
+    if role_value is None:
+        raise SystemExit(f"Palette does not define role: {role_name}")
+    return hex_to_rgba(role_value)
+
+
+def request_template_id(request: dict[str, Any]) -> str | None:
+    return request.get("template_id") or request.get("preset_id")
+
+
+def find_minecraft_client_jar(version: str) -> Path:
+    candidates = [
+        Path.home() / "Library/Application Support/PrismLauncher/libraries/com/mojang/minecraft" / version / f"minecraft-{version}-client.jar",
+        Path.home() / ".gradle/caches/fabric-loom" / version / "minecraft-client.jar",
+        Path.home() / ".gradle/caches/VanillaGradle/v2/jars/net/minecraft/client" / version / f"client-{version}.jar",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    raise SystemExit(f"Could not find Minecraft client jar for version {version}")
+
+
+def load_image_from_source(source: dict[str, Any]) -> Image.Image:
+    require_pillow()
+    kind = source["kind"]
+    if kind == "repo_path":
+        path = resolve_repo_path(Path(source["path"]))
+        return Image.open(path).convert("RGBA")
+    if kind == "minecraft_vanilla_asset":
+        jar_path = find_minecraft_client_jar(source["version"])
+        with zipfile.ZipFile(jar_path) as archive:
+            with archive.open(source["asset_path"]) as handle:
+                return Image.open(handle).convert("RGBA")
+    raise SystemExit(f"Unsupported image source kind: {kind}")
 
 
 def planned_outputs(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
@@ -249,6 +320,11 @@ def build_manifest(
         manifest["generated_files"] = generated_files
     if preview_files:
         manifest["preview_files"] = preview_files
+    template_id = request_template_id(request)
+    if template_id:
+        manifest["template_id"] = template_id
+    if request.get("preset_id"):
+        manifest["preset_id"] = request["preset_id"]
     return manifest
 
 
@@ -299,6 +375,64 @@ def validate_mask_against_asset_type(mask: dict[str, Any], asset_type: dict[str,
     return errors
 
 
+def region_pixels(region: dict[str, Any]) -> set[tuple[int, int]]:
+    pixels: set[tuple[int, int]] = set()
+    for rect in region["rects"]:
+        pixels.update(expand_rect(rect))
+    return pixels
+
+
+def validate_template_against_asset_type(template: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    if template["asset_type"] != asset_type["id"]:
+        errors.append("template asset_type does not match request asset type")
+    if template["base_mask"] != mask["id"]:
+        errors.append("template base_mask does not match request mask")
+
+    allowed = mask_allowed_pixels(mask)
+    region_names: set[str] = set()
+    seen_locked: set[tuple[int, int]] = set()
+    seen_free: set[tuple[int, int]] = set()
+
+    for region in template["regions"]:
+        name = region["name"]
+        if name in region_names:
+            errors.append(f"duplicate template region: {name}")
+            continue
+        region_names.add(name)
+        pixels = region_pixels(region)
+        if allowed and not pixels.issubset(allowed):
+            errors.append(f"template region '{name}' extends outside the base mask")
+        if region["mode"] == "locked":
+            if seen_locked & pixels:
+                errors.append(f"template locked region '{name}' overlaps another locked region")
+            seen_locked.update(pixels)
+        if region["mode"] == "free_paint":
+            if seen_free & pixels:
+                errors.append(f"template free_paint region '{name}' overlaps another free_paint region")
+            seen_free.update(pixels)
+
+    for entry in template.get("locked_regions", []):
+        if entry not in region_names:
+            errors.append(f"locked_regions references unknown region '{entry}'")
+    for entry in template.get("free_paint_regions", []):
+        if entry not in region_names:
+            errors.append(f"free_paint_regions references unknown region '{entry}'")
+    base_image = template.get("base_image")
+    if base_image is not None:
+        try:
+            image = load_image_from_source(base_image)
+            if image.width != asset_type["canvas"]["width"] or image.height != asset_type["canvas"]["height"]:
+                errors.append("template base image canvas does not match asset type canvas")
+        except SystemExit as exc:
+            errors.append(str(exc))
+    return errors
+
+
+def validate_preset_against_asset_type(preset: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any]) -> list[str]:
+    return validate_template_against_asset_type(preset, asset_type, mask)
+
+
 def extra_request_checks(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     asset_id = request["asset_id"]
@@ -328,6 +462,14 @@ def extra_request_checks(request: dict[str, Any], asset_type: dict[str, Any]) ->
 
     mask = load_mask(request["mask_id"])
     errors.extend(validate_mask_against_asset_type(mask, asset_type))
+
+    template_id = request_template_id(request)
+    if template_id:
+        template = load_template(template_id)
+        errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+        missing_roles = [role for role in template["palette_roles"] if role not in palette.get("roles", {})]
+        if missing_roles:
+            errors.append(f"palette is missing template roles: {', '.join(missing_roles)}")
 
     if request["provenance"]["generator_mode"] == "repair_generated_png":
         source = request.get("source_image")
@@ -455,18 +597,242 @@ def anti_mixel_cleanup(image: Image.Image, *, passes: int) -> Image.Image:
     return current
 
 
+def image_summary(image: Image.Image) -> dict[str, Any]:
+    pixels = image.load()
+    histogram: Counter[str] = Counter()
+    opaque_pixels: set[tuple[int, int]] = set()
+    for x in range(image.width):
+        for y in range(image.height):
+            pixel = pixels[x, y]
+            if pixel[3] == 0:
+                continue
+            opaque_pixels.add((x, y))
+            histogram[f"#{pixel[0]:02X}{pixel[1]:02X}{pixel[2]:02X}"] += 1
+    if opaque_pixels:
+        xs = [x for x, _ in opaque_pixels]
+        ys = [y for _, y in opaque_pixels]
+        bounds = {"x": min(xs), "y": min(ys), "width": max(xs) - min(xs) + 1, "height": max(ys) - min(ys) + 1}
+    else:
+        bounds = {"x": 0, "y": 0, "width": image.width, "height": image.height}
+    return {
+        "canvas": {"width": image.width, "height": image.height},
+        "non_transparent_bounds": bounds,
+        "color_histogram": [{"hex": color, "count": count} for color, count in histogram.most_common()],
+    }
+
+
+def connected_components(image: Image.Image) -> list[dict[str, Any]]:
+    pixels = image.load()
+    visited: set[tuple[int, int]] = set()
+    components: list[dict[str, Any]] = []
+    for x in range(image.width):
+        for y in range(image.height):
+            if (x, y) in visited or pixels[x, y][3] == 0:
+                continue
+            color = pixels[x, y]
+            queue: deque[tuple[int, int]] = deque([(x, y)])
+            visited.add((x, y))
+            points: list[tuple[int, int]] = []
+            while queue:
+                cx, cy = queue.popleft()
+                points.append((cx, cy))
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    nx, ny = cx + dx, cy + dy
+                    if not (0 <= nx < image.width and 0 <= ny < image.height):
+                        continue
+                    if (nx, ny) in visited or pixels[nx, ny] != color:
+                        continue
+                    visited.add((nx, ny))
+                    queue.append((nx, ny))
+            xs = [px for px, _ in points]
+            ys = [py for _, py in points]
+            components.append(
+                {
+                    "hex": f"#{color[0]:02X}{color[1]:02X}{color[2]:02X}",
+                    "count": len(points),
+                    "bounds": {"x": min(xs), "y": min(ys), "width": max(xs) - min(xs) + 1, "height": max(ys) - min(ys) + 1},
+                }
+            )
+    return sorted(components, key=lambda item: item["count"], reverse=True)
+
+
+def heuristic_regions(image: Image.Image, heuristic: str) -> list[dict[str, Any]]:
+    summary = image_summary(image)
+    bounds = summary["non_transparent_bounds"]
+    x = bounds["x"]
+    y = bounds["y"]
+    width = bounds["width"]
+    height = bounds["height"]
+    if heuristic == "book":
+        spine_w = max(2, width // 6)
+        page_w = max(1, width // 10)
+        clasp_w = 1
+        return [
+            {"name": "spine", "mode": "recolor_only", "rects": [{"x": x, "y": y, "width": spine_w, "height": height}], "allowed_palette_roles": ["spine_dark", "shadow"], "default_palette_role": "spine_dark", "optional": False},
+            {"name": "cover", "mode": "recolor_only", "rects": [{"x": x + spine_w, "y": y, "width": max(1, width - spine_w - page_w), "height": height}], "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"], "default_palette_role": "cover_mid", "optional": False},
+            {"name": "page_edge", "mode": "locked", "rects": [{"x": x + width - page_w, "y": y + 1, "width": page_w, "height": max(1, height - 3)}], "allowed_palette_roles": ["page_tone"], "default_palette_role": "page_tone", "optional": False},
+            {"name": "clasp", "mode": "recolor_only", "rects": [{"x": x + width - page_w - clasp_w - 1, "y": y + 2, "width": clasp_w, "height": max(1, height - 4)}], "allowed_palette_roles": ["metal_accent", "shadow"], "default_palette_role": "metal_accent", "optional": True},
+            {"name": "emblem", "mode": "motif", "rects": [{"x": x + width // 3, "y": y + height // 3, "width": max(2, width // 4), "height": max(2, height // 4)}], "allowed_palette_roles": ["metal_accent", "highlight"], "default_palette_role": "metal_accent", "optional": True},
+            {"name": "highlight", "mode": "shade_only", "rects": [{"x": x + spine_w + 1, "y": y + 1, "width": max(1, width - spine_w - page_w - 2), "height": 1}], "allowed_palette_roles": ["highlight", "cover_light"], "default_palette_role": "highlight", "optional": True},
+        ]
+    if heuristic == "sword":
+        return [
+            {"name": "blade", "mode": "recolor_only", "rects": [{"x": x + width // 2 - 1, "y": y, "width": 2, "height": max(2, height - 5)}], "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"], "default_palette_role": "base_mid", "optional": False},
+            {"name": "guard", "mode": "recolor_only", "rects": [{"x": x + max(0, width // 2 - 3), "y": y + max(1, height - 6), "width": min(width, 6), "height": 1}], "allowed_palette_roles": ["accent", "shadow"], "default_palette_role": "accent", "optional": True},
+            {"name": "handle", "mode": "recolor_only", "rects": [{"x": x + width // 2 - 1, "y": y + max(1, height - 5), "width": 2, "height": 5}], "allowed_palette_roles": ["base_dark", "shadow"], "default_palette_role": "base_dark", "optional": False},
+        ]
+    if heuristic == "pickaxe":
+        return [
+            {"name": "head", "mode": "recolor_only", "rects": [{"x": x + 1, "y": y, "width": max(3, width - 2), "height": max(2, height // 4)}], "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"], "default_palette_role": "base_mid", "optional": False},
+            {"name": "handle", "mode": "recolor_only", "rects": [{"x": x + width // 2 - 1, "y": y + max(1, height // 4), "width": 2, "height": max(3, height - max(1, height // 4))}], "allowed_palette_roles": ["base_dark", "shadow"], "default_palette_role": "base_dark", "optional": False},
+        ]
+    if heuristic == "bow":
+        return [
+            {"name": "limb_upper", "mode": "recolor_only", "rects": [{"x": x + 1, "y": y, "width": max(1, width - 2), "height": max(2, height // 3)}], "allowed_palette_roles": ["base_dark", "base_mid", "base_light"], "default_palette_role": "base_mid", "optional": False},
+            {"name": "grip", "mode": "recolor_only", "rects": [{"x": x + width // 2 - 1, "y": y + height // 3, "width": 2, "height": max(2, height // 3)}], "allowed_palette_roles": ["base_dark", "shadow"], "default_palette_role": "base_dark", "optional": False},
+            {"name": "string", "mode": "locked", "rects": [{"x": x + width - 2, "y": y + 1, "width": 1, "height": max(2, height - 2)}], "allowed_palette_roles": ["highlight"], "default_palette_role": "highlight", "optional": False},
+        ]
+    return [
+        {"name": "body", "mode": "recolor_only", "rects": [bounds], "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "shadow", "highlight"], "default_palette_role": "base_mid", "optional": False}
+    ]
+
+
+def analyze_image(image: Image.Image, heuristic: str) -> dict[str, Any]:
+    summary = image_summary(image)
+    return {
+        "heuristic": heuristic,
+        "source_summary": f"{heuristic} analysis for {image.width}x{image.height} image",
+        "color_clusters": summary["color_histogram"][:8],
+        "components": connected_components(image)[:16],
+        "candidate_regions": heuristic_regions(image, heuristic),
+    }
+
+
+def region_by_name(template: dict[str, Any], name: str) -> dict[str, Any]:
+    for region in template["regions"]:
+        if region["name"] == name:
+            return region
+    raise SystemExit(f"Unknown template region: {name}")
+
+
+def template_engine_supported(template: dict[str, Any], engine_name: str) -> bool:
+    return bool(template.get("engine_support", {}).get(engine_name, False))
+
+
+def template_base_image(template: dict[str, Any], palette: dict[str, Any] | None = None) -> Image.Image:
+    require_pillow()
+    if template.get("base_image"):
+        image = load_image_from_source(template["base_image"])
+        if template.get("transparent_outside_mask", False):
+            apply_mask_policy(image, load_mask(template["base_mask"]))
+        return image
+    if palette is None:
+        raise SystemExit("Template without base_image requires a palette-backed fallback")
+    mask = load_mask(template["base_mask"])
+    image = Image.new("RGBA", (mask["canvas"]["width"], mask["canvas"]["height"]), (0, 0, 0, 0))
+    for region in template["regions"]:
+        default_role = region.get("default_palette_role")
+        if default_role:
+            fill_pixels(image, region_pixels(region), palette_role_color(palette, default_role))
+    return image
+
+
+def quantize_region(
+    image: Image.Image,
+    pixels_to_fill: set[tuple[int, int]],
+    allowed_palette: list[tuple[int, int, int, int]],
+    *,
+    allow_partial_alpha: bool,
+) -> Image.Image:
+    output = image.copy()
+    src = image.load()
+    dst = output.load()
+    for x, y in pixels_to_fill:
+        pixel = src[x, y]
+        alpha = normalize_alpha(pixel[3], allow_partial_alpha=allow_partial_alpha)
+        if alpha == 0:
+            dst[x, y] = (0, 0, 0, 0)
+            continue
+        nearest = nearest_color(pixel, allowed_palette)
+        dst[x, y] = (nearest[0], nearest[1], nearest[2], alpha)
+    return output
+
+
+def template_editable_pixels(template: dict[str, Any]) -> set[tuple[int, int]]:
+    editable: set[tuple[int, int]] = set()
+    for region in template["regions"]:
+        if region["mode"] != "locked":
+            editable.update(region_pixels(region))
+    return editable
+
+
+def apply_template_regions(
+    request: dict[str, Any],
+    asset_type: dict[str, Any],
+    source_image: Image.Image,
+    template: dict[str, Any],
+) -> Image.Image:
+    palette = load_palette(request["material_palette"])
+    result = template_base_image(template, palette)
+    src = source_image.load()
+    dst = result.load()
+    allow_partial_alpha = asset_type["rules"]["allow_partial_alpha"] == "yes"
+
+    for region in template["regions"]:
+        mode = region["mode"]
+        pixels = region_pixels(region)
+        allowed_roles = region.get("allowed_palette_roles", [])
+        if not allowed_roles:
+            continue
+        allowed_colors = [palette_role_color(palette, role) for role in allowed_roles]
+        if mode == "locked":
+            continue
+        if mode == "motif":
+            for x, y in pixels:
+                pixel = src[x, y]
+                alpha = normalize_alpha(pixel[3], allow_partial_alpha=allow_partial_alpha)
+                if alpha == 0:
+                    continue
+                nearest = nearest_color(pixel, allowed_colors)
+                dst[x, y] = (nearest[0], nearest[1], nearest[2], alpha)
+            continue
+        for x, y in pixels:
+            pixel = src[x, y]
+            alpha = normalize_alpha(pixel[3], allow_partial_alpha=allow_partial_alpha)
+            if alpha == 0:
+                continue
+            nearest = nearest_color(pixel, allowed_colors)
+            dst[x, y] = (nearest[0], nearest[1], nearest[2], alpha)
+    return result
+
+
 def repair_generated_png(request: dict[str, Any], asset_type: dict[str, Any]) -> tuple[Image.Image, Image.Image]:
     require_pillow()
     source = resolve_repo_path(Path(request["source_image"]["path"]))
     image = Image.open(source).convert("RGBA")
-    palette = palette_rgba(load_palette(request["material_palette"]))
     resized = image.resize((asset_type["canvas"]["width"], asset_type["canvas"]["height"]), Image.Resampling.NEAREST)
-    quantized = quantize_image(
-        resized,
-        palette=palette,
-        allow_partial_alpha=asset_type["rules"]["allow_partial_alpha"] == "yes",
-    )
+    template: dict[str, Any] | None = None
+    template_id = request_template_id(request)
+    if template_id:
+        template = load_template(template_id)
+        if not template_engine_supported(template, "repair_generated_png"):
+            raise SystemExit(f"Template does not support repair_generated_png: {template_id}")
+        quantized = apply_template_regions(request, asset_type, resized, template)
+    else:
+        palette = palette_rgba(load_palette(request["material_palette"]))
+        quantized = quantize_image(
+            resized,
+            palette=palette,
+            allow_partial_alpha=asset_type["rules"]["allow_partial_alpha"] == "yes",
+        )
     cleaned = anti_mixel_cleanup(quantized, passes=asset_type["rules"].get("anti_mixel_passes", 2))
+    if template is not None:
+        base = template_base_image(template, load_palette(request["material_palette"]))
+        base_px = base.load()
+        cleaned_px = cleaned.load()
+        for region_name in template.get("locked_regions", []):
+            for x, y in region_pixels(region_by_name(template, region_name)):
+                cleaned_px[x, y] = base_px[x, y]
     apply_mask_policy(cleaned, load_mask(request["mask_id"]))
     return image, cleaned
 
@@ -480,6 +846,11 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
         )
 
     palette = set(palette_rgba(load_palette(request["material_palette"])))
+    template_id = request_template_id(request)
+    if template_id:
+        template = load_template(template_id)
+        base = template_base_image(template, load_palette(request["material_palette"]))
+        palette.update({(r, g, b, 255) for (r, g, b, a) in base.getdata() if a > 0})
     allow_partial_alpha = asset_type["rules"]["allow_partial_alpha"] == "yes"
     allowed = mask_allowed_pixels(mask)
     forbidden = mask_forbidden_pixels(mask)
@@ -506,6 +877,18 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
         diagnostics.append(f"alpha violation: {bad_alpha} pixels use disallowed partial alpha")
     if bad_mask:
         diagnostics.append(f"mask violation: {bad_mask} opaque pixels land outside the allowed mask")
+    if template_id:
+        template = load_template(template_id)
+        base = template_base_image(template, load_palette(request["material_palette"]))
+        base_px = base.load()
+        px = image.load()
+        mismatches = 0
+        for region_name in template.get("locked_regions", []):
+            for x, y in region_pixels(region_by_name(template, region_name)):
+                if px[x, y] != base_px[x, y]:
+                    mismatches += 1
+        if mismatches:
+            diagnostics.append(f"template locked-region mismatch: {mismatches} pixels differ from the base raster")
     return diagnostics
 
 
@@ -541,6 +924,85 @@ def command_output_paths(asset_id: str, output: str | None, manifest: str | None
     return output_path, manifest_path, preview_path
 
 
+def template_output_path(template_id: str, output: str | None) -> Path:
+    return resolve_repo_path(Path(output)) if output else preview_root() / "templates" / f"{template_id}.json"
+
+
+def render_region_overlay(image: Image.Image, regions: list[dict[str, Any]], *, grid: bool) -> Image.Image:
+    preview = magnify_image(image, scale=16, grid=grid)
+    draw = ImageDraw.Draw(preview)
+    palette = [
+        (220, 84, 84, 255),
+        (84, 156, 220, 255),
+        (112, 190, 84, 255),
+        (220, 183, 84, 255),
+        (184, 84, 220, 255),
+        (84, 220, 198, 255),
+    ]
+    for index, region in enumerate(regions):
+        color = palette[index % len(palette)]
+        for rect in region["rects"]:
+            x0 = rect["x"] * 16
+            y0 = rect["y"] * 16
+            x1 = (rect["x"] + rect["width"]) * 16 - 1
+            y1 = (rect["y"] + rect["height"]) * 16 - 1
+            draw.rectangle([(x0, y0), (x1, y1)], outline=color, width=2)
+            draw.text((x0 + 2, y0 + 2), region["name"], fill=color)
+    return preview
+
+
+def default_palette_roles_for_asset_type(asset_type_id: str) -> list[str]:
+    if asset_type_id.startswith("book_cover"):
+        return ["cover_dark", "cover_mid", "cover_light", "spine_dark", "page_tone", "metal_accent", "shadow", "highlight"]
+    return ["base_dark", "base_mid", "base_light", "accent", "shadow", "highlight"]
+
+
+def template_payload(
+    *,
+    template_id: str,
+    asset_type: dict[str, Any],
+    mask_id: str,
+    base_image: dict[str, Any],
+    analysis: dict[str, Any],
+    notes: list[str],
+) -> dict[str, Any]:
+    regions = analysis["candidate_regions"]
+    return {
+        "id": template_id,
+        "asset_type": asset_type["id"],
+        "base_mask": mask_id,
+        "base_image": base_image,
+        "analysis": {
+            "heuristic": analysis["heuristic"],
+            "source_summary": analysis["source_summary"],
+            "color_clusters": analysis["color_clusters"],
+            "components": analysis["components"],
+        },
+        "palette_roles": default_palette_roles_for_asset_type(asset_type["id"]),
+        "regions": regions,
+        "locked_regions": [region["name"] for region in regions if region["mode"] == "locked"],
+        "free_paint_regions": [region["name"] for region in regions if region["mode"] == "free_paint"],
+        "symmetry": "none",
+        "engine_support": {"repair_generated_png": True, "pixel_native": True},
+        "exact_base_output": True,
+        "transparent_outside_mask": True,
+        "notes": notes,
+    }
+
+
+def image_source_from_args(args: argparse.Namespace) -> dict[str, Any]:
+    image_path = getattr(args, "image", None)
+    minecraft_asset = getattr(args, "minecraft_asset", None)
+    minecraft_version = getattr(args, "minecraft_version", None)
+    if image_path:
+        return {"kind": "repo_path", "path": image_path}
+    if minecraft_asset:
+        if not minecraft_version:
+            raise SystemExit("--minecraft-version is required when using --minecraft-asset")
+        return {"kind": "minecraft_vanilla_asset", "asset_path": minecraft_asset, "version": minecraft_version}
+    raise SystemExit("Provide either --image or --minecraft-asset")
+
+
 def cmd_validate_request(args: argparse.Namespace) -> None:
     request, asset_type = load_request_and_type(args.request)
     print(f"Valid request: {request['asset_id']} ({asset_type['id']})")
@@ -568,6 +1030,80 @@ def cmd_validate_manifest(args: argparse.Namespace) -> None:
     if errors:
         raise SystemExit("\n".join(errors))
     print(f"Valid manifest: {manifest['asset_id']}")
+
+
+def cmd_inspect_image(args: argparse.Namespace) -> None:
+    image = load_image_from_source(image_source_from_args(args))
+    print(json.dumps(image_summary(image), indent=2))
+
+
+def cmd_analyze_image_regions(args: argparse.Namespace) -> None:
+    image = load_image_from_source(image_source_from_args(args))
+    analysis = analyze_image(image, args.heuristic)
+    if args.output:
+        save_json(resolve_repo_path(Path(args.output)), analysis)
+        print(f"Wrote analysis: {resolve_repo_path(Path(args.output))}")
+        return
+    print(json.dumps(analysis, indent=2))
+
+
+def cmd_render_region_overlay(args: argparse.Namespace) -> None:
+    image = load_image_from_source(image_source_from_args(args))
+    analysis = load_json(resolve_repo_path(Path(args.analysis)))
+    overlay = render_region_overlay(image, analysis["candidate_regions"], grid=args.grid)
+    output = resolve_repo_path(Path(args.output))
+    write_image(overlay, output)
+    print(f"Wrote region overlay: {output}")
+
+
+def cmd_create_template_from_image(args: argparse.Namespace) -> None:
+    image_source = image_source_from_args(args)
+    image = load_image_from_source(image_source)
+    asset_type = load_asset_type(args.asset_type)
+    if image.width != asset_type["canvas"]["width"] or image.height != asset_type["canvas"]["height"]:
+        raise SystemExit("source image canvas does not match asset type canvas")
+    mask = load_mask(args.base_mask)
+    mask_errors = validate_mask_against_asset_type(mask, asset_type)
+    if mask_errors:
+        raise SystemExit("\n".join(mask_errors))
+    analysis = analyze_image(image, args.heuristic)
+    template = template_payload(
+        template_id=args.template_id,
+        asset_type=asset_type,
+        mask_id=args.base_mask,
+        base_image=image_source,
+        analysis=analysis,
+        notes=[f"Template created from image source for {args.template_id} using heuristic '{args.heuristic}'."],
+    )
+    errors = validate_instance(template, load_json(template_schema_path()))
+    errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    if errors:
+        raise SystemExit("\n".join(errors))
+    output = template_output_path(args.template_id, args.output)
+    save_json(output, template)
+    print(f"Wrote template: {output}")
+
+
+def cmd_refine_template_regions(args: argparse.Namespace) -> None:
+    template_path = resolve_repo_path(Path(args.template))
+    template = load_json(template_path)
+    region_patch = load_json(resolve_repo_path(Path(args.region_map)))
+    template["regions"] = region_patch["regions"]
+    template["locked_regions"] = region_patch.get("locked_regions", template.get("locked_regions", []))
+    template["free_paint_regions"] = region_patch.get("free_paint_regions", template.get("free_paint_regions", []))
+    if "symmetry" in region_patch:
+        template["symmetry"] = region_patch["symmetry"]
+    if "palette_roles" in region_patch:
+        template["palette_roles"] = region_patch["palette_roles"]
+    output = resolve_repo_path(Path(args.output)) if args.output else template_path
+    mask = load_mask(template["base_mask"])
+    asset_type = load_asset_type(template["asset_type"])
+    errors = validate_instance(template, load_json(template_schema_path()))
+    errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    if errors:
+        raise SystemExit("\n".join(errors))
+    save_json(output, template)
+    print(f"Wrote refined template: {output}")
 
 
 def cmd_repair_generated_png(args: argparse.Namespace) -> None:
@@ -648,25 +1184,113 @@ def mirror_pixels(pixels_to_mirror: set[tuple[int, int]], *, width: int, axis: s
     return {(width - 1 - x, y) for x, y in pixels_to_mirror}
 
 
+def resolve_preset_color(
+    request: dict[str, Any],
+    template: dict[str, Any] | None,
+    op: dict[str, Any],
+    flat_palette: list[tuple[int, int, int, int]],
+) -> tuple[int, int, int, int]:
+    role_name = op.get("role")
+    if role_name:
+        if template is None:
+            raise SystemExit("Palette roles require a template-backed request")
+        return palette_role_color(load_palette(request["material_palette"]), role_name)
+    color_value = op.get("color")
+    if color_value is None:
+        raise SystemExit("Pixel op requires either role or color")
+    return color_from_ops(color_value, flat_palette)
+
+
+def motif_pixels(op: dict[str, Any], region: dict[str, Any]) -> set[tuple[int, int]]:
+    region_set = region_pixels(region)
+    pixels: set[tuple[int, int]] = set()
+    if op.get("points"):
+        bounds = region_set
+        min_x = min(x for x, _ in bounds)
+        min_y = min(y for _, y in bounds)
+        for point in op["points"]:
+            pixel = (min_x + point["x"], min_y + point["y"])
+            if pixel in region_set:
+                pixels.add(pixel)
+    else:
+        pixels = region_set
+    return pixels
+
+
 def execute_pixel_ops(request: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any], ops_payload: dict[str, Any]) -> Image.Image:
     require_pillow()
-    canvas = Image.new("RGBA", (asset_type["canvas"]["width"], asset_type["canvas"]["height"]), (0, 0, 0, 0))
-    palette = palette_rgba(load_palette(request["material_palette"]))
+    template_id = request_template_id(request)
+    template = load_template(template_id) if template_id else None
+    palette_def = load_palette(request["material_palette"])
+    palette = palette_rgba(palette_def)
+    if template:
+        if not template_engine_supported(template, "pixel_native"):
+            raise SystemExit(f"Template does not support pixel_native: {template_id}")
+        canvas = template_base_image(template, palette_def)
+    else:
+        canvas = Image.new("RGBA", (asset_type["canvas"]["width"], asset_type["canvas"]["height"]), (0, 0, 0, 0))
     allowed = mask_allowed_pixels(mask)
     forbidden = mask_forbidden_pixels(mask)
 
     for op in ops_payload["operations"]:
         name = op["op"]
-        color = color_from_ops(op["color"], palette)
         if name == "set_pixel":
+            color = resolve_preset_color(request, template, op, palette)
             pixels_to_fill = {(op["x"], op["y"])}
         elif name == "fill_region":
+            color = resolve_preset_color(request, template, op, palette)
             pixels_to_fill = rect_pixels(op["x"], op["y"], op["width"], op["height"])
         elif name == "shade_zone":
+            color = resolve_preset_color(request, template, op, palette)
             pixels_to_fill = zone_pixels(mask, op["zone"])
         elif name == "mirror_region":
+            color = resolve_preset_color(request, template, op, palette)
             region = rect_pixels(op["x"], op["y"], op["width"], op["height"])
             pixels_to_fill = mirror_pixels(region, width=canvas.width, axis=op["axis"])
+        elif name == "fill_region_role":
+            if template is None:
+                raise SystemExit("fill_region_role requires a template")
+            region = region_by_name(template, op["region"])
+            if region["mode"] not in {"recolor_only", "free_paint", "shade_only"}:
+                raise SystemExit(f"fill_region_role is not allowed for region mode {region['mode']}")
+            role = op["role"]
+            if role not in region["allowed_palette_roles"]:
+                raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
+            color = palette_role_color(palette_def, role)
+            pixels_to_fill = region_pixels(region)
+        elif name == "recolor_region":
+            if template is None:
+                raise SystemExit("recolor_region requires a template")
+            region = region_by_name(template, op["region"])
+            if region["mode"] != "recolor_only":
+                raise SystemExit(f"recolor_region requires a recolor_only region, got {region['mode']}")
+            role = op["role"]
+            if role not in region["allowed_palette_roles"]:
+                raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
+            color = palette_role_color(palette_def, role)
+            pixels_to_fill = region_pixels(region)
+        elif name == "shade_region":
+            if template is None:
+                raise SystemExit("shade_region requires a template")
+            region = region_by_name(template, op["region"])
+            if region["mode"] not in {"shade_only", "free_paint"}:
+                raise SystemExit(f"shade_region is not allowed for region mode {region['mode']}")
+            role = op["role"]
+            if role not in region["allowed_palette_roles"]:
+                raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
+            color = palette_role_color(palette_def, role)
+            pixels_to_fill = region_pixels(region)
+        elif name == "apply_motif":
+            if template is None:
+                raise SystemExit("apply_motif requires a template")
+            region = region_by_name(template, op["region"])
+            if region["mode"] != "motif":
+                raise SystemExit(f"apply_motif requires a motif region, got {region['mode']}")
+            role = op["role"]
+            if role not in region["allowed_palette_roles"]:
+                raise SystemExit(f"Role {role} is not allowed in region {region['name']}")
+            color = palette_role_color(palette_def, role)
+            pixels_to_fill = motif_pixels(op, region)
         else:
             raise SystemExit(f"Unsupported op: {name}")
         for pixel in pixels_to_fill:
@@ -708,6 +1332,92 @@ def cmd_paint_item_icon(args: argparse.Namespace) -> None:
     print(f"Wrote preview: {preview_path}")
 
 
+def cmd_describe_template(args: argparse.Namespace) -> None:
+    template = load_template(args.template_id)
+    print(json.dumps(template, indent=2))
+
+
+def cmd_promote_to_template(args: argparse.Namespace) -> None:
+    asset_type = load_asset_type(args.asset_type) if getattr(args, "asset_type", None) else load_request_and_type(args.request)[1]
+    generated_asset = resolve_repo_path(Path(args.generated_asset))
+    if not generated_asset.exists():
+        raise SystemExit(f"Generated asset does not exist: {generated_asset}")
+    region_map = load_json(resolve_repo_path(Path(args.region_map))) if args.region_map else None
+    mask = load_mask(args.base_mask)
+    errors = validate_mask_against_asset_type(mask, asset_type)
+    if errors:
+        raise SystemExit("\n".join(errors))
+
+    image_source = {"kind": "repo_path", "path": str(generated_asset.relative_to(repo_root()))}
+    image = load_image_from_source(image_source)
+    analysis = analyze_image(image, args.heuristic)
+    template = template_payload(
+        template_id=args.target_template_id,
+        asset_type=asset_type,
+        mask_id=args.base_mask,
+        base_image=image_source,
+        analysis=analysis,
+        notes=[f"Template promoted from generated asset {generated_asset.name}."],
+    )
+    if region_map:
+        template["regions"] = region_map["regions"]
+        template["locked_regions"] = region_map.get("locked_regions", [])
+        template["free_paint_regions"] = region_map.get("free_paint_regions", [])
+        if "palette_roles" in region_map:
+            template["palette_roles"] = region_map["palette_roles"]
+
+    validation_errors = validate_instance(template, load_json(template_schema_path()))
+    validation_errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    if validation_errors:
+        raise SystemExit("\n".join(validation_errors))
+
+    output = resolve_repo_path(Path(args.output))
+    save_json(output, template)
+    print(f"Wrote template: {output}")
+
+
+def cmd_export_preset_seed(args: argparse.Namespace) -> None:
+    request, asset_type = load_request_and_type(args.request)
+    generated_asset = resolve_repo_path(Path(args.generated_asset))
+    if not generated_asset.exists():
+        raise SystemExit(f"Generated asset does not exist: {generated_asset}")
+    region_map = load_json(resolve_repo_path(Path(args.region_map)))
+    mask = load_mask(args.base_mask)
+    errors = validate_mask_against_asset_type(mask, asset_type)
+    if errors:
+        raise SystemExit("\n".join(errors))
+
+    preset = {
+        "id": args.target_preset_id,
+        "asset_type": asset_type["id"],
+        "base_mask": args.base_mask,
+        "base_image": {"kind": "repo_path", "path": str(generated_asset.relative_to(repo_root()))},
+        "palette_roles": region_map["palette_roles"],
+        "regions": region_map["regions"],
+        "locked_regions": region_map.get("locked_regions", []),
+        "free_paint_regions": region_map.get("free_paint_regions", []),
+        "symmetry": region_map.get("symmetry", "none"),
+        "engine_support": region_map.get(
+            "engine_support",
+            {"repair_generated_png": True, "pixel_native": True},
+        ),
+        "exact_base_output": True,
+        "transparent_outside_mask": True,
+        "notes": region_map.get(
+            "notes",
+            [f"Seed preset exported from {request['asset_id']} using {generated_asset.name}."],
+        ),
+    }
+    validation_errors = validate_instance(preset, load_json(template_schema_path()))
+    validation_errors.extend(validate_template_against_asset_type(preset, asset_type, mask))
+    if validation_errors:
+        raise SystemExit("\n".join(validation_errors))
+
+    output = resolve_repo_path(Path(args.output))
+    save_json(output, preset)
+    print(f"Wrote preset seed: {output}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Verbum asset foundry")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -728,6 +1438,54 @@ def main() -> None:
     validate_manifest_parser = subparsers.add_parser("validate-manifest", help="Validate an emitted manifest")
     validate_manifest_parser.add_argument("manifest")
     validate_manifest_parser.set_defaults(func=cmd_validate_manifest)
+
+    inspect_parser = subparsers.add_parser("inspect-image", help="Inspect an image source and print pixel summary")
+    inspect_parser.add_argument("--image")
+    inspect_parser.add_argument("--minecraft-asset")
+    inspect_parser.add_argument("--minecraft-version")
+    inspect_parser.set_defaults(func=cmd_inspect_image)
+
+    analyze_parser = subparsers.add_parser("analyze-image-regions", help="Analyze an image and propose template regions")
+    analyze_parser.add_argument("--image")
+    analyze_parser.add_argument("--minecraft-asset")
+    analyze_parser.add_argument("--minecraft-version")
+    analyze_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    analyze_parser.add_argument("--output")
+    analyze_parser.set_defaults(func=cmd_analyze_image_regions)
+
+    overlay_parser = subparsers.add_parser("render-region-overlay", help="Render a labeled overlay from analysis output")
+    overlay_parser.add_argument("--image")
+    overlay_parser.add_argument("--minecraft-asset")
+    overlay_parser.add_argument("--minecraft-version")
+    overlay_parser.add_argument("--analysis", required=True)
+    overlay_parser.add_argument("--output", required=True)
+    overlay_parser.add_argument("--grid", action="store_true")
+    overlay_parser.set_defaults(func=cmd_render_region_overlay)
+
+    create_template_parser = subparsers.add_parser("create-template-from-image", help="Create a raster-backed template from an image source")
+    create_template_parser.add_argument("--image")
+    create_template_parser.add_argument("--minecraft-asset")
+    create_template_parser.add_argument("--minecraft-version")
+    create_template_parser.add_argument("--asset-type", required=True)
+    create_template_parser.add_argument("--base-mask", required=True)
+    create_template_parser.add_argument("--template-id", required=True)
+    create_template_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    create_template_parser.add_argument("--output")
+    create_template_parser.set_defaults(func=cmd_create_template_from_image)
+
+    refine_template_parser = subparsers.add_parser("refine-template-regions", help="Apply a reviewed region-map patch to a template")
+    refine_template_parser.add_argument("--template", required=True)
+    refine_template_parser.add_argument("--region-map", required=True)
+    refine_template_parser.add_argument("--output")
+    refine_template_parser.set_defaults(func=cmd_refine_template_regions)
+
+    describe_template_parser = subparsers.add_parser("describe-template", help="Print a template definition by id")
+    describe_template_parser.add_argument("template_id")
+    describe_template_parser.set_defaults(func=cmd_describe_template)
+
+    describe_preset_parser = subparsers.add_parser("describe-preset", help="Compatibility alias for describe-template")
+    describe_preset_parser.add_argument("template_id")
+    describe_preset_parser.set_defaults(func=cmd_describe_template)
 
     repair_parser = subparsers.add_parser("repair-generated-png", help="Convert a rough PNG into strict pixel art")
     repair_parser.add_argument("request")
@@ -752,6 +1510,25 @@ def main() -> None:
     paint_parser.add_argument("--preview-output")
     paint_parser.add_argument("--grid", action="store_true")
     paint_parser.set_defaults(func=cmd_paint_item_icon)
+
+    export_preset_parser = subparsers.add_parser("export-preset-seed", help="Export a reusable preset scaffold from a reviewed asset")
+    export_preset_parser.add_argument("request")
+    export_preset_parser.add_argument("--generated-asset", required=True)
+    export_preset_parser.add_argument("--base-mask", required=True)
+    export_preset_parser.add_argument("--region-map", required=True)
+    export_preset_parser.add_argument("--target-preset-id", required=True)
+    export_preset_parser.add_argument("--output", required=True)
+    export_preset_parser.set_defaults(func=cmd_export_preset_seed)
+
+    promote_template_parser = subparsers.add_parser("promote-to-template", help="Turn a reviewed generated PNG into a reusable raster-backed template")
+    promote_template_parser.add_argument("--generated-asset", required=True)
+    promote_template_parser.add_argument("--asset-type", required=True)
+    promote_template_parser.add_argument("--base-mask", required=True)
+    promote_template_parser.add_argument("--template-id", dest="target_template_id", required=True)
+    promote_template_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    promote_template_parser.add_argument("--region-map")
+    promote_template_parser.add_argument("--output", required=True)
+    promote_template_parser.set_defaults(func=cmd_promote_to_template)
 
     args = parser.parse_args()
     args.func(args)

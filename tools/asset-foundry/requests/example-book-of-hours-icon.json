@@ -1,0 +1,23 @@
+{
+  "asset_id": "book_of_hours",
+  "display_name": "Book of Hours",
+  "asset_type": "book_cover_16",
+  "profile": "vocations",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "devotional",
+    "domestic",
+    "worn",
+    "prayer"
+  ],
+  "mask_id": "vanilla_book_16_mask",
+  "template_id": "minecraft_vanilla_book_16",
+  "output": {
+    "resource_root": "modules/features/library/book-of-hours/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Draw a warm Vocations prayer-book icon with a modest clasp and small devotional motif."
+  }
+}

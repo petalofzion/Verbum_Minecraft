@@ -1,0 +1,41 @@
+{
+  "id": "generated_item_basic_16",
+  "asset_type": "simple_item_16",
+  "base_mask": "bench_item_icon_mask",
+  "palette_roles": [
+    "base_dark",
+    "base_mid",
+    "base_light",
+    "accent",
+    "shadow",
+    "highlight"
+  ],
+  "regions": [
+    {
+      "name": "body",
+      "mode": "recolor_only",
+      "rects": [{ "x": 2, "y": 4, "width": 12, "height": 8 }],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "shadow", "highlight"],
+      "default_palette_role": "base_mid",
+      "optional": false
+    },
+    {
+      "name": "accent_mark",
+      "mode": "motif",
+      "rects": [{ "x": 6, "y": 5, "width": 4, "height": 3 }],
+      "allowed_palette_roles": ["accent", "highlight"],
+      "default_palette_role": "accent",
+      "optional": true
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "vertical",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "notes": [
+    "Generic preset for simple generated-style item families."
+  ]
+}

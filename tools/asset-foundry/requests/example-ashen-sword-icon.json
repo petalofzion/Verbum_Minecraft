@@ -1,0 +1,23 @@
+{
+  "asset_id": "ashen_sword",
+  "display_name": "Ashen Sword",
+  "asset_type": "simple_item_16",
+  "profile": "veritas",
+  "material_palette": "veritas_leather",
+  "style_tags": [
+    "austere",
+    "weapon",
+    "worn",
+    "iron"
+  ],
+  "mask_id": "full_item_16_mask",
+  "template_id": "minecraft_vanilla_sword_16",
+  "output": {
+    "resource_root": "modules/features/combat/ashen-sword/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Create a darkened austere sword variant from the vanilla sword family."
+  }
+}

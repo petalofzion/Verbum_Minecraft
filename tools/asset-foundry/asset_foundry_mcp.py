@@ -21,6 +21,51 @@ TOOL = load_asset_foundry()
 
 TOOLS = [
     {
+        "name": "inspect_image",
+        "description": "Inspect an image source and return structural pixel summary.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "analyze_image_regions",
+        "description": "Analyze an image and propose template regions.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["heuristic"],
+            "properties": {
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "create_template_from_image",
+        "description": "Create a raster-backed template from a source image.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["asset_type", "base_mask", "template_id", "heuristic"],
+            "properties": {
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "asset_type": {"type": "string"},
+                "base_mask": {"type": "string"},
+                "template_id": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
+    },
+    {
         "name": "repair_generated_png",
         "description": "Convert a rough PNG into strict pixel art and emit preview-first artifacts.",
         "inputSchema": {
@@ -76,6 +121,34 @@ TOOLS = [
                 "output": {"type": "string"}
             }
         }
+    },
+    {
+        "name": "describe_template",
+        "description": "Describe a raster-backed template by id.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["template_id"],
+            "properties": {
+                "template_id": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "promote_to_template",
+        "description": "Turn a generated PNG into a reusable raster-backed template.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["generated_asset", "asset_type", "base_mask", "template_id", "heuristic", "output"],
+            "properties": {
+                "generated_asset": {"type": "string"},
+                "asset_type": {"type": "string"},
+                "base_mask": {"type": "string"},
+                "template_id": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "region_map": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
     }
 ]
 
@@ -110,6 +183,37 @@ def text_result(text: str) -> dict[str, Any]:
 
 def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     try:
+        if name == "inspect_image":
+            ns = SimpleNamespace(
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+            )
+            TOOL.cmd_inspect_image(ns)
+            return text_result("inspect_image completed")
+        if name == "analyze_image_regions":
+            ns = SimpleNamespace(
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                heuristic=arguments["heuristic"],
+                output=arguments.get("output"),
+            )
+            TOOL.cmd_analyze_image_regions(ns)
+            return text_result("analyze_image_regions completed")
+        if name == "create_template_from_image":
+            ns = SimpleNamespace(
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                asset_type=arguments["asset_type"],
+                base_mask=arguments["base_mask"],
+                template_id=arguments["template_id"],
+                heuristic=arguments["heuristic"],
+                output=arguments.get("output"),
+            )
+            TOOL.cmd_create_template_from_image(ns)
+            return text_result("create_template_from_image completed")
         if name == "repair_generated_png":
             ns = SimpleNamespace(
                 request=arguments["request"],
@@ -141,6 +245,22 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             ns = SimpleNamespace(request=arguments["request"], output=arguments["output"])
             TOOL.cmd_emit_manifest(ns)
             return text_result("emit_manifest completed")
+        if name == "describe_template":
+            ns = SimpleNamespace(template_id=arguments["template_id"])
+            TOOL.cmd_describe_template(ns)
+            return text_result("describe_template completed")
+        if name == "promote_to_template":
+            ns = SimpleNamespace(
+                generated_asset=arguments["generated_asset"],
+                asset_type=arguments["asset_type"],
+                base_mask=arguments["base_mask"],
+                target_template_id=arguments["template_id"],
+                heuristic=arguments["heuristic"],
+                region_map=arguments.get("region_map"),
+                output=arguments["output"],
+            )
+            TOOL.cmd_promote_to_template(ns)
+            return text_result("promote_to_template completed")
         raise SystemExit(f"Unknown tool: {name}")
     except SystemExit as exc:
         raise RuntimeError(str(exc)) from exc

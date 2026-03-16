@@ -1,0 +1,7 @@
+{
+  "operations": [
+    { "op": "recolor_region", "region": "blade", "role": "base_mid" },
+    { "op": "recolor_region", "region": "handle", "role": "base_dark" },
+    { "op": "fill_region_role", "region": "guard", "role": "accent" }
+  ]
+}

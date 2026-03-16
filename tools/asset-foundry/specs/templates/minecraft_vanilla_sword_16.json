@@ -1,0 +1,44 @@
+{
+  "id": "minecraft_vanilla_sword_16",
+  "asset_type": "simple_item_16",
+  "base_mask": "full_item_16_mask",
+  "base_image": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/item/iron_sword.png",
+    "version": "1.21.11"
+  },
+  "palette_roles": ["base_dark", "base_mid", "base_light", "accent", "shadow", "highlight"],
+  "regions": [
+    {
+      "name": "blade",
+      "mode": "recolor_only",
+      "rects": [{ "x": 6, "y": 0, "width": 4, "height": 10 }],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"],
+      "default_palette_role": "base_mid",
+      "optional": false
+    },
+    {
+      "name": "guard",
+      "mode": "recolor_only",
+      "rects": [{ "x": 5, "y": 9, "width": 6, "height": 2 }],
+      "allowed_palette_roles": ["accent", "shadow"],
+      "default_palette_role": "accent",
+      "optional": true
+    },
+    {
+      "name": "handle",
+      "mode": "recolor_only",
+      "rects": [{ "x": 6, "y": 10, "width": 4, "height": 6 }],
+      "allowed_palette_roles": ["base_dark", "shadow"],
+      "default_palette_role": "base_dark",
+      "optional": false
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": { "repair_generated_png": true, "pixel_native": true },
+  "exact_base_output": true,
+  "transparent_outside_mask": true,
+  "notes": ["Vanilla-backed sword family template based on the iron sword icon."]
+}

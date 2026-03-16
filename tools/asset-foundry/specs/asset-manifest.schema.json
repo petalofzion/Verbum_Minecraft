@@ -30,6 +30,8 @@
       }
     },
     "mask_id": { "type": "string", "minLength": 1 },
+    "template_id": { "type": "string", "minLength": 1 },
+    "preset_id": { "type": "string", "minLength": 1 },
     "source_image": { "type": "string", "minLength": 1 },
     "generated_files": {
       "type": "array",

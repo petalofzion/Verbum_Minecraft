@@ -11,6 +11,7 @@
     "desk"
   ],
   "mask_id": "bench_item_icon_mask",
+  "template_id": "generated_item_basic_16",
   "output": {
     "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
   },

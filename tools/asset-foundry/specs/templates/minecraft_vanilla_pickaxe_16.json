@@ -1,0 +1,36 @@
+{
+  "id": "minecraft_vanilla_pickaxe_16",
+  "asset_type": "simple_item_16",
+  "base_mask": "full_item_16_mask",
+  "base_image": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/item/iron_pickaxe.png",
+    "version": "1.21.11"
+  },
+  "palette_roles": ["base_dark", "base_mid", "base_light", "accent", "shadow", "highlight"],
+  "regions": [
+    {
+      "name": "head",
+      "mode": "recolor_only",
+      "rects": [{ "x": 3, "y": 0, "width": 10, "height": 5 }],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"],
+      "default_palette_role": "base_mid",
+      "optional": false
+    },
+    {
+      "name": "handle",
+      "mode": "recolor_only",
+      "rects": [{ "x": 6, "y": 5, "width": 4, "height": 11 }],
+      "allowed_palette_roles": ["base_dark", "shadow"],
+      "default_palette_role": "base_dark",
+      "optional": false
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": { "repair_generated_png": true, "pixel_native": true },
+  "exact_base_output": true,
+  "transparent_outside_mask": true,
+  "notes": ["Vanilla-backed pickaxe family template based on the iron pickaxe icon."]
+}

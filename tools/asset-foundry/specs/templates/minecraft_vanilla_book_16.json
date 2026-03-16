@@ -1,0 +1,96 @@
+{
+  "id": "minecraft_vanilla_book_16",
+  "asset_type": "book_cover_16",
+  "base_mask": "vanilla_book_16_mask",
+  "base_image": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/item/book.png",
+    "version": "1.21.11"
+  },
+  "base_reference": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/item/book.png",
+    "version": "1.21.11",
+    "notes": [
+      "Exact vanilla Minecraft book item."
+    ]
+  },
+  "analysis": {
+    "heuristic": "book",
+    "source_summary": "Book-family template anchored to the vanilla Minecraft book icon.",
+    "color_clusters": [],
+    "components": []
+  },
+  "palette_roles": [
+    "cover_dark",
+    "cover_mid",
+    "cover_light",
+    "spine_dark",
+    "page_tone",
+    "metal_accent",
+    "shadow",
+    "highlight"
+  ],
+  "regions": [
+    {
+      "name": "spine",
+      "mode": "recolor_only",
+      "rects": [{ "x": 2, "y": 1, "width": 2, "height": 14 }],
+      "allowed_palette_roles": ["spine_dark", "shadow"],
+      "default_palette_role": "spine_dark",
+      "optional": false
+    },
+    {
+      "name": "cover",
+      "mode": "recolor_only",
+      "rects": [{ "x": 4, "y": 1, "width": 8, "height": 14 }],
+      "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"],
+      "default_palette_role": "cover_mid",
+      "optional": false
+    },
+    {
+      "name": "page_edge",
+      "mode": "locked",
+      "rects": [{ "x": 12, "y": 2, "width": 1, "height": 11 }],
+      "allowed_palette_roles": ["page_tone"],
+      "default_palette_role": "page_tone",
+      "optional": false
+    },
+    {
+      "name": "clasp",
+      "mode": "recolor_only",
+      "rects": [{ "x": 10, "y": 3, "width": 1, "height": 10 }],
+      "allowed_palette_roles": ["metal_accent", "shadow"],
+      "default_palette_role": "metal_accent",
+      "optional": true
+    },
+    {
+      "name": "emblem",
+      "mode": "motif",
+      "rects": [{ "x": 6, "y": 5, "width": 4, "height": 4 }],
+      "allowed_palette_roles": ["metal_accent", "highlight"],
+      "default_palette_role": "metal_accent",
+      "optional": true
+    },
+    {
+      "name": "highlight",
+      "mode": "shade_only",
+      "rects": [{ "x": 5, "y": 2, "width": 6, "height": 1 }],
+      "allowed_palette_roles": ["highlight", "cover_light"],
+      "default_palette_role": "highlight",
+      "optional": true
+    }
+  ],
+  "locked_regions": ["page_edge"],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "exact_base_output": true,
+  "transparent_outside_mask": true,
+  "notes": [
+    "Use this as the canonical book/manual family template when assets should stay recognizably vanilla-adjacent."
+  ]
+}

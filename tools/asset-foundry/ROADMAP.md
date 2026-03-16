@@ -1,48 +1,58 @@
 # Asset Foundry Roadmap
 
-The previous milestone is complete:
-- preview-first PNG conversion works
-- pixel-native item drawing works
-- validation, manifests, and the thin MCP wrapper exist
+The preset milestone is complete.
 
-This roadmap is now for the **preset/template upgrade**.
+Current milestone:
+- raster-backed templates
+- image inspection and region analysis
+- exact-base vanilla family templates
+- promote generated assets into reusable templates
 
-## Next End State
-Asset Foundry should support reusable preset families that both engines can load and obey.
-
-That means:
-- one base preset can define a whole family such as vanilla-style books
-- rough PNG conversion can be constrained by the preset
-- pixel-native drawing can paint by region and role instead of only raw coordinates
-- approved base assets can become reusable templates for fast variation generation
+## Current End State
+Asset Foundry should let you:
+- take an existing PNG and turn it into a reusable template
+- keep exact base-raster output when no edits are applied
+- define or refine semantic regions on top of that base
+- generate coherent variations from the same template through both engines
+- repeat that flow for books and other vanilla-style item families
 
 ## Major Work Streams
 
-### 1. Preset Family Layer
-Add a new preset schema and preset loader above asset types and masks.
+### 1. Raster-Backed Template Layer
+Templates are now the real family unit:
+- base raster
+- region map
+- edit rules
+- engine support
 
-### 2. Role-Aware Palettes
-Upgrade palettes so presets can refer to semantic color roles, not just flat lists.
+### 2. Image Analysis and Region Proposal
+The tool should inspect a PNG, analyze connected regions/colors, and propose candidate editable regions before manual refinement.
 
-### 3. Region-Aware Engines
-Teach both the PNG-ingest path and the pixel-native path to work through preset regions and region rules.
+### 3. Family-Variant Workflow
+The same template should drive:
+- PNG ingestion / constrained conversion
+- pixel-native region editing
+- promote-generated-asset workflows
 
-### 4. Family Variation Workflow
-Support turning a successful base asset into a reusable preset and generating variants from it.
+### 4. Vanilla Family Onboarding
+First-class families should include:
+- vanilla book
+- vanilla sword
+- vanilla pickaxe
+- vanilla bow
 
-### 5. First-Class Book Family
-Implement the first robust family:
-- vanilla-like book preset
-- manual/codex preset
-- reusable Bible/manual variation flow
+### 5. Future 3D Model Foundry
+Only after the 2D template workflow feels stable:
+- Minecraft model JSON generation
+- UV-aware template families
+- entity/block model foundry concepts
 
 ## Near-Term Target
-The next "complete enough" version should let you:
-- create a preset from a base asset concept
-- load the preset by id
-- generate multiple consistent book variations from it
-- use the same preset in both the conversion and drawing engines
+The next "complete enough" version after this one should let you:
+- load a vanilla or generated base image into a review UI or workflow
+- refine region proposals with less manual JSON editing
+- scale the same family approach across more item classes without ad hoc setup
 
 ## Scope Discipline
-Do not start the 3D model foundry in this milestone.
-Finish the 2D preset/template system first.
+Do not start the 3D model foundry implementation in this milestone.
+Keep the current work focused on 2D template analysis, refinement, and family variation.

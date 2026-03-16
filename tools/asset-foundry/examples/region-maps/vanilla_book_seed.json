@@ -1,0 +1,48 @@
+{
+  "palette_roles": [
+    "cover_dark",
+    "cover_mid",
+    "cover_light",
+    "spine_dark",
+    "page_tone",
+    "metal_accent",
+    "shadow",
+    "highlight"
+  ],
+  "regions": [
+    {
+      "name": "spine",
+      "mode": "recolor_only",
+      "rects": [{ "x": 2, "y": 1, "width": 2, "height": 14 }],
+      "allowed_palette_roles": ["spine_dark", "shadow"],
+      "default_palette_role": "spine_dark",
+      "optional": false
+    },
+    {
+      "name": "cover",
+      "mode": "recolor_only",
+      "rects": [{ "x": 4, "y": 1, "width": 9, "height": 14 }],
+      "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"],
+      "default_palette_role": "cover_mid",
+      "optional": false
+    },
+    {
+      "name": "emblem",
+      "mode": "motif",
+      "rects": [{ "x": 6, "y": 5, "width": 4, "height": 4 }],
+      "allowed_palette_roles": ["metal_accent", "highlight"],
+      "default_palette_role": "metal_accent",
+      "optional": true
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "notes": [
+    "Example seed map for exporting a vanilla-like book preset."
+  ]
+}

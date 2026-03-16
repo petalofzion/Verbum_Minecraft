@@ -1,0 +1,23 @@
+{
+  "asset_id": "bright_sword",
+  "display_name": "Bright Sword",
+  "asset_type": "simple_item_16",
+  "profile": "vocations",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "simple",
+    "weapon",
+    "warm",
+    "tool"
+  ],
+  "mask_id": "full_item_16_mask",
+  "template_id": "minecraft_vanilla_sword_16",
+  "output": {
+    "resource_root": "modules/features/combat/bright-sword/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Create a lighter warm-wood sword variant from the vanilla sword family."
+  }
+}

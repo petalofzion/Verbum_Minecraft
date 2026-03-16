@@ -11,6 +11,7 @@
     "quiet"
   ],
   "mask_id": "book_cover_32_mask",
+  "template_id": "manual_book_icon_32",
   "source_image": {
     "path": "tools/asset-foundry/examples/source/dusty_devotional_rough.png"
   },
