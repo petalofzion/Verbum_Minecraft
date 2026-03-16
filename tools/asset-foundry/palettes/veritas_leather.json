@@ -1,0 +1,29 @@
+{
+  "id": "veritas_leather",
+  "profile": "veritas",
+  "colors": [
+    "#16110E",
+    "#3A2A20",
+    "#654733",
+    "#8B654B",
+    "#C5A17D"
+  ],
+  "roles": {
+    "cover_dark": "#3A2A20",
+    "cover_mid": "#654733",
+    "cover_light": "#8B654B",
+    "spine_dark": "#16110E",
+    "page_tone": "#C5A17D",
+    "metal_accent": "#C5A17D",
+    "shadow": "#16110E",
+    "highlight": "#C5A17D",
+    "base_dark": "#3A2A20",
+    "base_mid": "#654733",
+    "base_light": "#8B654B",
+    "accent": "#C5A17D"
+  },
+  "notes": [
+    "Restrained leather and parchment palette for Veritas manuals.",
+    "Keep ornament subtle and low-noise."
+  ]
+}

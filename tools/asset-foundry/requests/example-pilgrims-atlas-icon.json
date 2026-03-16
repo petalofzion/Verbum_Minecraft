@@ -1,0 +1,23 @@
+{
+  "asset_id": "pilgrims_atlas",
+  "display_name": "Pilgrim's Atlas",
+  "asset_type": "book_cover_16",
+  "profile": "visions",
+  "material_palette": "visions_sea",
+  "style_tags": [
+    "atlas",
+    "traveled",
+    "exploration",
+    "map"
+  ],
+  "mask_id": "vanilla_book_16_mask",
+  "template_id": "minecraft_vanilla_book_16",
+  "output": {
+    "resource_root": "modules/features/library/pilgrims-atlas/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Draw a traveled atlas variant from the vanilla book template with sea-dark binding, brass compass emblem, and preserved parchment pages."
+  }
+}

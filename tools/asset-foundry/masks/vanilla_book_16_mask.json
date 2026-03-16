@@ -1,0 +1,27 @@
+{
+  "id": "vanilla_book_16_mask",
+  "asset_type": "book_cover_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "allowed_rects": [
+    { "x": 0, "y": 1, "width": 16, "height": 14 }
+  ],
+  "forbidden_rects": [],
+  "zones": {
+    "spine": {
+      "rects": [{ "x": 0, "y": 1, "width": 4, "height": 14 }]
+    },
+    "cover": {
+      "rects": [{ "x": 4, "y": 1, "width": 9, "height": 14 }]
+    },
+    "pages": {
+      "rects": [{ "x": 13, "y": 1, "width": 3, "height": 14 }]
+    }
+  },
+  "symmetry": "none",
+  "notes": [
+    "Mask matched to the full vanilla Minecraft book silhouette."
+  ]
+}

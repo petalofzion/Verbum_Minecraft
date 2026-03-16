@@ -1,0 +1,24 @@
+{
+  "id": "simple_block_face_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "kind": "block_texture",
+  "output_files": [
+    "textures/block/{asset_id}.png"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "no",
+    "transparency_mode": "binary",
+    "mixel_policy": "strict",
+    "readability_hint": "Single block faces should read in-world without muddy texture noise.",
+    "anti_mixel_passes": 2,
+    "notes": [
+      "Use for simple single-face block textures.",
+      "Avoid noisy detail that collapses at distance."
+    ]
+  }
+}

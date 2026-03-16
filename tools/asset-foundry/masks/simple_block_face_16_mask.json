@@ -1,0 +1,28 @@
+{
+  "id": "simple_block_face_16_mask",
+  "asset_type": "simple_block_face_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "allowed_rects": [
+    { "x": 0, "y": 0, "width": 16, "height": 16 }
+  ],
+  "forbidden_rects": [],
+  "zones": {
+    "top_band": {
+      "rects": [
+        { "x": 0, "y": 0, "width": 16, "height": 4 }
+      ]
+    },
+    "body": {
+      "rects": [
+        { "x": 0, "y": 4, "width": 16, "height": 12 }
+      ]
+    }
+  },
+  "symmetry": "none",
+  "notes": [
+    "Full-face mask for simple block textures."
+  ]
+}

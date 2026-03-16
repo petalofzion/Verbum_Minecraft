@@ -1,0 +1,23 @@
+{
+  "asset_id": "dusty_devotional",
+  "display_name": "Dusty Devotional",
+  "asset_type": "book_cover_16",
+  "profile": "veritas",
+  "material_palette": "dusty_cloth",
+  "style_tags": [
+    "worn",
+    "restrained",
+    "devotional",
+    "quiet"
+  ],
+  "mask_id": "vanilla_book_16_mask",
+  "template_id": "minecraft_vanilla_book_16",
+  "output": {
+    "resource_root": "modules/features/library/dusty-devotional/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Recolor the vanilla book body into a worn dusty devotional variant while preserving the original vanilla pages."
+  }
+}

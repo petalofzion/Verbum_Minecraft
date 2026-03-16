@@ -1,0 +1,33 @@
+{
+  "asset_id": "oak_bench",
+  "display_name": "Oak Bench",
+  "profile": "vocations",
+  "asset_type": "bench_uv_32",
+  "material_palette": "vocations_oak",
+  "style_tags": [
+    "warm",
+    "domestic",
+    "worn",
+    "handcrafted"
+  ],
+  "mask_id": "bench_item_icon_mask",
+  "output": {
+    "resource_root": "modules/features/furniture/oak-bench/src/main/resources/assets/verbum",
+    "files": [
+      "modules/features/furniture/oak-bench/src/main/resources/assets/verbum/textures/block/oak_bench.png",
+      "modules/features/furniture/oak-bench/src/main/resources/assets/verbum/models/block/oak_bench.json",
+      "modules/features/furniture/oak-bench/src/main/resources/assets/verbum/models/item/oak_bench.json",
+      "modules/features/furniture/oak-bench/src/main/resources/assets/verbum/blockstates/oak_bench.json",
+      "modules/features/furniture/oak-bench/src/main/resources/assets/verbum/items/oak_bench.json"
+    ]
+  },
+  "provenance": {
+    "requested_by": "user",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Warm handcrafted oak bench for Vocations."
+  },
+  "review": {
+    "status": "draft",
+    "notes": []
+  }
+}

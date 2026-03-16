@@ -1,0 +1,23 @@
+{
+  "asset_id": "bible",
+  "display_name": "The Holy Bible",
+  "asset_type": "book_cover_16",
+  "profile": "veritas",
+  "material_palette": "veritas_leather",
+  "style_tags": [
+    "sacred",
+    "restrained",
+    "manual",
+    "leather"
+  ],
+  "mask_id": "vanilla_book_16_mask",
+  "template_id": "minecraft_vanilla_book_16",
+  "output": {
+    "resource_root": "modules/features/library/bible/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Draw a restrained Holy Bible item icon with a dark spine, warm leather cover, and small gold cross."
+  }
+}

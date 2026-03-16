@@ -1,0 +1,24 @@
+{
+  "id": "book_cover_16",
+  "canvas": {
+    "width": 16,
+    "height": 16
+  },
+  "kind": "item_icon",
+  "output_files": [
+    "textures/item/{asset_id}.png"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "no",
+    "transparency_mode": "binary",
+    "mixel_policy": "strict",
+    "readability_hint": "Book covers need clear spine and emblem contrast at inventory size.",
+    "anti_mixel_passes": 2,
+    "notes": [
+      "Use for compact book and manual icons.",
+      "Favor emblem readability over dense ornament."
+    ]
+  }
+}

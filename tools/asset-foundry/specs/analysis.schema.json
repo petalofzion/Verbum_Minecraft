@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "required": [
+    "source_summary",
+    "canvas",
+    "opaque_bounds",
+    "colors",
+    "components",
+    "adjacency",
+    "tone_ramps",
+    "detail_candidates",
+    "zone_candidates",
+    "pixel_groups",
+    "topology_map"
+  ],
+  "properties": {
+    "source_summary": { "type": "string", "minLength": 1 },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "opaque_bounds": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "colors": { "type": "array" },
+    "components": { "type": "array" },
+    "adjacency": { "type": "array" },
+    "tone_ramps": { "type": "array" },
+    "detail_candidates": { "type": "array" },
+    "zone_candidates": { "type": "array" },
+    "pixel_groups": { "type": "array" },
+    "topology_map": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

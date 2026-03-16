@@ -1,0 +1,70 @@
+{
+  "id": "manual_book_icon_32",
+  "asset_type": "book_cover_32",
+  "base_mask": "book_cover_32_mask",
+  "palette_roles": [
+    "cover_dark",
+    "cover_mid",
+    "cover_light",
+    "spine_dark",
+    "page_tone",
+    "metal_accent",
+    "shadow",
+    "highlight"
+  ],
+  "regions": [
+    {
+      "name": "spine",
+      "mode": "recolor_only",
+      "rects": [{ "x": 4, "y": 2, "width": 4, "height": 28 }],
+      "allowed_palette_roles": ["spine_dark", "shadow"],
+      "default_palette_role": "spine_dark",
+      "optional": false
+    },
+    {
+      "name": "cover",
+      "mode": "recolor_only",
+      "rects": [{ "x": 8, "y": 2, "width": 18, "height": 28 }],
+      "allowed_palette_roles": ["cover_dark", "cover_mid", "cover_light", "shadow", "highlight"],
+      "default_palette_role": "cover_mid",
+      "optional": false
+    },
+    {
+      "name": "page_edge",
+      "mode": "locked",
+      "rects": [{ "x": 24, "y": 4, "width": 2, "height": 22 }],
+      "allowed_palette_roles": ["page_tone"],
+      "default_palette_role": "page_tone",
+      "optional": false
+    },
+    {
+      "name": "emblem",
+      "mode": "motif",
+      "rects": [{ "x": 13, "y": 11, "width": 8, "height": 8 }],
+      "allowed_palette_roles": ["metal_accent", "highlight"],
+      "default_palette_role": "metal_accent",
+      "optional": true
+    },
+    {
+      "name": "border",
+      "mode": "shade_only",
+      "rects": [
+        { "x": 8, "y": 2, "width": 18, "height": 2 },
+        { "x": 8, "y": 28, "width": 18, "height": 2 }
+      ],
+      "allowed_palette_roles": ["highlight", "shadow"],
+      "default_palette_role": "highlight",
+      "optional": true
+    }
+  ],
+  "locked_regions": ["page_edge"],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "notes": [
+    "Larger manual/codex preset for richer cover treatment."
+  ]
+}

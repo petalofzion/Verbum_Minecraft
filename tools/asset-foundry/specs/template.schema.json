@@ -1,0 +1,254 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "asset_type",
+    "base_mask",
+    "base_image",
+    "palette_roles",
+    "regions",
+    "locked_regions",
+    "free_paint_regions",
+    "symmetry",
+    "engine_support",
+    "exact_base_output",
+    "transparent_outside_mask",
+    "notes"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "asset_type": { "type": "string", "minLength": 1 },
+    "base_mask": { "type": "string", "minLength": 1 },
+    "base_image": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["repo_path", "minecraft_vanilla_asset"] },
+        "path": { "type": "string", "minLength": 1 },
+        "asset_path": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "base_reference": {
+      "type": "object",
+      "required": ["kind", "asset_path"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1 },
+        "asset_path": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "heuristic": { "type": "string", "minLength": 1 },
+        "source_summary": { "type": "string", "minLength": 1 },
+        "color_clusters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["hex", "count"],
+            "properties": {
+              "hex": { "type": "string", "minLength": 4 },
+              "count": { "type": "integer", "minimum": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["hex", "count", "bounds"],
+            "properties": {
+              "hex": { "type": "string", "minLength": 4 },
+              "count": { "type": "integer", "minimum": 1 },
+              "bounds": {
+                "type": "object",
+                "required": ["x", "y", "width", "height"],
+                "properties": {
+                  "x": { "type": "integer", "minimum": 0 },
+                  "y": { "type": "integer", "minimum": 0 },
+                  "width": { "type": "integer", "minimum": 1 },
+                  "height": { "type": "integer", "minimum": 1 }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "group_summary": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "count", "mode"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "count": { "type": "integer", "minimum": 0 },
+              "mode": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "detail_candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "bounds", "count"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "count": { "type": "integer", "minimum": 0 },
+              "bounds": {
+                "type": "object",
+                "required": ["x", "y", "width", "height"],
+                "properties": {
+                  "x": { "type": "integer", "minimum": 0 },
+                  "y": { "type": "integer", "minimum": 0 },
+                  "width": { "type": "integer", "minimum": 1 },
+                  "height": { "type": "integer", "minimum": 1 }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "palette_roles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "pixel_groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "mode", "pixels", "allowed_palette_roles", "default_palette_role"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "kind": { "type": "string", "minLength": 1 },
+          "mode": {
+            "type": "string",
+            "enum": ["locked", "recolor_only", "detail", "motif", "free_paint", "shade_only"]
+          },
+          "source_color_id": { "type": "string", "minLength": 1 },
+          "rank": { "type": "integer", "minimum": 0 },
+          "pixels": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["x", "y"],
+              "properties": {
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "allowed_palette_roles": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "default_palette_role": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "group_sets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "minLength": 1 }
+      }
+    },
+    "detail_replacements": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "fallback_role": { "type": "string", "minLength": 1 },
+          "clear_to_group": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "regions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "mode", "rects", "allowed_palette_roles", "default_palette_role", "optional"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "mode": {
+            "type": "string",
+            "enum": ["locked", "recolor_only", "motif", "free_paint", "shade_only"]
+          },
+          "rects": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["x", "y", "width", "height"],
+              "properties": {
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 },
+                "width": { "type": "integer", "minimum": 1 },
+                "height": { "type": "integer", "minimum": 1 }
+              },
+              "additionalProperties": false
+            }
+          },
+          "allowed_palette_roles": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "default_palette_role": { "type": "string", "minLength": 1 },
+          "optional": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "locked_regions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "free_paint_regions": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "symmetry": {
+      "type": "string",
+      "enum": ["none", "vertical"]
+    },
+    "engine_support": {
+      "type": "object",
+      "required": ["repair_generated_png", "pixel_native"],
+      "properties": {
+        "repair_generated_png": { "type": "boolean" },
+        "pixel_native": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "exact_base_output": { "type": "boolean" },
+    "transparent_outside_mask": { "type": "boolean" },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "additionalProperties": false
+}

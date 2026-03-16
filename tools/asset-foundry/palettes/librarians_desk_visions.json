@@ -1,0 +1,37 @@
+{
+  "id": "librarians_desk_visions",
+  "profile": "visions",
+  "colors": [
+    "#110E08",
+    "#19140C",
+    "#1B160D",
+    "#281E0B",
+    "#382116",
+    "#41230E",
+    "#4B2B18",
+    "#1F3A42",
+    "#36656D",
+    "#6E9DA3",
+    "#B5B5B5",
+    "#D8D8D8",
+    "#FFFFFF"
+  ],
+  "roles": {
+    "base_dark": "#1F3A42",
+    "base_mid": "#36656D",
+    "base_light": "#6E9DA3",
+    "accent": "#D8D8D8",
+    "shadow": "#19140C",
+    "highlight": "#FFFFFF",
+    "cover_dark": "#1F3A42",
+    "cover_mid": "#36656D",
+    "cover_light": "#6E9DA3",
+    "spine_dark": "#19140C",
+    "page_tone": "#D8D8D8",
+    "metal_accent": "#FFFFFF"
+  },
+  "notes": [
+    "Teal-blue wood recolor palette for the Librarian's Desk crafting-table-derived face.",
+    "Includes locked paper and linework colors so template-backed validation stays legal."
+  ]
+}

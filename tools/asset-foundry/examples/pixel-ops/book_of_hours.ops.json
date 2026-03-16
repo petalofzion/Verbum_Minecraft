@@ -1,0 +1,5 @@
+{
+  "operations": [
+    { "op": "remap_group_set_role", "group_set": "body_all", "role": "cover_mid" }
+  ]
+}

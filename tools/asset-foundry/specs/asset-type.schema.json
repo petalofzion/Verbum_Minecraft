@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verbum Asset Type",
+  "type": "object",
+  "required": [
+    "id",
+    "canvas",
+    "kind",
+    "output_files",
+    "rules"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "canvas": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "kind": { "type": "string", "minLength": 1 },
+    "output_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rules": {
+      "type": "object",
+      "required": [
+        "palette_required",
+        "mask_required",
+        "allow_partial_alpha",
+        "transparency_mode",
+        "mixel_policy",
+        "readability_hint",
+        "anti_mixel_passes"
+      ],
+      "properties": {
+        "palette_required": { "type": "string", "enum": ["yes", "no"] },
+        "mask_required": { "type": "string", "enum": ["yes", "no"] },
+        "allow_partial_alpha": { "type": "string", "enum": ["yes", "no"] },
+        "transparency_mode": { "type": "string", "enum": ["binary", "limited", "full"] },
+        "mixel_policy": { "type": "string", "enum": ["strict", "moderate", "loose"] },
+        "readability_hint": { "type": "string", "minLength": 1 },
+        "anti_mixel_passes": { "type": "integer", "minimum": 0 },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,4 @@
+.venv/
+previews/generated/
+*.pyc
+__pycache__/

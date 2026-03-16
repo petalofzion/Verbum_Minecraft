@@ -1,0 +1,24 @@
+{
+  "id": "book_cover_32",
+  "canvas": {
+    "width": 32,
+    "height": 32
+  },
+  "kind": "item_icon",
+  "output_files": [
+    "textures/item/{asset_id}.png"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "no",
+    "transparency_mode": "binary",
+    "mixel_policy": "strict",
+    "readability_hint": "Larger manual covers can carry detail but must still read as pixel art.",
+    "anti_mixel_passes": 3,
+    "notes": [
+      "Use for richer book and manual cover art.",
+      "Keep borders and central motifs intentional."
+    ]
+  }
+}
