@@ -34,3 +34,12 @@ Keep it short and bounded:
 ## Rule
 Bundle all discovered capability gaps into one log entry when possible.
 Do not stop-start repeatedly for one feature.
+
+## Repo-Agent Closure Checklist
+When a repo agent fulfills a capability request, they should update the capsule-facing discovery surfaces before handing work back:
+- `docs/contracts/CORE_API.md` if the capability is available to capsules
+- `docs/contracts/contract_wiring.tsv`
+- generated `docs/contracts/CONTRACT_INDEX.md`
+- relevant `docs/wiring/*` notes when assembly behavior changed
+
+If those surfaces are not updated, capsule agents should treat the capability as undocumented and stop again rather than guessing.

@@ -14,14 +14,15 @@ Use it as a procedural checklist, not as a narrative guide.
 | --- | --- | --- | --- | --- | --- |
 | New capsule/module | `module.json`, capsule docs, SPI registration | `modules/modules.toml`, `docs/CAPSULE_INDEX.*`, `docs/TODO_INDEX.md` | `python3 tools/scripts/update_module_manifest.py`, `python3 tools/scripts/update_capsule_index.py`, `tools/scripts/update_todo_index.sh`, `./gradlew check build` | Capsule can create local files; repo agent owns indexes | new contract or assembly wiring needed |
 | Changed module metadata | `module.json`, profile placement | `modules/modules.toml`, `docs/CAPSULE_INDEX.*`, profile docs if semantics changed | `python3 tools/scripts/update_module_manifest.py`, `python3 tools/scripts/update_capsule_index.py`, `./gradlew check build` | no, unless packet includes repo integration | metadata changes alter profile identity or inheritance |
-| New API/SPI contract | `modules/core/api`, `modules/core/spi`, `docs/contracts/CORE_API.md` | `docs/contracts/contract_wiring.tsv`, `docs/contracts/CONTRACT_INDEX.md`, possibly ADRs | `tools/scripts/update_contract_index.sh`, `./gradlew check build` | no | contract shape affects multiple capsules or public API |
-| Changed contract wiring | assembly wiring and registrar code | `docs/contracts/contract_wiring.tsv`, `docs/contracts/CONTRACT_INDEX.md`, wiring docs | `tools/scripts/update_contract_index.sh`, `./gradlew check build` | no | change touches assemblies or multiple profiles |
+| New API/SPI contract | `modules/core/api`, `modules/core/spi`, `docs/contracts/CORE_API.md` | `docs/contracts/CORE_API.md`, `docs/contracts/contract_wiring.tsv`, `docs/contracts/CONTRACT_INDEX.md`, possibly ADRs | `tools/scripts/update_contract_index.sh`, `./gradlew check build` | no | contract shape affects multiple capsules or public API |
+| Changed contract wiring | assembly wiring and registrar code | `docs/contracts/CORE_API.md` when capsule-usable behavior changed, `docs/contracts/contract_wiring.tsv`, `docs/contracts/CONTRACT_INDEX.md`, wiring docs | `tools/scripts/update_contract_index.sh`, `./gradlew check build` | no | change touches assemblies or multiple profiles |
 | Assembly wiring change | `assemblies/*`, `docs/wiring/ASSEMBLY_WIRING.md`, `docs/wiring/UI_WIRING.md` | relevant wiring docs, `docs/contracts/contract_wiring.tsv` if contract consumption changes | `tools/scripts/update_contract_index.sh`, `./gradlew check build` | no | any Fabric/Minecraft/config/IO change |
 | Player-facing content/manual change | profile docs, style bible, capsule README/PRD | capsule docs, `docs/CAPSULE_INDEX.*` if purpose/scope changed | `python3 tools/scripts/update_capsule_index.py`, `./gradlew check build` | yes, inside capsule | copy change alters profile semantics or naming |
 | Library-backed book change | `LibraryBookDef` book id, asset path, lang/item/model files | matching `assets/<ns>/books/<path>@<edition>.txt` when edition-qualified | `./gradlew verifyLibraryBookResources`, `./gradlew check build` | yes, if local to the capsule | resource naming no longer matches declared book id |
 | Asset foundry tooling change | `tools/asset-foundry/*`, request/manifest schemas, provenance rules | local docs, schema examples, attribution if external code/deps were adapted | `python3 tools/asset-foundry/asset_foundry.py validate-request ...`, `python3 tools/asset-foundry/asset_foundry.py validate-manifest ...`, `./gradlew check build` | no | tooling adds new external dependency, MCP/runtime coupling, or output-path conventions change |
 | Generated art asset bundle | asset request, palette, mask, module resource path, lang/model/blockstate files | provenance manifest, target module assets, any related module docs | `python3 tools/asset-foundry/asset_foundry.py plan-bundle ...`, `python3 tools/asset-foundry/asset_foundry.py emit-manifest ...`, `./gradlew check build` | yes for local capsule-owned assets; repo agent for shared palettes/specs | asset type or output root implies cross-module/shared tooling change |
 | Orchestration schema/tooling change | task/report schemas, wrapper scripts, quickstart docs | examples, `docs/agents/*`, `tools/scripts/*` | `./gradlew verifyAgentProtocolAssets`, `./gradlew check build` | no | change affects packet/report contract or executor behavior |
+| Runtime-sensitive seam change | `assemblies/*`, `modules/core/api/*`, `docs/GOTCHAS.md` | verifier docs/templates if expectations changed, gotchas when a new pitfall is discovered | `python3 tools/scripts/runtime_smoke_check.py --profile <profile>`, `./gradlew check build` | no | runtime init is required to prove correctness |
 | New gotcha / version pitfall | version-specific behavior | `docs/GOTCHAS.md` | manual review + `./gradlew check build` | yes, if local discovery; repo agent should integrate | issue affects assemblies, assets, or multiple capsules |
 | New subsystem / architecture shift | architecture map, runtime constitution, ADR rules | ADR, relevant core docs, possibly update surfaces | `./gradlew check build` plus any benchmark obligations | no | architecture or public contract changes |
 
@@ -31,6 +32,13 @@ Refresh these through scripts, not by hand:
 - `docs/CAPSULE_INDEX.md` and `docs/CAPSULE_INDEX.tsv` via `python3 tools/scripts/update_capsule_index.py`
 - `docs/TODO_INDEX.md` via `tools/scripts/update_todo_index.sh`
 - `docs/contracts/CONTRACT_INDEX.md` via `tools/scripts/update_contract_index.sh`
+
+## Capability Gap Closure Rule
+When a repo agent adds a new capability that capsule agents may rely on, the gap is not considered closed until:
+- the contract is listed in `docs/contracts/CORE_API.md`
+- the wiring status is reflected in `docs/contracts/contract_wiring.tsv`
+- the generated `docs/contracts/CONTRACT_INDEX.md` has been refreshed
+- any relevant wiring notes in `docs/wiring/*` are updated
 
 ## Minimum Repo-Agent Finish Sequence
 ```bash

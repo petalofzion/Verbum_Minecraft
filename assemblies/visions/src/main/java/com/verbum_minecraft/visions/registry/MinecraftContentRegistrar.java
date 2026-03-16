@@ -1,5 +1,6 @@
 package com.verbum_minecraft.visions.registry;
 
+import com.verbum_minecraft.api.content.BlockDef;
 import com.verbum_minecraft.api.content.BookDef;
 import com.verbum_minecraft.api.content.ContentSink;
 import com.verbum_minecraft.api.content.ItemDef;
@@ -28,8 +29,12 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class MinecraftContentRegistrar implements ContentSink {
     @Override
@@ -40,6 +45,19 @@ public class MinecraftContentRegistrar implements ContentSink {
         Item item = new Item(settings);
         Registry.register(BuiltInRegistries.ITEM, id, item);
         registerCreativeTab(def, item);
+    }
+
+    @Override
+    public void acceptBlock(BlockDef def) {
+        Identifier id = toIdentifier(def.id());
+        Block block = createBlock(def, id);
+        Registry.register(BuiltInRegistries.BLOCK, id, block);
+
+        Item.Properties settings = new Item.Properties()
+            .setId(ResourceKey.create(Registries.ITEM, id));
+        BlockItem item = new BlockItem(block, settings);
+        Registry.register(BuiltInRegistries.ITEM, id, item);
+        registerCreativeTab(def.creativeTabKey(), item);
     }
 
     @Override
@@ -96,7 +114,10 @@ public class MinecraftContentRegistrar implements ContentSink {
     }
 
     private static void registerCreativeTab(ItemDef def, Item item) {
-        String key = def.creativeTabKey();
+        registerCreativeTab(def.creativeTabKey(), item);
+    }
+
+    private static void registerCreativeTab(String key, Item item) {
         if (key == null || key.isBlank()) {
             return;
         }
@@ -118,6 +139,32 @@ public class MinecraftContentRegistrar implements ContentSink {
         }
 
         ItemGroupEvents.modifyEntriesEvent(tabKey).register(entries -> entries.accept(item));
+    }
+
+    private static Block createBlock(BlockDef def, Identifier id) {
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
+            .setId(ResourceKey.create(Registries.BLOCK, id))
+            .strength(def.destroyTime(), def.explosionResistance())
+            .sound(toSoundType(def.soundTypeKey()));
+        if (def.hasWorkstationBehavior()) {
+            return new WorkstationFeatureBlock(properties, def.workstationBehaviorId());
+        }
+        if (def.hasInteractionBehavior()) {
+            return new InteractiveFeatureBlock(properties, def.interactionBehaviorId());
+        }
+        return new Block(properties);
+    }
+
+    private static SoundType toSoundType(String key) {
+        return switch (key) {
+            case "wood" -> SoundType.WOOD;
+            case "gravel" -> SoundType.GRAVEL;
+            case "metal" -> SoundType.METAL;
+            case "glass" -> SoundType.GLASS;
+            case "wool" -> SoundType.WOOL;
+            case "sand" -> SoundType.SAND;
+            default -> SoundType.STONE;
+        };
     }
 
     private static WrittenBookContent buildWrittenBookContent(BookDef def) {

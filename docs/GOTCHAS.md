@@ -9,6 +9,8 @@ Include a source link for each entry.
 - Fabric API: 0.140.2+1.21.11
 
 ## Gotchas
+- When registering new blocks in 1.21.11, block properties must carry a block registry id before block construction. If a custom block registration path skips `Properties.setId(ResourceKey.create(Registries.BLOCK, id))`, client startup can crash with `NullPointerException: Block id not set`.
+  Source: local Verbum runtime crash and mapped stacktrace during `:assemblies:vocations:runClient` on 2026-03-15.
 - Item model definitions live in `assets/<namespace>/items/<id>.json`, and the
   `minecraft:item_model` item component points to the resource location for the
   items model. Missing `items/<id>.json` breaks item rendering even if the model

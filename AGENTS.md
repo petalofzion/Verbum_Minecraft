@@ -46,7 +46,8 @@ If you are assigned to a capsule, **do not** read the entire repo. Follow the fu
 4. **[docs/runtime-constitution.md](docs/runtime-constitution.md)** (performance laws).
 5. **[docs/contracts/CORE_API.md](docs/contracts/CORE_API.md)** (available contracts).
 6. **[docs/contracts/CONTRACT_INDEX.md](docs/contracts/CONTRACT_INDEX.md)** (wiring coverage).
-7. Capsule docs: `README.md`, `docs/PRD.md`, `docs/MVP.md`, `docs/TODO.md`, `docs/agent-logs/`.
+7. **[docs/GOTCHAS.md](docs/GOTCHAS.md)** (version-specific pitfalls that affect assets, data, and runtime assumptions).
+8. Capsule docs: `README.md`, `docs/PRD.md`, `docs/MVP.md`, `docs/TODO.md`, `docs/agent-logs/`.
 
 ### Repo Agents (wiring, orchestration, cross-module)
 Repo agents must read broader documentation before working:
@@ -59,12 +60,13 @@ Repo agents must read broader documentation before working:
 6. **[docs/runtime-constitution.md](docs/runtime-constitution.md)** (performance laws).
 7. **[docs/contracts/CORE_API.md](docs/contracts/CORE_API.md)** (available contracts).
 8. **[docs/wiring/ASSEMBLY_WIRING.md](docs/wiring/ASSEMBLY_WIRING.md)** (wiring map).
-9. **[docs/UPDATE_SURFACES.md](docs/UPDATE_SURFACES.md)** (repo-wide update obligations).
-10. **[docs/CAPSULE_INDEX.md](docs/CAPSULE_INDEX.md)** (current capsule/module inventory).
-11. **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** (style/testing workflow).
-12. **[CODEOWNERS](CODEOWNERS)** (ownership).
-13. **[TODO.md](TODO.md)** and **[docs/TODO_INDEX.md](docs/TODO_INDEX.md)** (coordination).
-14. **Nearest `AGENTS.md`** for any module you touch.
+9. **[docs/GOTCHAS.md](docs/GOTCHAS.md)** (version-specific pitfalls that affect wiring, assets, and runtime assumptions).
+10. **[docs/UPDATE_SURFACES.md](docs/UPDATE_SURFACES.md)** (repo-wide update obligations).
+11. **[docs/CAPSULE_INDEX.md](docs/CAPSULE_INDEX.md)** (current capsule/module inventory).
+12. **[docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)** (style/testing workflow).
+13. **[CODEOWNERS](CODEOWNERS)** (ownership).
+14. **[TODO.md](TODO.md)** and **[docs/TODO_INDEX.md](docs/TODO_INDEX.md)** (coordination).
+15. **Nearest `AGENTS.md`** for any module you touch.
 
 Repo agents are responsible for maintaining `TODO.md`, `docs/TODO_INDEX.md`, and the contract wiring index (`docs/contracts/contract_wiring.tsv` → `docs/contracts/CONTRACT_INDEX.md`).
 

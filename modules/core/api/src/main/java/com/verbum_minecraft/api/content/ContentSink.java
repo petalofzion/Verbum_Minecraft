@@ -6,6 +6,8 @@ package com.verbum_minecraft.api.content;
 public interface ContentSink {
     void acceptItem(ItemDef def);
 
+    void acceptBlock(BlockDef def);
+
     void acceptBook(BookDef def);
 
     void acceptLibraryBook(LibraryBookDef def);

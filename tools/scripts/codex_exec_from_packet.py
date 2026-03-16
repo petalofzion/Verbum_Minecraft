@@ -32,6 +32,12 @@ def build_prompt(packet):
     lines.append("Stop conditions:")
     lines.extend(f"- {item}" for item in packet["stop_conditions"])
     lines.append(f"Verification scope: {packet['verification_scope']}")
+    if packet["role"] == "verifier":
+        lines.append("You are a verification-only agent. Do not implement fixes or modify implementation files.")
+    if packet.get("verification_targets"):
+        lines.append(f"Verification targets: {', '.join(packet['verification_targets'])}")
+    if packet.get("gotcha_review_required"):
+        lines.append("A gotcha review is required. Read docs/GOTCHAS.md and list the relevant gotchas you checked in gotchas_checked.")
     if packet["verification_scope"] == "capsule_local":
         lines.append(
             "You own only capsule-local verification. Do not treat repo-wide index updates or full repo builds as required for task completion."
@@ -50,6 +56,8 @@ def build_prompt(packet):
     lines.append(
         "Set blocker_category to one of: none, environment, scope, contract, verification, requirements, unknown."
     )
+    if packet["role"] == "verifier":
+        lines.append("Verifier reports should keep files_touched empty and use verification_summary for the outcome.")
     lines.append("End immediately after completion or when any stop condition fires.")
     return "\n".join(lines)
 

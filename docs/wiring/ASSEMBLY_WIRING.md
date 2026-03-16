@@ -27,12 +27,21 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
 
 **Current mapping:**
 - `ItemDef` → `Item.Properties` → `Registry.register(BuiltInRegistries.ITEM, id, item)`
+- `BlockDef` → `BlockBehaviour.Properties` → `Registry.register(BuiltInRegistries.BLOCK, id, block)` plus a same-id `BlockItem`
+  - If `workstationBehaviorId` is set, assemblies resolve a `BlockWorkstationBehaviorProvider` through SPI and create a `WorkstationFeatureBlock`.
+  - If `interactionBehaviorId` is set, assemblies resolve a `BlockInteractionBehaviorProvider` through SPI and create an `InteractiveFeatureBlock`.
 - `maxStackSize`, `fireproof`, `rarityOrdinal` are mapped directly.
 - `creativeTabKey` is wired via Fabric ItemGroupEvents.
   - Supported keys: `books`, `tools`, `ingredients`, `combat`, `food`, `building`, `functional`, `redstone`, `spawn_eggs`
   - Mapping uses vanilla creative tabs (e.g., `books` → `TOOLS_AND_UTILITIES`).
 - `BookDef` → `WrittenBookItem` + `DataComponents.WRITTEN_BOOK_CONTENT` (vanilla book limits apply).
 - `LibraryBookDef` → library-backed `WrittenBookItem` that opens `BookViewScreen` with pages loaded from the Book Enhancement library (offline, classpath resources). Item content uses a tiny placeholder page to avoid large NBT payloads. The client paginates text to `BookViewScreen` text width/height so pages are not truncated.
+- `BlockInteractionHandler` → generic `InteractiveFeatureBlock` wiring in assemblies. The assembly constructs a pure `BlockInteractionContext` from held item id / sneaking / creative mode, calls the capsule-owned handler, and applies `BlockInteractionResult` grants or messages server-side.
+- `BlockWorkstationHandler` → workstation wiring in assemblies.
+  - Veritas currently uses a direct `WorkstationFeatureBlock` action path.
+  - Vocations, Visions, and Vorago route workstation blocks through `LibrariansDeskWorkstationMenu` + client screen registration so explicit actions (`salvage_all`, `copy_books`, `edit_player_book`, `write_draft`) are dispatched from a real menu/container flow.
+  - Assembly wiring applies `WorkstationSlotDelta` consumption for batch operations, resolves `ItemGrant` outputs, and materializes `WorkstationPlayerBookGrant` outputs as player-owned `minecraft:written_book` stacks without mutating shipped library resources.
+- `BlockInteractionBehaviorProvider` / `BlockWorkstationBehaviorProvider` → SPI seam used by assemblies to resolve capsule-owned behavior ids without exposing implementation class names through `modules/core/api`.
 
 ## UI Modifications
 ### Library Book Reader Enhancements
@@ -45,12 +54,18 @@ Wiring coverage is tracked in `docs/contracts/contract_wiring.tsv` and summarize
   - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookClient.java`
   - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookView.java`
   - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibraryBookBookmarks.java`
+  - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibrariansDeskWorkstationClient.java`
+  - `assemblies/vocations/src/main/java/com/verbum_minecraft/vocations/client/LibrariansDeskWorkstationScreen.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookClient.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookView.java`
   - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibraryBookBookmarks.java`
+  - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibrariansDeskWorkstationClient.java`
+  - `assemblies/visions/src/main/java/com/verbum_minecraft/visions/client/LibrariansDeskWorkstationScreen.java`
   - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookClient.java`
   - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookView.java`
   - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibraryBookBookmarks.java`
+  - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibrariansDeskWorkstationClient.java`
+  - `assemblies/vorago/src/main/java/com/verbum_minecraft/vorago/client/LibrariansDeskWorkstationScreen.java`
 
 ## Resource Expectations (Items)
 Capsule resources must exist for any item:
@@ -60,6 +75,14 @@ Capsule resources must exist for any item:
 - `assets/<namespace>/lang/en_us.json`
 
 Missing assets result in the purple/black missing‑texture cube.
+
+## Resource Expectations (Blocks)
+Placeable blocks also require:
+- `assets/<namespace>/blockstates/<path>.json`
+- `assets/<namespace>/models/block/<path>.json`
+- `assets/<namespace>/models/item/<path>.json`
+- `assets/<namespace>/items/<path>.json`
+- `assets/<namespace>/lang/en_us.json`
 
 **1.21.11 note:** The `items/<path>.json` file is required to map the item to
 its model. Missing it will show the missing-texture cube even if the model and
@@ -80,3 +103,4 @@ If you introduce new contracts in `modules/core/api` or `modules/core/spi`:
 1. Implement the Fabric/Minecraft wiring in `assemblies/*`.
 2. Update `docs/contracts/CORE_API.md` with usage guidance.
 3. Update this document with the wiring path.
+4. Keep implementation addressing out of `modules/core/api`; prefer symbolic ids resolved through SPI providers.
