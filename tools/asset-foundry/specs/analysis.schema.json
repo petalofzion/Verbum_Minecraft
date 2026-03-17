@@ -10,6 +10,7 @@
     "tone_ramps",
     "detail_candidates",
     "zone_candidates",
+    "surface_relationships",
     "pixel_groups",
     "topology_map"
   ],
@@ -39,8 +40,10 @@
     "components": { "type": "array" },
     "adjacency": { "type": "array" },
     "tone_ramps": { "type": "array" },
+    "candidate_regions": { "type": "array" },
     "detail_candidates": { "type": "array" },
     "zone_candidates": { "type": "array" },
+    "surface_relationships": { "type": "object" },
     "pixel_groups": { "type": "array" },
     "topology_map": {
       "type": "array",

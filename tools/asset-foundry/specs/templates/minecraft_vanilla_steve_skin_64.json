@@ -1,0 +1,130 @@
+{
+  "id": "minecraft_vanilla_steve_skin_64",
+  "asset_type": "atlas_surface_64",
+  "surface_id": "atlas_main",
+  "base_mask": "full_atlas_64_mask",
+  "base_image": {
+    "kind": "minecraft_vanilla_asset",
+    "asset_path": "assets/minecraft/textures/entity/player/wide/steve.png",
+    "version": "1.21.11"
+  },
+  "analysis": {
+    "source_summary": "Authored atlas template proving that one surface can carry many semantic UV zones and transform policies.",
+    "color_clusters": [],
+    "components": [],
+    "group_summary": [
+      { "name": "skin_locked", "count": 192, "mode": "locked" },
+      { "name": "clothing_primary", "count": 224, "mode": "recolor_only" },
+      { "name": "boots_detail", "count": 32, "mode": "recolor_only" }
+    ],
+    "detail_candidates": [],
+    "surface_relationships": {
+      "pixel_count": 4096,
+      "notes": "Atlas proof surface; richer mechanical summaries are emitted by analyze-image."
+    }
+  },
+  "palette_roles": [
+    "base_dark",
+    "base_mid",
+    "base_light",
+    "shadow",
+    "highlight"
+  ],
+  "pixel_groups": [
+    {
+      "name": "skin_locked",
+      "kind": "semantic_group",
+      "mode": "locked",
+      "pixels": [
+        { "x": 8, "y": 8 }, { "x": 9, "y": 8 }, { "x": 10, "y": 8 }, { "x": 11, "y": 8 }, { "x": 12, "y": 8 }, { "x": 13, "y": 8 }, { "x": 14, "y": 8 }, { "x": 15, "y": 8 },
+        { "x": 8, "y": 9 }, { "x": 9, "y": 9 }, { "x": 10, "y": 9 }, { "x": 11, "y": 9 }, { "x": 12, "y": 9 }, { "x": 13, "y": 9 }, { "x": 14, "y": 9 }, { "x": 15, "y": 9 },
+        { "x": 8, "y": 10 }, { "x": 9, "y": 10 }, { "x": 10, "y": 10 }, { "x": 11, "y": 10 }, { "x": 12, "y": 10 }, { "x": 13, "y": 10 }, { "x": 14, "y": 10 }, { "x": 15, "y": 10 },
+        { "x": 8, "y": 11 }, { "x": 9, "y": 11 }, { "x": 10, "y": 11 }, { "x": 11, "y": 11 }, { "x": 12, "y": 11 }, { "x": 13, "y": 11 }, { "x": 14, "y": 11 }, { "x": 15, "y": 11 },
+        { "x": 8, "y": 12 }, { "x": 9, "y": 12 }, { "x": 10, "y": 12 }, { "x": 11, "y": 12 }, { "x": 12, "y": 12 }, { "x": 13, "y": 12 }, { "x": 14, "y": 12 }, { "x": 15, "y": 12 },
+        { "x": 8, "y": 13 }, { "x": 9, "y": 13 }, { "x": 10, "y": 13 }, { "x": 11, "y": 13 }, { "x": 12, "y": 13 }, { "x": 13, "y": 13 }, { "x": 14, "y": 13 }, { "x": 15, "y": 13 },
+        { "x": 8, "y": 14 }, { "x": 9, "y": 14 }, { "x": 10, "y": 14 }, { "x": 11, "y": 14 }, { "x": 12, "y": 14 }, { "x": 13, "y": 14 }, { "x": 14, "y": 14 }, { "x": 15, "y": 14 },
+        { "x": 8, "y": 15 }, { "x": 9, "y": 15 }, { "x": 10, "y": 15 }, { "x": 11, "y": 15 }, { "x": 12, "y": 15 }, { "x": 13, "y": 15 }, { "x": 14, "y": 15 }, { "x": 15, "y": 15 }
+      ],
+      "allowed_palette_roles": ["highlight"],
+      "default_palette_role": "highlight"
+    },
+    {
+      "name": "clothing_primary",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "transform_policy": "palette_projection",
+      "preserve_local_contrast": true,
+      "pixels": [
+        { "x": 20, "y": 20 }, { "x": 21, "y": 20 }, { "x": 22, "y": 20 }, { "x": 23, "y": 20 }, { "x": 24, "y": 20 }, { "x": 25, "y": 20 }, { "x": 26, "y": 20 }, { "x": 27, "y": 20 },
+        { "x": 20, "y": 21 }, { "x": 21, "y": 21 }, { "x": 22, "y": 21 }, { "x": 23, "y": 21 }, { "x": 24, "y": 21 }, { "x": 25, "y": 21 }, { "x": 26, "y": 21 }, { "x": 27, "y": 21 },
+        { "x": 20, "y": 22 }, { "x": 21, "y": 22 }, { "x": 22, "y": 22 }, { "x": 23, "y": 22 }, { "x": 24, "y": 22 }, { "x": 25, "y": 22 }, { "x": 26, "y": 22 }, { "x": 27, "y": 22 },
+        { "x": 20, "y": 23 }, { "x": 21, "y": 23 }, { "x": 22, "y": 23 }, { "x": 23, "y": 23 }, { "x": 24, "y": 23 }, { "x": 25, "y": 23 }, { "x": 26, "y": 23 }, { "x": 27, "y": 23 },
+        { "x": 20, "y": 24 }, { "x": 21, "y": 24 }, { "x": 22, "y": 24 }, { "x": 23, "y": 24 }, { "x": 24, "y": 24 }, { "x": 25, "y": 24 }, { "x": 26, "y": 24 }, { "x": 27, "y": 24 },
+        { "x": 20, "y": 25 }, { "x": 21, "y": 25 }, { "x": 22, "y": 25 }, { "x": 23, "y": 25 }, { "x": 24, "y": 25 }, { "x": 25, "y": 25 }, { "x": 26, "y": 25 }, { "x": 27, "y": 25 },
+        { "x": 20, "y": 26 }, { "x": 21, "y": 26 }, { "x": 22, "y": 26 }, { "x": 23, "y": 26 }, { "x": 24, "y": 26 }, { "x": 25, "y": 26 }, { "x": 26, "y": 26 }, { "x": 27, "y": 26 },
+        { "x": 20, "y": 27 }, { "x": 21, "y": 27 }, { "x": 22, "y": 27 }, { "x": 23, "y": 27 }, { "x": 24, "y": 27 }, { "x": 25, "y": 27 }, { "x": 26, "y": 27 }, { "x": 27, "y": 27 },
+        { "x": 20, "y": 28 }, { "x": 21, "y": 28 }, { "x": 22, "y": 28 }, { "x": 23, "y": 28 }, { "x": 24, "y": 28 }, { "x": 25, "y": 28 }, { "x": 26, "y": 28 }, { "x": 27, "y": 28 },
+        { "x": 20, "y": 29 }, { "x": 21, "y": 29 }, { "x": 22, "y": 29 }, { "x": 23, "y": 29 }, { "x": 24, "y": 29 }, { "x": 25, "y": 29 }, { "x": 26, "y": 29 }, { "x": 27, "y": 29 },
+        { "x": 20, "y": 30 }, { "x": 21, "y": 30 }, { "x": 22, "y": 30 }, { "x": 23, "y": 30 }, { "x": 24, "y": 30 }, { "x": 25, "y": 30 }, { "x": 26, "y": 30 }, { "x": 27, "y": 30 },
+        { "x": 20, "y": 31 }, { "x": 21, "y": 31 }, { "x": 22, "y": 31 }, { "x": 23, "y": 31 }, { "x": 24, "y": 31 }, { "x": 25, "y": 31 }, { "x": 26, "y": 31 }, { "x": 27, "y": 31 },
+        { "x": 4, "y": 20 }, { "x": 5, "y": 20 }, { "x": 6, "y": 20 }, { "x": 7, "y": 20 }, { "x": 4, "y": 21 }, { "x": 5, "y": 21 }, { "x": 6, "y": 21 }, { "x": 7, "y": 21 },
+        { "x": 4, "y": 22 }, { "x": 5, "y": 22 }, { "x": 6, "y": 22 }, { "x": 7, "y": 22 }, { "x": 4, "y": 23 }, { "x": 5, "y": 23 }, { "x": 6, "y": 23 }, { "x": 7, "y": 23 },
+        { "x": 4, "y": 24 }, { "x": 5, "y": 24 }, { "x": 6, "y": 24 }, { "x": 7, "y": 24 }, { "x": 4, "y": 25 }, { "x": 5, "y": 25 }, { "x": 6, "y": 25 }, { "x": 7, "y": 25 },
+        { "x": 4, "y": 26 }, { "x": 5, "y": 26 }, { "x": 6, "y": 26 }, { "x": 7, "y": 26 }, { "x": 4, "y": 27 }, { "x": 5, "y": 27 }, { "x": 6, "y": 27 }, { "x": 7, "y": 27 },
+        { "x": 4, "y": 28 }, { "x": 5, "y": 28 }, { "x": 6, "y": 28 }, { "x": 7, "y": 28 }, { "x": 4, "y": 29 }, { "x": 5, "y": 29 }, { "x": 6, "y": 29 }, { "x": 7, "y": 29 }
+      ],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"],
+      "default_palette_role": "base_mid"
+    },
+    {
+      "name": "boots_detail",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "transform_policy": "contrast_preserving_recolor",
+      "preserve_local_contrast": true,
+      "pixels": [
+        { "x": 4, "y": 30 }, { "x": 5, "y": 30 }, { "x": 6, "y": 30 }, { "x": 7, "y": 30 },
+        { "x": 4, "y": 31 }, { "x": 5, "y": 31 }, { "x": 6, "y": 31 }, { "x": 7, "y": 31 },
+        { "x": 20, "y": 62 }, { "x": 21, "y": 62 }, { "x": 22, "y": 62 }, { "x": 23, "y": 62 },
+        { "x": 20, "y": 63 }, { "x": 21, "y": 63 }, { "x": 22, "y": 63 }, { "x": 23, "y": 63 }
+      ],
+      "allowed_palette_roles": ["base_dark", "base_mid", "shadow"],
+      "default_palette_role": "base_dark"
+    }
+  ],
+  "group_sets": {
+    "clothing_all": ["clothing_primary", "boots_detail"]
+  },
+  "group_set_options": {
+    "clothing_all": {
+      "transform_policy": "palette_projection",
+      "preserve_value": true,
+      "preserve_local_contrast": true,
+      "ramp_roles": ["base_dark", "base_mid", "base_light", "highlight"]
+    }
+  },
+  "detail_replacements": {},
+  "regions": [
+    {
+      "name": "atlas_main",
+      "mode": "recolor_only",
+      "rects": [{ "x": 0, "y": 0, "width": 64, "height": 64 }],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight", "shadow"],
+      "default_palette_role": "base_mid",
+      "optional": false
+    }
+  ],
+  "locked_regions": [],
+  "free_paint_regions": [],
+  "symmetry": "none",
+  "engine_support": {
+    "repair_generated_png": true,
+    "pixel_native": true
+  },
+  "exact_base_output": true,
+  "transparent_outside_mask": true,
+  "notes": [
+    "Architecture-proof atlas surface template for player skin style assets.",
+    "Semantics are authored in the template; analysis remains neutral."
+  ]
+}

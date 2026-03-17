@@ -29,6 +29,19 @@
           },
           "color": { "type": "string", "minLength": 4 },
           "role": { "type": "string", "minLength": 1 },
+          "transform_policy": {
+            "type": "string",
+            "enum": [
+              "flat_recolor",
+              "preserve_value",
+              "palette_projection",
+              "hue_bias_remap",
+              "contrast_preserving_recolor"
+            ]
+          },
+          "preserve_local_contrast": { "type": "boolean" },
+          "quantize_to_palette": { "type": "boolean" },
+          "surface": { "type": "string", "minLength": 1 },
           "region": { "type": "string", "minLength": 1 },
           "group": { "type": "string", "minLength": 1 },
           "group_set": { "type": "string", "minLength": 1 },

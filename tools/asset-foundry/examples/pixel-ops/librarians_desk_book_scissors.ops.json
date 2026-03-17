@@ -1,0 +1,347 @@
+{
+  "operations": [
+    {
+      "surface": "front",
+      "op": "remap_group_set_role",
+      "group_set": "wood_all",
+      "role": "base_mid"
+    },
+    {
+      "surface": "side",
+      "op": "remap_group_set_role",
+      "group_set": "wood_all",
+      "role": "base_mid"
+    },
+    {
+      "surface": "top",
+      "op": "remap_group_set_role",
+      "group_set": "wood_all",
+      "role": "base_mid"
+    },
+
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 5,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 6,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 7,
+      "color": "#26611E"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 8,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 2,
+      "y": 9,
+      "color": "#9FE992"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 9,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 4,
+      "y": 9,
+      "color": "#9FE992"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 2,
+      "y": 10,
+      "color": "#9FE992"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 10,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 4,
+      "y": 10,
+      "color": "#9FE992"
+    },
+
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 2,
+      "y": 8,
+      "color": "#FFFFFF"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 4,
+      "y": 8,
+      "color": "#FFFFFF"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 9,
+      "color": "#FFFFFF"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 2,
+      "y": 10,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 4,
+      "y": 10,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 3,
+      "y": 8,
+      "color": "#0A1B09"
+    },
+
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 4,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 4,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 4,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 4,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 5,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 5,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 5,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 5,
+      "color": "#D8D8D8"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 6,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 6,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 6,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 6,
+      "color": "#D8D8D8"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 7,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 7,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 7,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 7,
+      "color": "#D8D8D8"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 8,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 8,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 8,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 8,
+      "color": "#D8D8D8"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 9,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 9,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 9,
+      "color": "#281E0B"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 9,
+      "color": "#D8D8D8"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 10,
+      "y": 10,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 11,
+      "y": 10,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 12,
+      "y": 10,
+      "color": "#0A1B09"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 10,
+      "color": "#9FE992"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 11,
+      "color": "#539F49"
+    },
+    {
+      "surface": "front",
+      "op": "set_pixel",
+      "x": 13,
+      "y": 12,
+      "color": "#A4F497"
+    }
+  ]
+}

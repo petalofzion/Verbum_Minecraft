@@ -1,0 +1,21 @@
+{
+  "asset_id": "scribe_skin",
+  "display_name": "Scribe Skin",
+  "asset_type": "atlas_surface_64",
+  "profile": "veritas",
+  "material_palette": "veritas_leather",
+  "style_tags": [
+    "atlas_surface",
+    "player_skin",
+    "architecture_proof"
+  ],
+  "family_template_id": "minecraft_vanilla_player_skin_family_64",
+  "output": {
+    "resource_root": "modules/features/library/bible/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Architecture proof that atlas-style surfaces can be authored as one semantic template surface."
+  }
+}

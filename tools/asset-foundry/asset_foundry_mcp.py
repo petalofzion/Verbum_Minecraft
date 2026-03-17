@@ -37,7 +37,6 @@ TOOLS = [
         "description": "Analyze an image and emit a neutral analysis artifact.",
         "inputSchema": {
             "type": "object",
-            "required": ["heuristic"],
             "properties": {
                 "image": {"type": "string"},
                 "minecraft_asset": {"type": "string"},
@@ -52,7 +51,6 @@ TOOLS = [
         "description": "Analyze an image and emit a neutral analysis artifact.",
         "inputSchema": {
             "type": "object",
-            "required": ["heuristic"],
             "properties": {
                 "image": {"type": "string"},
                 "minecraft_asset": {"type": "string"},
@@ -67,7 +65,6 @@ TOOLS = [
         "description": "Print a text topology map for an image using neutral component ids.",
         "inputSchema": {
             "type": "object",
-            "required": ["heuristic"],
             "properties": {
                 "image": {"type": "string"},
                 "minecraft_asset": {"type": "string"},
@@ -81,7 +78,7 @@ TOOLS = [
         "description": "Create a neutral raster-backed template seed from a source image.",
         "inputSchema": {
             "type": "object",
-            "required": ["asset_type", "base_mask", "template_id", "heuristic"],
+            "required": ["asset_type", "base_mask", "template_id"],
             "properties": {
                 "image": {"type": "string"},
                 "minecraft_asset": {"type": "string"},
@@ -146,6 +143,46 @@ TOOLS = [
         }
     },
     {
+        "name": "paint_surface_bundle",
+        "description": "Create a named surface bundle from bundle-scoped pixel ops.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["request", "ops"],
+            "properties": {
+                "request": {"type": "string"},
+                "ops": {"type": "string"},
+                "output": {"type": "string"},
+                "manifest_output": {"type": "string"},
+                "preview_output": {"type": "string"},
+                "grid": {"type": "boolean"}
+            }
+        }
+    },
+    {
+        "name": "validate_bundle",
+        "description": "Validate a generated named surface bundle against the authored family template.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["request"],
+            "properties": {
+                "request": {"type": "string"}
+            }
+        }
+    },
+    {
+        "name": "render_delta",
+        "description": "Render a visual delta between a base image and a generated image.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["base_image", "generated_image", "output"],
+            "properties": {
+                "base_image": {"type": "string"},
+                "generated_image": {"type": "string"},
+                "output": {"type": "string"}
+            }
+        }
+    },
+    {
         "name": "validate_texture",
         "description": "Validate a converted or drawn PNG against asset type, palette, alpha, mask, and path rules.",
         "inputSchema": {
@@ -185,7 +222,7 @@ TOOLS = [
         "description": "Turn a generated PNG into a reusable raster-backed template.",
         "inputSchema": {
             "type": "object",
-            "required": ["generated_asset", "asset_type", "base_mask", "template_id", "heuristic", "output"],
+            "required": ["generated_asset", "asset_type", "base_mask", "template_id", "output"],
             "properties": {
                 "generated_asset": {"type": "string"},
                 "asset_type": {"type": "string"},
@@ -243,7 +280,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 image=arguments.get("image"),
                 minecraft_asset=arguments.get("minecraft_asset"),
                 minecraft_version=arguments.get("minecraft_version"),
-                heuristic=arguments["heuristic"],
+                heuristic=arguments.get("heuristic", "generic"),
                 output=arguments.get("output"),
             )
             TOOL.cmd_analyze_image_regions(ns)
@@ -253,7 +290,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 image=arguments.get("image"),
                 minecraft_asset=arguments.get("minecraft_asset"),
                 minecraft_version=arguments.get("minecraft_version"),
-                heuristic=arguments["heuristic"],
+                heuristic=arguments.get("heuristic", "generic"),
                 output=arguments.get("output"),
             )
             TOOL.cmd_analyze_image(ns)
@@ -263,7 +300,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 image=arguments.get("image"),
                 minecraft_asset=arguments.get("minecraft_asset"),
                 minecraft_version=arguments.get("minecraft_version"),
-                heuristic=arguments["heuristic"],
+                heuristic=arguments.get("heuristic", "generic"),
             )
             TOOL.cmd_inspect_topology(ns)
             return text_result("inspect_topology completed")
@@ -275,7 +312,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 asset_type=arguments["asset_type"],
                 base_mask=arguments["base_mask"],
                 template_id=arguments["template_id"],
-                heuristic=arguments["heuristic"],
+                heuristic=arguments.get("heuristic", "generic"),
                 output=arguments.get("output"),
             )
             TOOL.cmd_create_template_from_image(ns)
@@ -316,6 +353,29 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             )
             TOOL.cmd_paint_item_icon(ns)
             return text_result("paint_item_icon completed")
+        if name == "paint_surface_bundle":
+            ns = SimpleNamespace(
+                request=arguments["request"],
+                ops=arguments["ops"],
+                output=arguments.get("output"),
+                manifest_output=arguments.get("manifest_output"),
+                preview_output=arguments.get("preview_output"),
+                grid=arguments.get("grid", False),
+            )
+            TOOL.cmd_paint_surface_bundle(ns)
+            return text_result("paint_surface_bundle completed")
+        if name == "validate_bundle":
+            ns = SimpleNamespace(request=arguments["request"])
+            TOOL.cmd_validate_bundle(ns)
+            return text_result("validate_bundle passed")
+        if name == "render_delta":
+            ns = SimpleNamespace(
+                base_image=arguments["base_image"],
+                generated_image=arguments["generated_image"],
+                output=arguments["output"],
+            )
+            TOOL.cmd_render_delta(ns)
+            return text_result("render_delta completed")
         if name == "validate_texture":
             ns = SimpleNamespace(request=arguments["request"], image=arguments["image"])
             TOOL.cmd_validate_texture(ns)
@@ -334,7 +394,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
                 asset_type=arguments["asset_type"],
                 base_mask=arguments["base_mask"],
                 target_template_id=arguments["template_id"],
-                heuristic=arguments["heuristic"],
+                heuristic=arguments.get("heuristic", "generic"),
                 region_map=arguments.get("region_map"),
                 output=arguments["output"],
             )

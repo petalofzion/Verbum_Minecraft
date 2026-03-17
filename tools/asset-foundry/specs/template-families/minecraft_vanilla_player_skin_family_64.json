@@ -1,0 +1,15 @@
+{
+  "id": "minecraft_vanilla_player_skin_family_64",
+  "asset_type": "atlas_surface_64",
+  "asset_class": "atlas_surface",
+  "surfaces": [
+    {
+      "name": "atlas_main",
+      "template_id": "minecraft_vanilla_steve_skin_64",
+      "output_path": "textures/entity/{asset_id}.png"
+    }
+  ],
+  "output_bundle": {
+    "kind": "atlas_bundle"
+  }
+}

@@ -1081,6 +1081,26 @@
       "page_light"
     ]
   },
+  "group_set_options": {
+    "body_all": {
+      "preserve_value": true,
+      "transform_policy": "palette_projection",
+      "preserve_local_contrast": true,
+      "ramp_roles": [
+        "cover_dark",
+        "cover_mid",
+        "cover_light"
+      ]
+    },
+    "pages_all": {
+      "preserve_value": true,
+      "transform_policy": "preserve_value",
+      "ramp_roles": [
+        "highlight",
+        "page_tone"
+      ]
+    }
+  },
   "detail_replacements": {},
   "regions": [
     {

@@ -1,46 +1,47 @@
 {
-  "id": "minecraft_crafting_table_front_16",
+  "id": "minecraft_crafting_table_side_16",
   "asset_type": "simple_block_face_16",
+  "surface_id": "side",
   "base_mask": "simple_block_face_16_mask",
   "base_image": {
     "kind": "minecraft_vanilla_asset",
-    "asset_path": "assets/minecraft/textures/block/crafting_table_front.png",
+    "asset_path": "assets/minecraft/textures/block/crafting_table_side.png",
     "version": "1.21.11"
   },
   "analysis": {
-    "source_summary": "Authored front surface template with locked frame/tool details and one preserve-value wood recolor domain.",
+    "source_summary": "Authored side surface template with locked frame/tool details and one preserve-value wood recolor domain.",
     "color_clusters": [
       {
         "hex": "#AF8F55",
-        "count": 33
+        "count": 36
+      },
+      {
+        "hex": "#B8945F",
+        "count": 36
       },
       {
         "hex": "#19140C",
         "count": 31
       },
       {
-        "hex": "#B8945F",
-        "count": 30
-      },
-      {
         "hex": "#9F844D",
-        "count": 26
+        "count": 31
       },
       {
         "hex": "#C29D62",
-        "count": 23
+        "count": 26
       },
       {
         "hex": "#7E6237",
-        "count": 19
-      },
-      {
-        "hex": "#382116",
-        "count": 18
+        "count": 23
       },
       {
         "hex": "#67502C",
-        "count": 14
+        "count": 17
+      },
+      {
+        "hex": "#382116",
+        "count": 16
       }
     ],
     "components": [
@@ -65,22 +66,22 @@
         }
       },
       {
-        "hex": "#D8D8D8",
-        "count": 8,
+        "hex": "#C29D62",
+        "count": 5,
         "bounds": {
-          "x": 12,
-          "y": 7,
-          "width": 2,
-          "height": 5
+          "x": 9,
+          "y": 8,
+          "width": 5,
+          "height": 1
         }
       },
       {
-        "hex": "#281E0B",
+        "hex": "#B8945F",
         "count": 5,
         "bounds": {
           "x": 11,
           "y": 4,
-          "width": 3,
+          "width": 4,
           "height": 2
         }
       },
@@ -95,16 +96,6 @@
         }
       },
       {
-        "hex": "#D8D8D8",
-        "count": 4,
-        "bounds": {
-          "x": 2,
-          "y": 9,
-          "width": 3,
-          "height": 2
-        }
-      },
-      {
         "hex": "#C29D62",
         "count": 4,
         "bounds": {
@@ -112,16 +103,6 @@
           "y": 4,
           "width": 4,
           "height": 1
-        }
-      },
-      {
-        "hex": "#AF8F55",
-        "count": 4,
-        "bounds": {
-          "x": 4,
-          "y": 5,
-          "width": 3,
-          "height": 2
         }
       },
       {
@@ -203,27 +184,37 @@
           "width": 3,
           "height": 2
         }
+      },
+      {
+        "hex": "#9F844D",
+        "count": 4,
+        "bounds": {
+          "x": 12,
+          "y": 9,
+          "width": 3,
+          "height": 2
+        }
+      },
+      {
+        "hex": "#B8945F",
+        "count": 3,
+        "bounds": {
+          "x": 2,
+          "y": 12,
+          "width": 2,
+          "height": 2
+        }
       }
     ],
     "detail_candidates": [
       {
         "name": "detail_candidate_01",
-        "count": 21,
+        "count": 11,
         "bounds": {
-          "x": 2,
-          "y": 6,
+          "x": 3,
+          "y": 5,
           "width": 3,
           "height": 5
-        }
-      },
-      {
-        "name": "detail_candidate_02",
-        "count": 21,
-        "bounds": {
-          "x": 11,
-          "y": 4,
-          "width": 3,
-          "height": 9
         }
       }
     ]
@@ -532,42 +523,14 @@
     {
       "name": "tool_detail",
       "kind": "semantic_group",
-      "mode": "detail",
+      "mode": "locked",
       "pixels": [
         {
-          "x": 11,
-          "y": 3
-        },
-        {
-          "x": 12,
-          "y": 3
-        },
-        {
-          "x": 13,
-          "y": 3
-        },
-        {
-          "x": 11,
-          "y": 4
-        },
-        {
-          "x": 13,
-          "y": 4
-        },
-        {
           "x": 3,
           "y": 5
         },
         {
-          "x": 11,
-          "y": 5
-        },
-        {
-          "x": 12,
-          "y": 5
-        },
-        {
-          "x": 13,
+          "x": 5,
           "y": 5
         },
         {
@@ -575,103 +538,31 @@
           "y": 6
         },
         {
-          "x": 11,
+          "x": 5,
           "y": 6
-        },
-        {
-          "x": 12,
-          "y": 6
-        },
-        {
-          "x": 13,
-          "y": 6
-        },
-        {
-          "x": 3,
-          "y": 7
-        },
-        {
-          "x": 11,
-          "y": 7
-        },
-        {
-          "x": 12,
-          "y": 7
-        },
-        {
-          "x": 13,
-          "y": 7
-        },
-        {
-          "x": 3,
-          "y": 8
-        },
-        {
-          "x": 11,
-          "y": 8
-        },
-        {
-          "x": 12,
-          "y": 8
-        },
-        {
-          "x": 13,
-          "y": 8
-        },
-        {
-          "x": 2,
-          "y": 9
-        },
-        {
-          "x": 3,
-          "y": 9
         },
         {
           "x": 4,
-          "y": 9
-        },
-        {
-          "x": 12,
-          "y": 9
-        },
-        {
-          "x": 13,
-          "y": 9
-        },
-        {
-          "x": 2,
-          "y": 10
+          "y": 7
         },
         {
           "x": 3,
-          "y": 10
+          "y": 8
         },
         {
-          "x": 4,
-          "y": 10
+          "x": 5,
+          "y": 8
         },
         {
-          "x": 12,
-          "y": 10
+          "x": 3,
+          "y": 9
         },
         {
-          "x": 13,
-          "y": 10
-        },
-        {
-          "x": 13,
-          "y": 11
-        },
-        {
-          "x": 13,
-          "y": 12
+          "x": 5,
+          "y": 9
         }
       ],
       "allowed_palette_roles": [
-        "base_dark",
-        "base_mid",
-        "base_light",
-        "base_highlight",
         "shadow",
         "highlight"
       ],
@@ -835,6 +726,18 @@
           "y": 3
         },
         {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 12,
+          "y": 3
+        },
+        {
+          "x": 13,
+          "y": 3
+        },
+        {
           "x": 14,
           "y": 3
         },
@@ -871,10 +774,18 @@
           "y": 4
         },
         {
+          "x": 11,
+          "y": 4
+        },
+        {
           "x": 12,
           "y": 4
         },
         {
+          "x": 13,
+          "y": 4
+        },
+        {
           "x": 14,
           "y": 4
         },
@@ -891,10 +802,6 @@
           "y": 5
         },
         {
-          "x": 5,
-          "y": 5
-        },
-        {
           "x": 6,
           "y": 5
         },
@@ -904,6 +811,18 @@
         },
         {
           "x": 10,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 12,
+          "y": 5
+        },
+        {
+          "x": 13,
           "y": 5
         },
         {
@@ -923,10 +842,6 @@
           "y": 6
         },
         {
-          "x": 5,
-          "y": 6
-        },
-        {
           "x": 6,
           "y": 6
         },
@@ -936,6 +851,18 @@
         },
         {
           "x": 10,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 12,
+          "y": 6
+        },
+        {
+          "x": 13,
           "y": 6
         },
         {
@@ -951,7 +878,7 @@
           "y": 7
         },
         {
-          "x": 4,
+          "x": 3,
           "y": 7
         },
         {
@@ -968,6 +895,18 @@
         },
         {
           "x": 10,
+          "y": 7
+        },
+        {
+          "x": 11,
+          "y": 7
+        },
+        {
+          "x": 12,
+          "y": 7
+        },
+        {
+          "x": 13,
           "y": 7
         },
         {
@@ -987,10 +926,6 @@
           "y": 8
         },
         {
-          "x": 5,
-          "y": 8
-        },
-        {
           "x": 6,
           "y": 8
         },
@@ -1000,6 +935,18 @@
         },
         {
           "x": 10,
+          "y": 8
+        },
+        {
+          "x": 11,
+          "y": 8
+        },
+        {
+          "x": 12,
+          "y": 8
+        },
+        {
+          "x": 13,
           "y": 8
         },
         {
@@ -1011,7 +958,11 @@
           "y": 9
         },
         {
-          "x": 5,
+          "x": 2,
+          "y": 9
+        },
+        {
+          "x": 4,
           "y": 9
         },
         {
@@ -1031,11 +982,31 @@
           "y": 9
         },
         {
+          "x": 12,
+          "y": 9
+        },
+        {
+          "x": 13,
+          "y": 9
+        },
+        {
           "x": 14,
           "y": 9
         },
         {
           "x": 1,
+          "y": 10
+        },
+        {
+          "x": 2,
+          "y": 10
+        },
+        {
+          "x": 3,
+          "y": 10
+        },
+        {
+          "x": 4,
           "y": 10
         },
         {
@@ -1056,6 +1027,14 @@
         },
         {
           "x": 11,
+          "y": 10
+        },
+        {
+          "x": 12,
+          "y": 10
+        },
+        {
+          "x": 13,
           "y": 10
         },
         {
@@ -1103,6 +1082,10 @@
           "y": 11
         },
         {
+          "x": 13,
+          "y": 11
+        },
+        {
           "x": 14,
           "y": 11
         },
@@ -1144,6 +1127,10 @@
         },
         {
           "x": 12,
+          "y": 12
+        },
+        {
+          "x": 13,
           "y": 12
         },
         {
@@ -1311,16 +1298,31 @@
       "wood_material"
     ]
   },
+  "group_set_options": {
+    "wood_all": {
+      "preserve_value": true,
+      "transform_policy": "contrast_preserving_recolor",
+      "preserve_local_contrast": true,
+      "quantize_to_palette": false,
+      "ramp_roles": [
+        "base_deep",
+        "base_dark",
+        "base_mid",
+        "base_light",
+        "base_highlight"
+      ]
+    }
+  },
   "detail_replacements": {},
   "regions": [
     {
-      "name": "wood_surface",
+      "name": "surface_body",
       "mode": "recolor_only",
       "rects": [
         {
-          "x": 1,
+          "x": 0,
           "y": 0,
-          "width": 14,
+          "width": 16,
           "height": 16
         }
       ],
@@ -1345,22 +1347,6 @@
   "exact_base_output": true,
   "transparent_outside_mask": true,
   "notes": [
-    "Neutral template seed created from analysis for minecraft_crafting_table_front_16."
-  ],
-  "surface_id": "front",
-  "group_set_options": {
-    "wood_all": {
-      "preserve_value": true,
-      "transform_policy": "contrast_preserving_recolor",
-      "preserve_local_contrast": true,
-      "quantize_to_palette": false,
-      "ramp_roles": [
-        "base_deep",
-        "base_dark",
-        "base_mid",
-        "base_light",
-        "base_highlight"
-      ]
-    }
-  }
+    "side surface template for crafting-table-family recolors."
+  ]
 }

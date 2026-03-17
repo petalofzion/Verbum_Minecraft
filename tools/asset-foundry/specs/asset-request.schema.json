@@ -9,7 +9,6 @@
     "profile",
     "material_palette",
     "style_tags",
-    "mask_id",
     "output",
     "provenance"
   ],
@@ -30,6 +29,24 @@
     "mask_id": { "type": "string", "minLength": 1 },
     "template_id": { "type": "string", "minLength": 1 },
     "preset_id": { "type": "string", "minLength": 1 },
+    "family_template_id": { "type": "string", "minLength": 1 },
+    "surface_overrides": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "source_image": {
+            "type": "object",
+            "required": ["path"],
+            "properties": {
+              "path": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "notes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
     "source_image": {
       "type": "object",

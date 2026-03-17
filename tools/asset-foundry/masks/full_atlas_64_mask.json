@@ -1,0 +1,36 @@
+{
+  "id": "full_atlas_64_mask",
+  "asset_type": "atlas_surface_64",
+  "canvas": {
+    "width": 64,
+    "height": 64
+  },
+  "allowed_rects": [
+    { "x": 0, "y": 0, "width": 64, "height": 64 }
+  ],
+  "forbidden_rects": [],
+  "zones": {
+    "head_front": {
+      "rects": [{ "x": 8, "y": 8, "width": 8, "height": 8 }]
+    },
+    "torso_front": {
+      "rects": [{ "x": 20, "y": 20, "width": 8, "height": 12 }]
+    },
+    "left_arm_front": {
+      "rects": [{ "x": 44, "y": 20, "width": 4, "height": 12 }]
+    },
+    "right_arm_front": {
+      "rects": [{ "x": 44, "y": 20, "width": 4, "height": 12 }]
+    },
+    "left_leg_front": {
+      "rects": [{ "x": 4, "y": 20, "width": 4, "height": 12 }]
+    },
+    "right_leg_front": {
+      "rects": [{ "x": 20, "y": 52, "width": 4, "height": 12 }]
+    }
+  },
+  "symmetry": "none",
+  "notes": [
+    "Full-canvas atlas mask for architecture-proof skin and mob workflows."
+  ]
+}

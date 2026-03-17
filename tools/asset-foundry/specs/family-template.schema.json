@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "asset_type",
+    "asset_class",
+    "surfaces",
+    "output_bundle"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "asset_type": { "type": "string", "minLength": 1 },
+    "asset_class": { "type": "string", "enum": ["single_surface", "multi_surface_block", "atlas_surface"] },
+    "surfaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "template_id"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "template_id": { "type": "string", "minLength": 1 },
+          "slot": { "type": "string", "minLength": 1 },
+          "output_suffix": { "type": "string", "minLength": 1 },
+          "output_path": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "output_bundle": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["single_surface", "block_model_bundle", "atlas_bundle"] },
+        "texture_slots": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "model_parent": { "type": "string", "minLength": 1 },
+        "model_output": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

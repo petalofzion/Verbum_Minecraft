@@ -1,0 +1,22 @@
+{
+  "asset_id": "librarians_desk",
+  "display_name": "Librarians Desk",
+  "asset_type": "simple_block_face_16",
+  "profile": "visions",
+  "material_palette": "librarians_desk_visions",
+  "style_tags": [
+    "desk",
+    "crafted",
+    "surface_bundle",
+    "vanilla_derivative"
+  ],
+  "family_template_id": "minecraft_crafting_table_family_16",
+  "output": {
+    "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
+  },
+  "provenance": {
+    "requested_by": "asset_foundry_example",
+    "generator_mode": "pixel_native",
+    "prompt_summary": "Generate a crafting-table-family Librarian's Desk recolor bundle with preserved value relationships."
+  }
+}

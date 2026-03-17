@@ -1,0 +1,38 @@
+{
+  "id": "minecraft_crafting_table_family_16",
+  "asset_type": "simple_block_face_16",
+  "asset_class": "multi_surface_block",
+  "surfaces": [
+    {
+      "name": "front",
+      "template_id": "minecraft_crafting_table_front_16",
+      "slot": "front",
+      "output_suffix": "front"
+    },
+    {
+      "name": "side",
+      "template_id": "minecraft_crafting_table_side_16",
+      "slot": "side",
+      "output_suffix": "side"
+    },
+    {
+      "name": "top",
+      "template_id": "minecraft_crafting_table_top_16",
+      "slot": "top",
+      "output_suffix": "top"
+    }
+  ],
+  "output_bundle": {
+    "kind": "block_model_bundle",
+    "model_parent": "minecraft:block/cube",
+    "texture_slots": {
+      "north": "front",
+      "south": "front",
+      "east": "side",
+      "west": "side",
+      "up": "top",
+      "down": "side"
+    },
+    "model_output": "models/block/{asset_id}.json"
+  }
+}

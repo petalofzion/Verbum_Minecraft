@@ -28,6 +28,8 @@ class AssetFoundryTests(unittest.TestCase):
             "tools/asset-foundry/requests/example-devotional-cover.json",
             "tools/asset-foundry/requests/example-librarians-desk-icon.json",
             "tools/asset-foundry/requests/example-librarians-desk-face.json",
+            "tools/asset-foundry/requests/example-librarians-desk-bundle.json",
+            "tools/asset-foundry/requests/example-player-skin-atlas.json",
             "tools/asset-foundry/requests/example-bible-icon.json",
             "tools/asset-foundry/requests/example-book-of-hours-icon.json",
             "tools/asset-foundry/requests/example-librarians-desk-crafting-face.json",
@@ -42,6 +44,17 @@ class AssetFoundryTests(unittest.TestCase):
     def test_describe_template_loads(self):
         template = self.tool.load_template("minecraft_vanilla_book_16")
         self.assertEqual(template["asset_type"], "book_cover_16")
+
+    def test_family_template_loads(self):
+        family = self.tool.load_family_template("minecraft_crafting_table_family_16")
+        self.assertEqual(family["asset_class"], "multi_surface_block")
+        self.assertEqual([surface["name"] for surface in family["surfaces"]], ["front", "side", "top"])
+
+    def test_atlas_family_template_loads(self):
+        family = self.tool.load_family_template("minecraft_vanilla_player_skin_family_64")
+        self.assertEqual(family["asset_class"], "atlas_surface")
+        self.assertEqual(family["output_bundle"]["kind"], "atlas_bundle")
+        self.assertEqual(family["surfaces"][0]["output_path"], "textures/entity/{asset_id}.png")
 
     def test_template_base_matches_vanilla_book_source(self):
         template = self.tool.load_template("minecraft_vanilla_book_16")
@@ -126,6 +139,63 @@ class AssetFoundryTests(unittest.TestCase):
         errors = self.tool.validate_manifest(manifest)
         self.assertEqual(errors, [])
 
+    def test_preserve_value_group_set_uses_multiple_output_colors(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-bundle.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        front = rendered["front"]
+        template = self.tool.load_template("minecraft_crafting_table_front_16")
+        palette = self.tool.load_palette(request["material_palette"])
+        base = self.tool.template_base_image(template, palette)
+        wood_points = {
+            point
+            for group in self.tool.template_group_set(template, "wood_all")
+            for point in self.tool.pixel_group_pixels(group)
+        }
+        changed_colors = {
+            front.getpixel((x, y))
+            for x, y in wood_points
+            if front.getpixel((x, y)) != base.getpixel((x, y))
+        }
+        self.assertGreaterEqual(len(changed_colors), 4)
+
+    def test_contrast_preserving_transform_retains_multiple_desk_tones(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-bundle.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        side = rendered["side"]
+        template = self.tool.load_template("minecraft_crafting_table_side_16")
+        palette = self.tool.load_palette(request["material_palette"])
+        base = self.tool.template_base_image(template, palette)
+        wood_points = {
+            point
+            for group in self.tool.template_group_set(template, "wood_all")
+            for point in self.tool.pixel_group_pixels(group)
+        }
+        changed_colors = {
+            side.getpixel((x, y))
+            for x, y in wood_points
+            if side.getpixel((x, y)) != base.getpixel((x, y))
+        }
+        self.assertGreaterEqual(len(changed_colors), 4)
+
+    def test_surface_bundle_diagnostics_passes_for_generated_desk_bundle(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-bundle.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        palette = self.tool.load_palette(request["material_palette"])
+        for surface in family["surfaces"]:
+            template = self.tool.load_template(surface["template_id"])
+            output_path, _, _, _ = self.tool.family_surface_output_paths(request, family, surface)
+            self.tool.write_image(rendered[surface["name"]], output_path)
+        model_path = REPO_ROOT / self.tool.family_model_output(request, family)
+        self.tool.save_json(model_path, self.tool.build_block_model_payload(request, family))
+        diagnostics = self.tool.surface_bundle_diagnostics(request, asset_type)
+        self.assertEqual(diagnostics, [])
+
     def test_repair_generated_png_with_preset_respects_locked_region(self):
         request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-devotional-cover.json")
         _, repaired = self.tool.repair_generated_png(request, asset_type)
@@ -191,6 +261,9 @@ class AssetFoundryTests(unittest.TestCase):
         self.assertTrue(all(name.startswith(("component_", "tone_ramp_", "tone_group_", "detail_candidate_", "zone_candidate_", "edge_band_")) for name in group_ids))
         self.assertNotIn("cover", group_ids)
         self.assertNotIn("spine", group_ids)
+        self.assertIn("surface_relationships", analysis)
+        self.assertIn("texture_density", analysis["surface_relationships"])
+        self.assertIn("relationships", analysis["pixel_groups"][0])
 
     def test_create_template_seed_from_analysis_generates_valid_template(self):
         image = self.tool.load_image_from_source(

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import colorsys
 import copy
 import json
 import re
@@ -145,6 +146,10 @@ def analysis_schema_path() -> Path:
     return foundry_root() / "specs" / "analysis.schema.json"
 
 
+def family_template_schema_path() -> Path:
+    return foundry_root() / "specs" / "family-template.schema.json"
+
+
 def load_request(path: Path) -> dict[str, Any]:
     request = load_json(path)
     schema = load_json(request_schema_path())
@@ -197,6 +202,18 @@ def load_preset(preset_id: str) -> dict[str, Any]:
     return preset
 
 
+def load_family_template(family_template_id: str) -> dict[str, Any]:
+    path = foundry_root() / "specs" / "template-families" / f"{family_template_id}.json"
+    if not path.exists():
+        raise SystemExit(f"Unknown family template: {family_template_id}")
+    family = load_json(path)
+    schema = load_json(family_template_schema_path())
+    errors = validate_instance(family, schema)
+    if errors:
+        raise SystemExit("\n".join(errors))
+    return family
+
+
 def load_mask(mask_id: str) -> dict[str, Any]:
     path = foundry_root() / "masks" / f"{mask_id}.json"
     if not path.exists():
@@ -240,6 +257,18 @@ def request_template_id(request: dict[str, Any]) -> str | None:
     return request.get("template_id") or request.get("preset_id")
 
 
+def request_family_template_id(request: dict[str, Any]) -> str | None:
+    return request.get("family_template_id")
+
+
+def request_surface_override(request: dict[str, Any], surface_name: str) -> dict[str, Any] | None:
+    return request.get("surface_overrides", {}).get(surface_name)
+
+
+def request_is_surface_bundle(request: dict[str, Any]) -> bool:
+    return request_family_template_id(request) is not None
+
+
 def find_minecraft_client_jar(version: str) -> Path:
     candidates = [
         Path.home() / "Library/Application Support/PrismLauncher/libraries/com/mojang/minecraft" / version / f"minecraft-{version}-client.jar",
@@ -266,10 +295,44 @@ def load_image_from_source(source: dict[str, Any]) -> Image.Image:
     raise SystemExit(f"Unsupported image source kind: {kind}")
 
 
-def planned_outputs(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
+def single_surface_planned_outputs(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
     resource_root = request["output"]["resource_root"]
     asset_id = request["asset_id"]
     return [f"{resource_root.rstrip('/')}/{rel.replace('{asset_id}', asset_id)}" for rel in asset_type["output_files"]]
+
+
+def family_texture_output(request: dict[str, Any], surface_name: str, output_suffix: str) -> str:
+    resource_root = request["output"]["resource_root"].rstrip("/")
+    asset_id = request["asset_id"]
+    return f"{resource_root}/textures/block/{asset_id}_{output_suffix or surface_name}.png"
+
+
+def family_surface_output_rel(request: dict[str, Any], surface: dict[str, Any]) -> str:
+    resource_root = request["output"]["resource_root"].rstrip("/")
+    asset_id = request["asset_id"]
+    if surface.get("output_path"):
+        return f"{resource_root}/{surface['output_path'].replace('{asset_id}', asset_id)}"
+    return family_texture_output(request, surface["name"], surface.get("output_suffix", surface["name"]))
+
+
+def family_model_output(request: dict[str, Any], family_template: dict[str, Any]) -> str:
+    resource_root = request["output"]["resource_root"].rstrip("/")
+    output_rel = family_template["output_bundle"].get("model_output", "models/block/{asset_id}.json")
+    return f"{resource_root}/{output_rel.replace('{asset_id}', request['asset_id'])}"
+
+
+def planned_outputs(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
+    family_template_id = request_family_template_id(request)
+    if not family_template_id:
+        return single_surface_planned_outputs(request, asset_type)
+    family = load_family_template(family_template_id)
+    outputs = [
+        family_surface_output_rel(request, surface)
+        for surface in family["surfaces"]
+    ]
+    if family["output_bundle"]["kind"] == "block_model_bundle":
+        outputs.append(family_model_output(request, family))
+    return outputs
 
 
 def preview_root() -> Path:
@@ -300,6 +363,10 @@ def delta_summary_output(asset_id: str) -> Path:
     return preview_root() / f"{asset_id}_delta.json"
 
 
+def surface_asset_id(asset_id: str, surface_name: str) -> str:
+    return f"{asset_id}_{surface_name}"
+
+
 def build_manifest(
     request: dict[str, Any],
     asset_type: dict[str, Any],
@@ -308,6 +375,7 @@ def build_manifest(
     delta_files: list[str] | None = None,
     source_image: str | None = None,
     generated_files: list[str] | None = None,
+    surface_files: dict[str, list[str]] | None = None,
 ) -> dict[str, Any]:
     manifest: dict[str, Any] = {
         "asset_id": request["asset_id"],
@@ -316,7 +384,6 @@ def build_manifest(
         "asset_type": request["asset_type"],
         "material_palette": request["material_palette"],
         "style_tags": request["style_tags"],
-        "mask_id": request["mask_id"],
         "output": {
             "resource_root": request["output"]["resource_root"],
             "files": planned_outputs(request, asset_type),
@@ -327,10 +394,14 @@ def build_manifest(
             "notes": [],
         },
     }
+    if request.get("mask_id"):
+        manifest["mask_id"] = request["mask_id"]
     if source_image is not None:
         manifest["source_image"] = source_image
     if generated_files:
         manifest["generated_files"] = generated_files
+    if surface_files:
+        manifest["surface_files"] = surface_files
     if preview_files:
         manifest["preview_files"] = preview_files
     if delta_files:
@@ -340,6 +411,8 @@ def build_manifest(
         manifest["template_id"] = template_id
     if request.get("preset_id"):
         manifest["preset_id"] = request["preset_id"]
+    if request_family_template_id(request):
+        manifest["family_template_id"] = request["family_template_id"]
     return manifest
 
 
@@ -363,13 +436,42 @@ def delta_summary(base: Image.Image, generated: Image.Image, template: dict[str,
     payload: dict[str, Any] = {"changed_count": len(changed), "changed_pixels": changed}
     if template and template_has_pixel_groups(template):
         per_group: dict[str, int] = {}
+        group_transform_summary: dict[str, Any] = {}
         for group in template["pixel_groups"]:
             pixels = pixel_group_pixels(group)
             count = sum(1 for item in changed if (item["x"], item["y"]) in pixels)
             if count:
                 per_group[group["name"]] = count
+            stats = region_relationship_stats(base, pixels)
+            if pixels:
+                group_transform_summary[group["name"]] = {
+                    "mode": group["mode"],
+                    "changed_pixel_count": count,
+                    "locked_pixel_count": len(pixels) if group["mode"] == "locked" else 0,
+                    "source_value_range": stats["value"],
+                    "source_saturation_range": stats["saturation"],
+                    "source_hue_mean": stats["hue"]["mean"],
+                }
         payload["changed_groups"] = per_group
+        payload["group_transform_summary"] = group_transform_summary
     return payload
+
+
+def block_model_texture_ref(request: dict[str, Any], surface: dict[str, Any]) -> str:
+    namespace = request["output"]["resource_root"].split("/assets/", 1)[1]
+    return f"{namespace}:block/{request['asset_id']}_{surface.get('output_suffix', surface['name'])}"
+
+
+def build_block_model_payload(request: dict[str, Any], family_template: dict[str, Any]) -> dict[str, Any]:
+    surfaces = {surface["name"]: surface for surface in family_template["surfaces"]}
+    textures = {
+        slot: block_model_texture_ref(request, surfaces[surface_name])
+        for slot, surface_name in family_template["output_bundle"].get("texture_slots", {}).items()
+    }
+    return {
+        "parent": family_template["output_bundle"]["model_parent"],
+        "textures": textures,
+    }
 
 
 def validate_manifest(manifest: dict[str, Any]) -> list[str]:
@@ -448,6 +550,10 @@ def template_group_set(template: dict[str, Any], group_set_name: str) -> list[di
     return [pixel_group_by_name(template, name) for name in names]
 
 
+def template_group_set_options(template: dict[str, Any], group_set_name: str) -> dict[str, Any]:
+    return template.get("group_set_options", {}).get(group_set_name, {})
+
+
 def validate_template_against_asset_type(template: dict[str, Any], asset_type: dict[str, Any], mask: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if template["asset_type"] != asset_type["id"]:
@@ -506,6 +612,12 @@ def validate_template_against_asset_type(template: dict[str, Any], asset_type: d
         for entry in members:
             if entry not in group_names:
                 errors.append(f"group_sets.{set_name} references unknown pixel group '{entry}'")
+    for set_name in template.get("group_set_options", {}):
+        if set_name not in template.get("group_sets", {}):
+            errors.append(f"group_set_options references unknown group set '{set_name}'")
+        for role_name in template["group_set_options"][set_name].get("ramp_roles", []):
+            if role_name not in template.get("palette_roles", []):
+                errors.append(f"group_set_options.{set_name}.ramp_roles references unknown palette role '{role_name}'")
     base_image = template.get("base_image")
     if base_image is not None:
         try:
@@ -514,6 +626,29 @@ def validate_template_against_asset_type(template: dict[str, Any], asset_type: d
                 errors.append("template base image canvas does not match asset type canvas")
         except SystemExit as exc:
             errors.append(str(exc))
+    return errors
+
+
+def validate_family_template(family: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    surface_names: set[str] = set()
+    for surface in family["surfaces"]:
+        if surface["name"] in surface_names:
+            errors.append(f"duplicate family surface '{surface['name']}'")
+            continue
+        surface_names.add(surface["name"])
+        try:
+            template = load_template(surface["template_id"])
+        except SystemExit as exc:
+            errors.append(str(exc))
+            continue
+        if template["asset_type"] != family["asset_type"]:
+            errors.append(
+                f"family surface '{surface['name']}' template asset_type {template['asset_type']} does not match family asset_type {family['asset_type']}"
+            )
+    for slot, surface_name in family.get("output_bundle", {}).get("texture_slots", {}).items():
+        if surface_name not in surface_names:
+            errors.append(f"output_bundle.texture_slots.{slot} references unknown surface '{surface_name}'")
     return errors
 
 
@@ -543,30 +678,54 @@ def extra_request_checks(request: dict[str, Any], asset_type: dict[str, Any]) ->
         errors.append("asset_type/item_icon: expected at least one textures/item output")
     if output_kind in {"block_texture", "uv_texture"} and "/textures/block/" not in output_joined:
         errors.append("asset_type/block_texture: expected at least one textures/block output")
+    if output_kind == "entity_texture" and "/textures/entity/" not in output_joined:
+        errors.append("asset_type/entity_texture: expected at least one textures/entity output")
 
     palette = load_palette(request["material_palette"])
     if palette["profile"] != request["profile"]:
         errors.append("material_palette profile does not match request profile")
 
-    mask = load_mask(request["mask_id"])
-    errors.extend(validate_mask_against_asset_type(mask, asset_type))
-
-    template_id = request_template_id(request)
-    if template_id:
-        template = load_template(template_id)
-        errors.extend(validate_template_against_asset_type(template, asset_type, mask))
-        missing_roles = [role for role in template["palette_roles"] if role not in palette.get("roles", {})]
-        if missing_roles:
-            errors.append(f"palette is missing template roles: {', '.join(missing_roles)}")
+    family_template_id = request_family_template_id(request)
+    if family_template_id:
+        family = load_family_template(family_template_id)
+        if family["asset_type"] != asset_type["id"]:
+            errors.append("family_template asset_type does not match request asset type")
+        errors.extend(validate_family_template(family))
+        for surface in family["surfaces"]:
+            template = load_template(surface["template_id"])
+            mask = load_mask(template["base_mask"])
+            errors.extend(validate_mask_against_asset_type(mask, asset_type))
+            errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+            missing_roles = [role for role in template["palette_roles"] if role not in palette.get("roles", {})]
+            if missing_roles:
+                errors.append(f"palette is missing template roles for surface {surface['name']}: {', '.join(missing_roles)}")
+    else:
+        mask = load_mask(request["mask_id"])
+        errors.extend(validate_mask_against_asset_type(mask, asset_type))
+        template_id = request_template_id(request)
+        if template_id:
+            template = load_template(template_id)
+            errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+            missing_roles = [role for role in template["palette_roles"] if role not in palette.get("roles", {})]
+            if missing_roles:
+                errors.append(f"palette is missing template roles: {', '.join(missing_roles)}")
 
     if request["provenance"]["generator_mode"] == "repair_generated_png":
-        source = request.get("source_image")
-        if not source:
-            errors.append("source_image is required when generator_mode is repair_generated_png")
+        if family_template_id:
+            for surface in load_family_template(family_template_id)["surfaces"]:
+                override = request_surface_override(request, surface["name"])
+                if override and override.get("source_image"):
+                    source_path = resolve_repo_path(Path(override["source_image"]["path"]))
+                    if not source_path.exists():
+                        errors.append(f"surface_overrides.{surface['name']}.source_image.path does not exist: {override['source_image']['path']}")
         else:
-            source_path = resolve_repo_path(Path(source["path"]))
-            if not source_path.exists():
-                errors.append(f"source_image.path does not exist: {source['path']}")
+            source = request.get("source_image")
+            if not source:
+                errors.append("source_image is required when generator_mode is repair_generated_png")
+            else:
+                source_path = resolve_repo_path(Path(source["path"]))
+                if not source_path.exists():
+                    errors.append(f"source_image.path does not exist: {source['path']}")
     return errors
 
 
@@ -813,6 +972,7 @@ def color_inventory(image: Image.Image) -> list[dict[str, Any]]:
                 "rgba": [color[0], color[1], color[2], color[3]],
                 "count": len(coords),
                 "luminance": pixel_luma(color),
+                "hsv": hsv_payload(color),
                 "bounds": bounds_from_pixels(coords),
                 "pixels": pixel_points_payload(coords),
             }
@@ -887,6 +1047,84 @@ def neutral_zone_candidates(components: list[dict[str, Any]]) -> list[dict[str, 
 
 def pixel_luma(pixel: tuple[int, int, int, int]) -> int:
     return int(pixel[0] * 0.299 + pixel[1] * 0.587 + pixel[2] * 0.114)
+
+
+def pixel_hsv(pixel: tuple[int, int, int, int]) -> tuple[float, float, float]:
+    return colorsys.rgb_to_hsv(pixel[0] / 255.0, pixel[1] / 255.0, pixel[2] / 255.0)
+
+
+def hsv_payload(pixel: tuple[int, int, int, int]) -> dict[str, float]:
+    h, s, v = pixel_hsv(pixel)
+    return {
+        "hue": round(h * 360.0, 3),
+        "saturation": round(s, 4),
+        "value": round(v, 4),
+    }
+
+
+def color_from_hsv(hue: float, saturation: float, value: float) -> tuple[int, int, int, int]:
+    r, g, b = colorsys.hsv_to_rgb(hue % 1.0, min(max(saturation, 0.0), 1.0), min(max(value, 0.0), 1.0))
+    return (round(r * 255), round(g * 255), round(b * 255), 255)
+
+
+def region_relationship_stats(image: Image.Image, pixels: set[tuple[int, int]]) -> dict[str, Any]:
+    if not pixels:
+        return {
+            "pixel_count": 0,
+            "luminance": {"min": 0, "max": 0, "mean": 0.0, "spread": 0},
+            "hue": {"mean": 0.0},
+            "saturation": {"min": 0.0, "max": 0.0, "mean": 0.0},
+            "value": {"min": 0.0, "max": 0.0, "mean": 0.0},
+            "local_contrast": {"mean_abs_neighbor_delta": 0.0},
+            "texture_density": 0.0,
+        }
+    px = image.load()
+    lumas: list[int] = []
+    hues: list[float] = []
+    saturations: list[float] = []
+    values: list[float] = []
+    edge_hits = 0
+    edge_checks = 0
+    contrast_deltas: list[int] = []
+    for x, y in pixels:
+        pixel = px[x, y]
+        luma = pixel_luma(pixel)
+        h, s, v = pixel_hsv(pixel)
+        lumas.append(luma)
+        hues.append(h * 360.0)
+        saturations.append(s)
+        values.append(v)
+        for dx, dy in ((1, 0), (0, 1)):
+            nx, ny = x + dx, y + dy
+            if (nx, ny) in pixels:
+                edge_checks += 1
+                neighbor = px[nx, ny]
+                contrast_deltas.append(abs(luma - pixel_luma(neighbor)))
+                if pixel[:3] != neighbor[:3]:
+                    edge_hits += 1
+    contrast_mean = sum(contrast_deltas) / len(contrast_deltas) if contrast_deltas else 0.0
+    return {
+        "pixel_count": len(pixels),
+        "luminance": {
+            "min": min(lumas),
+            "max": max(lumas),
+            "mean": round(sum(lumas) / len(lumas), 3),
+            "spread": max(lumas) - min(lumas),
+        },
+        "hue": {"mean": round(sum(hues) / len(hues), 3)},
+        "saturation": {
+            "min": round(min(saturations), 4),
+            "max": round(max(saturations), 4),
+            "mean": round(sum(saturations) / len(saturations), 4),
+        },
+        "value": {
+            "min": round(min(values), 4),
+            "max": round(max(values), 4),
+            "mean": round(sum(values) / len(values), 4),
+        },
+        "local_contrast": {"mean_abs_neighbor_delta": round(contrast_mean, 4)},
+        "texture_density": round(edge_hits / edge_checks, 4) if edge_checks else 0.0,
+    }
 
 
 def pixel_points_payload(pixels: set[tuple[int, int]]) -> list[dict[str, int]]:
@@ -973,7 +1211,7 @@ def infer_group_role(requested_role: str, group_name: str) -> str:
 
 ROLE_VARIANTS = {
     "cover": ["cover_dark", "cover_mid", "cover_light"],
-    "base": ["base_dark", "base_mid", "base_light"],
+    "base": ["base_deep", "base_dark", "base_mid", "base_light", "base_highlight"],
 }
 
 
@@ -1120,10 +1358,18 @@ def heuristic_regions(image: Image.Image, heuristic: str) -> list[dict[str, Any]
 
 
 def analyze_image(image: Image.Image, heuristic: str) -> dict[str, Any]:
+    heuristic = heuristic or "generic"
     summary = image_summary(image)
     colors = color_inventory(image)
     components = connected_components_with_pixels(image)
     tone_ramps = tone_ramps_from_colors(colors)
+    candidate_regions = heuristic_regions(image, heuristic)
+    all_pixels = {
+        (x, y)
+        for x in range(image.width)
+        for y in range(image.height)
+        if image.getpixel((x, y))[3] > 0
+    }
     analysis = {
         "source_summary": f"Neutral pixel analysis for {image.width}x{image.height} image using '{heuristic}' hint",
         "canvas": summary["canvas"],
@@ -1132,8 +1378,10 @@ def analyze_image(image: Image.Image, heuristic: str) -> dict[str, Any]:
         "components": components,
         "adjacency": component_adjacency(components),
         "tone_ramps": tone_ramps,
+        "candidate_regions": candidate_regions,
         "detail_candidates": neutral_detail_candidates(components, tone_ramps),
         "zone_candidates": neutral_zone_candidates(components),
+        "surface_relationships": region_relationship_stats(image, all_pixels),
         "pixel_groups": [
             {
                 "id": group["id"],
@@ -1142,6 +1390,7 @@ def analyze_image(image: Image.Image, heuristic: str) -> dict[str, Any]:
                 "rank": group["rank"],
                 "count": group["count"],
                 "bounds": group["bounds"],
+                "relationships": region_relationship_stats(image, {(pixel["x"], pixel["y"]) for pixel in group["pixels"]}),
                 "pixels": group["pixels"],
             }
             for group in tone_ramps
@@ -1209,6 +1458,28 @@ def template_editable_pixels(template: dict[str, Any]) -> set[tuple[int, int]]:
     return editable
 
 
+def template_non_quantized_pixels(template: dict[str, Any]) -> set[tuple[int, int]]:
+    if not template_has_pixel_groups(template):
+        return set()
+    non_quantized: set[tuple[int, int]] = set()
+    group_sets = template.get("group_sets", {})
+    for set_name, members in group_sets.items():
+        options = template_group_set_options(template, set_name)
+        if quantize_to_palette_for_scope(options=options):
+            continue
+        for group_name in members:
+            group = pixel_group_by_name(template, group_name)
+            if group["mode"] != "locked":
+                non_quantized.update(pixel_group_pixels(group))
+    grouped = {name for members in group_sets.values() for name in members}
+    for group in template.get("pixel_groups", []):
+        if group["name"] in grouped or group["mode"] == "locked":
+            continue
+        if not quantize_to_palette_for_scope(group=group):
+            non_quantized.update(pixel_group_pixels(group))
+    return non_quantized
+
+
 def apply_template_regions(
     request: dict[str, Any],
     asset_type: dict[str, Any],
@@ -1222,13 +1493,31 @@ def apply_template_regions(
     allow_partial_alpha = asset_type["rules"]["allow_partial_alpha"] == "yes"
 
     if template_has_pixel_groups(template):
+        processed_groups: set[str] = set()
+        for set_name, members in template.get("group_sets", {}).items():
+            options = template_group_set_options(template, set_name)
+            policy = transform_policy_for_scope(options=options)
+            if policy == "flat_recolor":
+                continue
+            groups = [pixel_group_by_name(template, name) for name in members]
+            groups = [group for group in groups if group["mode"] not in {"locked", "detail", "motif"} and not group["name"].startswith("page_")]
+            if not groups:
+                continue
+            processed_groups.update(group["name"] for group in groups)
+            remap_group_set_preserve_value(result, template, palette, groups, groups[0]["default_palette_role"], options)
         editable_groups = [
             group for group in template["pixel_groups"]
-            if group["mode"] not in {"locked", "detail", "motif"} and not group["name"].startswith("page_")
+            if group["mode"] not in {"locked", "detail", "motif"}
+            and not group["name"].startswith("page_")
+            and group["name"] not in processed_groups
         ]
         for group in editable_groups:
             pixels = pixel_group_pixels(group)
             if not pixels:
+                continue
+            policy = transform_policy_for_scope(group=group)
+            if policy != "flat_recolor":
+                remap_group_to_role(result, template, palette, group, group["default_palette_role"])
                 continue
             allowed_colors = [palette_role_color(palette, role) for role in group["allowed_palette_roles"]]
             for x, y in pixels:
@@ -1315,10 +1604,12 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
 
     palette = set(palette_rgba(load_palette(request["material_palette"])))
     template_id = request_template_id(request)
+    non_quantized_pixels: set[tuple[int, int]] = set()
     if template_id:
         template = load_template(template_id)
         base = template_base_image(template, load_palette(request["material_palette"]))
         palette.update({(r, g, b, 255) for (r, g, b, a) in base.getdata() if a > 0})
+        non_quantized_pixels = template_non_quantized_pixels(template)
     allow_partial_alpha = asset_type["rules"]["allow_partial_alpha"] == "yes"
     allowed = mask_allowed_pixels(mask)
     forbidden = mask_forbidden_pixels(mask)
@@ -1336,7 +1627,7 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
                 bad_mask += 1
             if not allow_partial_alpha and pixel[3] not in (0, 255):
                 bad_alpha += 1
-            if (pixel[0], pixel[1], pixel[2], 255) not in palette:
+            if (pixel[0], pixel[1], pixel[2], 255) not in palette and (x, y) not in non_quantized_pixels:
                 off_palette += 1
 
     if off_palette:
@@ -1376,6 +1667,42 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
     return diagnostics
 
 
+def surface_bundle_diagnostics(request: dict[str, Any], asset_type: dict[str, Any]) -> list[str]:
+    require_pillow()
+    diagnostics: list[str] = []
+    family_template_id = request_family_template_id(request)
+    if not family_template_id:
+        return ["surface bundle validation requires request.family_template_id"]
+    family = load_family_template(family_template_id)
+    family_errors = validate_family_template(family)
+    if family_errors:
+        diagnostics.extend(family_errors)
+        return diagnostics
+    for surface in family["surfaces"]:
+        template = load_template(surface["template_id"])
+        mask = load_mask(template["base_mask"])
+        image_path = resolve_repo_path(Path(family_surface_output_rel(request, surface)))
+        if not image_path.exists():
+            diagnostics.append(f"missing generated surface output: {image_path.relative_to(repo_root())}")
+            continue
+        image = Image.open(image_path).convert("RGBA")
+        surface_request = copy.deepcopy(request)
+        surface_request["template_id"] = surface["template_id"]
+        surface_request["mask_id"] = template["base_mask"]
+        for issue in texture_diagnostics(image, request=surface_request, asset_type=asset_type, mask=mask):
+            diagnostics.append(f"{surface['name']}: {issue}")
+    if family["output_bundle"]["kind"] == "block_model_bundle":
+        model_path = resolve_repo_path(Path(family_model_output(request, family)))
+        if not model_path.exists():
+            diagnostics.append(f"missing generated model output: {model_path.relative_to(repo_root())}")
+        else:
+            model = load_json(model_path)
+            expected = build_block_model_payload(request, family)
+            if model != expected:
+                diagnostics.append("generated block model does not match expected family texture slot mapping")
+    return diagnostics
+
+
 def output_path_diagnostic(path: Path) -> str | None:
     path_str = str(path.relative_to(repo_root()))
     if path_str.startswith("tools/asset-foundry/previews/"):
@@ -1406,6 +1733,14 @@ def command_output_paths(asset_id: str, output: str | None, manifest: str | None
     manifest_path = resolve_repo_path(Path(manifest)) if manifest else manifest_output(asset_id)
     preview_path = resolve_repo_path(Path(preview)) if preview else preview_sheet_output(asset_id)
     return output_path, manifest_path, preview_path
+
+
+def family_surface_output_paths(request: dict[str, Any], family: dict[str, Any], surface: dict[str, Any]) -> tuple[Path, Path, Path, Path]:
+    generated = resolve_repo_path(Path(family_surface_output_rel(request, surface)))
+    preview = preview_sheet_output(surface_asset_id(request["asset_id"], surface["name"]))
+    delta = delta_output(surface_asset_id(request["asset_id"], surface["name"]))
+    delta_json = delta_summary_output(surface_asset_id(request["asset_id"], surface["name"]))
+    return generated, preview, delta, delta_json
 
 
 def template_output_path(template_id: str, output: str | None) -> Path:
@@ -1615,7 +1950,7 @@ def cmd_inspect_image(args: argparse.Namespace) -> None:
 
 def cmd_analyze_image(args: argparse.Namespace) -> None:
     image = load_image_from_source(image_source_from_args(args))
-    analysis = analyze_image(image, args.heuristic)
+    analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
     errors = validate_instance(analysis, load_json(analysis_schema_path()))
     if errors:
         raise SystemExit("\n".join(errors))
@@ -1632,13 +1967,16 @@ def cmd_analyze_image_regions(args: argparse.Namespace) -> None:
 
 def cmd_inspect_topology(args: argparse.Namespace) -> None:
     image = load_image_from_source(image_source_from_args(args))
-    analysis = analyze_image(image, args.heuristic)
+    analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
     print("\n".join(analysis["topology_map"]))
 
 
 def cmd_render_region_overlay(args: argparse.Namespace) -> None:
     image = load_image_from_source(image_source_from_args(args))
-    analysis = load_json(resolve_repo_path(Path(args.analysis)))
+    if getattr(args, "analysis", None):
+        analysis = load_json(resolve_repo_path(Path(args.analysis)))
+    else:
+        analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
     overlay = render_region_overlay(image, analysis["candidate_regions"], grid=args.grid)
     output = resolve_repo_path(Path(args.output))
     write_image(overlay, output)
@@ -1665,14 +2003,14 @@ def cmd_create_template_from_image(args: argparse.Namespace) -> None:
     mask_errors = validate_mask_against_asset_type(mask, asset_type)
     if mask_errors:
         raise SystemExit("\n".join(mask_errors))
-    analysis = analyze_image(image, args.heuristic)
+    analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
     template = template_seed_payload(
         template_id=args.template_id,
         asset_type=asset_type,
         mask_id=args.base_mask,
         base_image=image_source,
         analysis=analysis,
-        notes=[f"Neutral template seed created from image source for {args.template_id} using heuristic hint '{args.heuristic}'."],
+        notes=[f"Neutral template seed created from image source for {args.template_id} using heuristic hint '{getattr(args, 'heuristic', 'generic')}'."],
     )
     errors = validate_instance(template, load_json(template_schema_path()))
     errors.extend(validate_template_against_asset_type(template, asset_type, mask))
@@ -1837,6 +2175,14 @@ def cmd_validate_texture(args: argparse.Namespace) -> None:
     print(f"Valid texture: {image_path}")
 
 
+def cmd_validate_bundle(args: argparse.Namespace) -> None:
+    request, asset_type = load_request_and_type(args.request)
+    diagnostics = surface_bundle_diagnostics(request, asset_type)
+    if diagnostics:
+        raise SystemExit("\n".join(diagnostics))
+    print(f"Valid surface bundle: {request['asset_id']}")
+
+
 def color_from_ops(color_value: str, palette: list[tuple[int, int, int, int]]) -> tuple[int, int, int, int]:
     candidate = hex_to_rgba(color_value)
     if candidate not in palette:
@@ -1871,11 +2217,30 @@ def resolve_preset_color(
     if role_name:
         if template is None:
             raise SystemExit("Palette roles require a template-backed request")
-        return palette_role_color(load_palette(request["material_palette"]), role_name)
     color_value = op.get("color")
     if color_value is None:
         raise SystemExit("Pixel op requires either role or color")
+    if role_name:
+        return palette_role_color(load_palette(request["material_palette"]), role_name)
     return color_from_ops(color_value, flat_palette)
+
+
+def closest_allowed_role(role_name: str, allowed_roles: list[str]) -> str:
+    if role_name in allowed_roles:
+        return role_name
+    desired_variant = palette_role_variant(role_name)
+    if desired_variant is None:
+        return allowed_roles[0]
+    family, desired_index = desired_variant
+    candidates: list[tuple[int, str]] = []
+    for allowed in allowed_roles:
+        allowed_variant = palette_role_variant(allowed)
+        if allowed_variant is None or allowed_variant[0] != family:
+            continue
+        candidates.append((abs(allowed_variant[1] - desired_index), allowed))
+    if candidates:
+        return min(candidates, key=lambda item: item[0])[1]
+    return allowed_roles[0]
 
 
 def motif_pixels(op: dict[str, Any], region: dict[str, Any]) -> set[tuple[int, int]]:
@@ -1917,9 +2282,207 @@ def fill_group_pixels(image: Image.Image, group: dict[str, Any], color: tuple[in
     fill_pixels(image, pixel_group_pixels(group), color)
 
 
-def remap_group_to_role(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
+def source_image_for_template(template: dict[str, Any], palette_def: dict[str, Any]) -> Image.Image:
+    return template_base_image(template, palette_def)
+
+
+def remap_group_to_role_flat(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
     group_allowed_role(group, role)
     fill_group_pixels(image, group, palette_role_color(palette_def, role))
+
+
+def preserve_value_roles_for_group_set(
+    requested_role: str,
+    groups: list[dict[str, Any]],
+    options: dict[str, Any] | None = None,
+) -> list[str]:
+    if options and options.get("ramp_roles"):
+        return list(options["ramp_roles"])
+    variant = palette_role_variant(requested_role)
+    if variant is None:
+        return [requested_role]
+    family, _ = variant
+    return ROLE_VARIANTS[family]
+
+
+def transform_policy_for_scope(
+    group: dict[str, Any] | None = None,
+    options: dict[str, Any] | None = None,
+    explicit_policy: str | None = None,
+) -> str:
+    if explicit_policy:
+        return explicit_policy
+    if options and options.get("transform_policy"):
+        return options["transform_policy"]
+    if group and group.get("transform_policy"):
+        return group["transform_policy"]
+    if options and options.get("preserve_value"):
+        return "preserve_value"
+    if group and group.get("preserve_value"):
+        return "preserve_value"
+    return "flat_recolor"
+
+
+def quantize_to_palette_for_scope(
+    *,
+    group: dict[str, Any] | None = None,
+    options: dict[str, Any] | None = None,
+    explicit_quantize: bool | None = None,
+) -> bool:
+    if explicit_quantize is not None:
+        return explicit_quantize
+    if options and "quantize_to_palette" in options:
+        return bool(options["quantize_to_palette"])
+    if group and "quantize_to_palette" in group:
+        return bool(group["quantize_to_palette"])
+    return False
+
+
+def clamp01(value: float) -> float:
+    return min(max(value, 0.0), 1.0)
+
+
+def circular_hue_delta(source: float, target: float) -> float:
+    delta = target - source
+    if delta > 0.5:
+        delta -= 1.0
+    elif delta < -0.5:
+        delta += 1.0
+    return delta
+
+
+def role_hsv(palette_def: dict[str, Any], role: str) -> tuple[float, float, float]:
+    return pixel_hsv(palette_role_color(palette_def, role))
+
+
+def ranked_target_color(
+    luma: int,
+    luma_min: int,
+    luma_max: int,
+    ramp_roles: list[str],
+    palette_def: dict[str, Any],
+    allowed_roles: list[str],
+) -> tuple[int, int, int, int]:
+    if len(ramp_roles) == 1:
+        desired_role = ramp_roles[0]
+    elif luma_max == luma_min:
+        desired_role = ramp_roles[min(len(ramp_roles) - 1, len(ramp_roles) // 2)]
+    else:
+        normalized = (luma - luma_min) / (luma_max - luma_min)
+        target_index = round(normalized * (len(ramp_roles) - 1))
+        desired_role = ramp_roles[max(0, min(target_index, len(ramp_roles) - 1))]
+    role = closest_allowed_role(desired_role, allowed_roles)
+    return palette_role_color(palette_def, role)
+
+
+def apply_color_transform(
+    base_pixel: tuple[int, int, int, int],
+    target_pixel: tuple[int, int, int, int],
+    *,
+    policy: str,
+    group_stats: dict[str, Any],
+    preserve_local_contrast: bool = False,
+) -> tuple[int, int, int, int]:
+    if policy in {"flat_recolor", "preserve_value"}:
+        return target_pixel
+    source_h, source_s, source_v = pixel_hsv(base_pixel)
+    target_h, target_s, target_v = pixel_hsv(target_pixel)
+    value_spread = max(group_stats["value"]["max"] - group_stats["value"]["min"], 0.0001)
+    sat_spread = max(group_stats["saturation"]["max"] - group_stats["saturation"]["min"], 0.0001)
+    value_ratio = (source_v - group_stats["value"]["min"]) / value_spread
+    sat_ratio = (source_s - group_stats["saturation"]["min"]) / sat_spread
+
+    if policy == "palette_projection":
+        projected_v = clamp01(group_stats["value"]["min"] + value_ratio * (target_v - group_stats["value"]["min"] + value_spread))
+        projected_s = clamp01((target_s * 0.65) + (source_s * 0.35))
+        return color_from_hsv(target_h, projected_s, projected_v)
+
+    if policy == "hue_bias_remap":
+        mean_hue = (group_stats["hue"]["mean"] / 360.0) % 1.0
+        hue = (source_h + circular_hue_delta(mean_hue, target_h)) % 1.0
+        saturation = clamp01((source_s * 0.7) + (target_s * 0.3))
+        value = clamp01((source_v * 0.7) + (target_v * 0.3))
+        return color_from_hsv(hue, saturation, value)
+
+    if policy == "contrast_preserving_recolor":
+        contrast_scale = 1.0
+        if preserve_local_contrast:
+            contrast_scale += min(group_stats["local_contrast"]["mean_abs_neighbor_delta"] / 255.0, 0.35)
+        delta_v = (source_v - group_stats["value"]["mean"]) * contrast_scale
+        delta_s = (source_s - group_stats["saturation"]["mean"]) * (0.8 if preserve_local_contrast else 0.5)
+        value = clamp01(target_v + delta_v)
+        saturation = clamp01(target_s + delta_s)
+        hue = (target_h + circular_hue_delta(group_stats["hue"]["mean"] / 360.0, source_h) * 0.15) % 1.0
+        return color_from_hsv(hue, saturation, value)
+
+    return target_pixel
+
+
+def remap_group_set_preserve_value(
+    image: Image.Image,
+    template: dict[str, Any],
+    palette_def: dict[str, Any],
+    groups: list[dict[str, Any]],
+    requested_role: str,
+    options: dict[str, Any] | None = None,
+) -> None:
+    ramp_roles = preserve_value_roles_for_group_set(requested_role, groups, options)
+    base = source_image_for_template(template, palette_def)
+    src = base.load()
+    dst = image.load()
+    pixels: list[tuple[tuple[int, int], dict[str, Any], int]] = []
+    for group in groups:
+        for x, y in pixel_group_pixels(group):
+            pixels.append(((x, y), group, pixel_luma(src[x, y])))
+    if not pixels:
+        return
+    lumas = [entry[2] for entry in pixels]
+    min_luma = min(lumas)
+    max_luma = max(lumas)
+    all_points = {(x, y) for (x, y), _, _ in pixels}
+    stats = region_relationship_stats(base, all_points)
+    policy = transform_policy_for_scope(options=options)
+    preserve_local_contrast = bool((options or {}).get("preserve_local_contrast"))
+    quantize_to_palette = quantize_to_palette_for_scope(options=options)
+    for (x, y), group, luma in pixels:
+        target_pixel = ranked_target_color(luma, min_luma, max_luma, ramp_roles, palette_def, group["allowed_palette_roles"])
+        transformed = apply_color_transform(
+            src[x, y],
+            target_pixel,
+            policy=policy,
+            group_stats=stats,
+            preserve_local_contrast=preserve_local_contrast,
+        )
+        allowed_colors = {
+            palette_role_color(palette_def, role)
+            for role in set(group["allowed_palette_roles"]) | set(ramp_roles)
+            if role in palette_def.get("roles", {})
+        }
+        if quantize_to_palette:
+            dst[x, y] = nearest_color(transformed, list(allowed_colors or {target_pixel}))
+        else:
+            dst[x, y] = transformed
+
+
+def remap_group_to_role(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
+    group_allowed_role(group, role)
+    policy = transform_policy_for_scope(group=group)
+    if policy != "flat_recolor":
+        remap_group_set_preserve_value(
+            image,
+            template,
+            palette_def,
+            [group],
+            role,
+            {
+                "transform_policy": policy,
+                "preserve_value": group.get("preserve_value", False),
+                "preserve_local_contrast": group.get("preserve_local_contrast", False),
+                "quantize_to_palette": group.get("quantize_to_palette", False),
+            },
+        )
+        return
+    remap_group_to_role_flat(image, template, palette_def, group, role)
 
 
 def clear_group_to_role(image: Image.Image, template: dict[str, Any], palette_def: dict[str, Any], group: dict[str, Any], role: str) -> None:
@@ -2014,12 +2577,38 @@ def execute_pixel_ops(request: dict[str, Any], asset_type: dict[str, Any], mask:
             group = pixel_group_by_name(template, op["group"])
             if group["mode"] not in {"recolor_only", "shade_only", "detail"}:
                 raise SystemExit(f"remap_group_role is not allowed for pixel group mode {group['mode']}")
-            remap_group_to_role(canvas, template, palette_def, group, op["role"])
+            if op.get("transform_policy"):
+                remap_group_set_preserve_value(
+                    canvas,
+                    template,
+                    palette_def,
+                    [group],
+                    op["role"],
+                    {
+                        "transform_policy": op["transform_policy"],
+                        "preserve_value": op["transform_policy"] != "flat_recolor",
+                        "preserve_local_contrast": op.get("preserve_local_contrast", False),
+                        "quantize_to_palette": op.get("quantize_to_palette", False),
+                    },
+                )
+            else:
+                remap_group_to_role(canvas, template, palette_def, group, op["role"])
             continue
         elif name == "remap_group_set_role":
             if template is None or not template_has_pixel_groups(template):
                 raise SystemExit("remap_group_set_role requires a template with pixel_groups")
             groups = template_group_set(template, op["group_set"])
+            options = {**template_group_set_options(template, op["group_set"])}
+            if op.get("transform_policy"):
+                options["transform_policy"] = op["transform_policy"]
+                options["preserve_value"] = op["transform_policy"] != "flat_recolor"
+            if "preserve_local_contrast" in op:
+                options["preserve_local_contrast"] = op["preserve_local_contrast"]
+            if "quantize_to_palette" in op:
+                options["quantize_to_palette"] = op["quantize_to_palette"]
+            if transform_policy_for_scope(options=options) != "flat_recolor":
+                remap_group_set_preserve_value(canvas, template, palette_def, groups, op["role"], options)
+                continue
             for group in groups:
                 inferred_role = ranked_group_role(op["role"], group, groups)
                 remap_group_to_role(canvas, template, palette_def, group, inferred_role)
@@ -2058,6 +2647,42 @@ def execute_pixel_ops(request: dict[str, Any], asset_type: dict[str, Any], mask:
         fill_pixels(canvas, pixels_to_fill, color)
 
     return canvas
+
+
+def execute_surface_bundle_ops(
+    request: dict[str, Any],
+    asset_type: dict[str, Any],
+    family_template: dict[str, Any],
+    ops_payload: dict[str, Any],
+) -> dict[str, Image.Image]:
+    rendered: dict[str, Image.Image] = {}
+    surface_ops: dict[str, list[dict[str, Any]]] = {surface["name"]: [] for surface in family_template["surfaces"]}
+    for op in ops_payload["operations"]:
+        surface_name = op.get("surface")
+        if surface_name is None:
+            raise SystemExit("Surface bundle ops require each operation to declare a surface")
+        if surface_name not in surface_ops:
+            raise SystemExit(f"Unknown family surface in ops: {surface_name}")
+        op_copy = dict(op)
+        op_copy.pop("surface", None)
+        surface_ops[surface_name].append(op_copy)
+
+    for surface in family_template["surfaces"]:
+        template = load_template(surface["template_id"])
+        mask = load_mask(template["base_mask"])
+        surface_request = copy.deepcopy(request)
+        surface_request["template_id"] = surface["template_id"]
+        surface_request["mask_id"] = template["base_mask"]
+        override = request_surface_override(request, surface["name"])
+        if override and override.get("source_image"):
+            surface_request["source_image"] = override["source_image"]
+        rendered[surface["name"]] = execute_pixel_ops(
+            surface_request,
+            asset_type,
+            mask,
+            {"operations": surface_ops[surface["name"]]},
+        )
+    return rendered
 
 
 def cmd_paint_item_icon(args: argparse.Namespace) -> None:
@@ -2107,9 +2732,89 @@ def cmd_paint_item_icon(args: argparse.Namespace) -> None:
         print(f"Wrote delta artifact: {resolve_repo_path(Path(delta_file))}")
 
 
+def cmd_paint_surface_bundle(args: argparse.Namespace) -> None:
+    request, asset_type = load_request_and_type(args.request)
+    if request["provenance"]["generator_mode"] != "pixel_native":
+        raise SystemExit("paint-surface-bundle requires provenance.generator_mode = pixel_native")
+    family_template_id = request_family_template_id(request)
+    if not family_template_id:
+        raise SystemExit("paint-surface-bundle requires request.family_template_id")
+    family = load_family_template(family_template_id)
+    family_errors = validate_family_template(family)
+    if family_errors:
+        raise SystemExit("\n".join(family_errors))
+    ops_payload = load_pixel_ops(resolve_repo_path(Path(args.ops)))
+    rendered = execute_surface_bundle_ops(request, asset_type, family, ops_payload)
+    palette_def = load_palette(request["material_palette"])
+
+    generated_files: list[str] = []
+    preview_files: list[str] = []
+    delta_files: list[str] = []
+    surface_files: dict[str, list[str]] = {}
+    for surface in family["surfaces"]:
+        template = load_template(surface["template_id"])
+        image = rendered[surface["name"]]
+        output_path, preview_path, delta_path, delta_json_path = family_surface_output_paths(request, family, surface)
+        diag = output_path_diagnostic(output_path)
+        if diag:
+            raise SystemExit(diag)
+        write_image(image, output_path)
+        preview = magnify_image(image, scale=16, grid=args.grid)
+        write_image(preview, preview_path)
+        base = template_base_image(template, palette_def)
+        write_image(render_delta_image(base, image), delta_path)
+        save_json(delta_json_path, delta_summary(base, image, template))
+        rel_generated = str(output_path.relative_to(repo_root()))
+        rel_preview = str(preview_path.relative_to(repo_root()))
+        rel_delta = str(delta_path.relative_to(repo_root()))
+        rel_delta_json = str(delta_json_path.relative_to(repo_root()))
+        generated_files.append(rel_generated)
+        preview_files.append(rel_preview)
+        delta_files.extend([rel_delta, rel_delta_json])
+        surface_files[surface["name"]] = [rel_generated, rel_preview, rel_delta, rel_delta_json]
+
+    model_path = None
+    if family["output_bundle"]["kind"] == "block_model_bundle":
+        model_path = resolve_repo_path(Path(family_model_output(request, family)))
+        diag = output_path_diagnostic(model_path)
+        if diag:
+            raise SystemExit(diag)
+        save_json(model_path, build_block_model_payload(request, family))
+        generated_files.append(str(model_path.relative_to(repo_root())))
+
+    manifest_path = resolve_repo_path(Path(args.manifest_output)) if args.manifest_output else manifest_output(request["asset_id"])
+    manifest = build_manifest(
+        request,
+        asset_type,
+        preview_files=preview_files,
+        delta_files=delta_files,
+        generated_files=generated_files,
+        surface_files=surface_files,
+    )
+    manifest["provenance"]["generated_at"] = datetime.now(UTC).isoformat()
+    manifest["provenance"]["pixel_ops"] = str(resolve_repo_path(Path(args.ops)).relative_to(repo_root()))
+    save_json(manifest_path, manifest)
+    for surface_name, files in surface_files.items():
+        print(f"Wrote surface bundle artifacts for {surface_name}: {files[0]}")
+    if model_path is not None:
+        print(f"Wrote block model: {model_path}")
+    print(f"Wrote manifest: {manifest_path}")
+
+
 def cmd_describe_template(args: argparse.Namespace) -> None:
     template = load_template(args.template_id)
     print(json.dumps(template, indent=2))
+
+
+def cmd_render_delta(args: argparse.Namespace) -> None:
+    require_pillow()
+    base = Image.open(resolve_repo_path(Path(args.base))).convert("RGBA")
+    generated = Image.open(resolve_repo_path(Path(args.generated))).convert("RGBA")
+    output = resolve_repo_path(Path(args.output))
+    write_image(render_delta_image(base, generated), output)
+    save_json(resolve_repo_path(Path(args.summary_output)), delta_summary(base, generated))
+    print(f"Wrote delta image: {output}")
+    print(f"Wrote delta summary: {resolve_repo_path(Path(args.summary_output))}")
 
 
 def cmd_promote_to_template(args: argparse.Namespace) -> None:
@@ -2125,7 +2830,7 @@ def cmd_promote_to_template(args: argparse.Namespace) -> None:
 
     image_source = {"kind": "repo_path", "path": str(generated_asset.relative_to(repo_root()))}
     image = load_image_from_source(image_source)
-    analysis = analyze_image(image, args.heuristic)
+    analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
     template = template_payload(
         template_id=args.target_template_id,
         asset_type=asset_type,
@@ -2233,7 +2938,7 @@ def main() -> None:
     analyze_parser.add_argument("--image")
     analyze_parser.add_argument("--minecraft-asset")
     analyze_parser.add_argument("--minecraft-version")
-    analyze_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    analyze_parser.add_argument("--heuristic", default="generic")
     analyze_parser.add_argument("--output")
     analyze_parser.set_defaults(func=cmd_analyze_image)
 
@@ -2241,7 +2946,7 @@ def main() -> None:
     analyze_regions_parser.add_argument("--image")
     analyze_regions_parser.add_argument("--minecraft-asset")
     analyze_regions_parser.add_argument("--minecraft-version")
-    analyze_regions_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    analyze_regions_parser.add_argument("--heuristic", default="generic")
     analyze_regions_parser.add_argument("--output")
     analyze_regions_parser.set_defaults(func=cmd_analyze_image_regions)
 
@@ -2249,7 +2954,7 @@ def main() -> None:
     topology_parser.add_argument("--image")
     topology_parser.add_argument("--minecraft-asset")
     topology_parser.add_argument("--minecraft-version")
-    topology_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    topology_parser.add_argument("--heuristic", default="generic")
     topology_parser.set_defaults(func=cmd_inspect_topology)
 
     overlay_parser = subparsers.add_parser("render-region-overlay", help="Render a labeled overlay from analysis output")
@@ -2260,6 +2965,14 @@ def main() -> None:
     overlay_parser.add_argument("--output", required=True)
     overlay_parser.add_argument("--grid", action="store_true")
     overlay_parser.set_defaults(func=cmd_render_region_overlay)
+    analysis_overlay_parser = subparsers.add_parser("render-analysis-overlay", help="Compatibility alias for render-region-overlay")
+    analysis_overlay_parser.add_argument("--image")
+    analysis_overlay_parser.add_argument("--minecraft-asset")
+    analysis_overlay_parser.add_argument("--minecraft-version")
+    analysis_overlay_parser.add_argument("--heuristic", default="generic")
+    analysis_overlay_parser.add_argument("--output", required=True)
+    analysis_overlay_parser.add_argument("--grid", action="store_true")
+    analysis_overlay_parser.set_defaults(func=cmd_render_region_overlay)
 
     group_overlay_parser = subparsers.add_parser("render-group-overlay", help="Render a labeled overlay from template pixel-group analysis")
     group_overlay_parser.add_argument("--image")
@@ -2277,7 +2990,7 @@ def main() -> None:
     create_template_parser.add_argument("--asset-type", required=True)
     create_template_parser.add_argument("--base-mask", required=True)
     create_template_parser.add_argument("--template-id", required=True)
-    create_template_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    create_template_parser.add_argument("--heuristic", default="generic")
     create_template_parser.add_argument("--output")
     create_template_parser.set_defaults(func=cmd_create_template_from_image)
 
@@ -2317,6 +3030,13 @@ def main() -> None:
     describe_preset_parser.add_argument("template_id")
     describe_preset_parser.set_defaults(func=cmd_describe_template)
 
+    render_delta_parser = subparsers.add_parser("render-delta", help="Render a visual delta between a base image and generated image")
+    render_delta_parser.add_argument("--base", required=True)
+    render_delta_parser.add_argument("--generated", required=True)
+    render_delta_parser.add_argument("--output", required=True)
+    render_delta_parser.add_argument("--summary-output", required=True)
+    render_delta_parser.set_defaults(func=cmd_render_delta)
+
     repair_parser = subparsers.add_parser("repair-generated-png", help="Convert a rough PNG into strict pixel art")
     repair_parser.add_argument("request")
     repair_parser.add_argument("--output")
@@ -2332,6 +3052,10 @@ def main() -> None:
     validate_texture_parser.add_argument("image")
     validate_texture_parser.set_defaults(func=cmd_validate_texture)
 
+    validate_bundle_parser = subparsers.add_parser("validate-bundle", help="Validate a generated named surface bundle")
+    validate_bundle_parser.add_argument("request")
+    validate_bundle_parser.set_defaults(func=cmd_validate_bundle)
+
     paint_parser = subparsers.add_parser("paint-item-icon", help="Create a pixel-native item icon from pixel ops")
     paint_parser.add_argument("request")
     paint_parser.add_argument("--ops", required=True)
@@ -2340,6 +3064,13 @@ def main() -> None:
     paint_parser.add_argument("--preview-output")
     paint_parser.add_argument("--grid", action="store_true")
     paint_parser.set_defaults(func=cmd_paint_item_icon)
+
+    paint_bundle_parser = subparsers.add_parser("paint-surface-bundle", help="Create a named surface bundle from bundle-scoped pixel ops")
+    paint_bundle_parser.add_argument("request")
+    paint_bundle_parser.add_argument("--ops", required=True)
+    paint_bundle_parser.add_argument("--manifest-output")
+    paint_bundle_parser.add_argument("--grid", action="store_true")
+    paint_bundle_parser.set_defaults(func=cmd_paint_surface_bundle)
 
     export_preset_parser = subparsers.add_parser("export-preset-seed", help="Export a reusable preset scaffold from a reviewed asset")
     export_preset_parser.add_argument("request")
@@ -2355,7 +3086,7 @@ def main() -> None:
     promote_template_parser.add_argument("--asset-type", required=True)
     promote_template_parser.add_argument("--base-mask", required=True)
     promote_template_parser.add_argument("--template-id", dest="target_template_id", required=True)
-    promote_template_parser.add_argument("--heuristic", required=True, choices=["book", "sword", "pickaxe", "bow", "generic"])
+    promote_template_parser.add_argument("--heuristic", default="generic")
     promote_template_parser.add_argument("--region-map")
     promote_template_parser.add_argument("--output", required=True)
     promote_template_parser.set_defaults(func=cmd_promote_to_template)

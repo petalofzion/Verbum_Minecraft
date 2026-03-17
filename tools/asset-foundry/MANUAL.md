@@ -28,6 +28,20 @@ The intended architecture is:
 - Label
 - Transform
 
+The default transformation policy is now:
+- preserve relationships first
+- flatten only when explicitly requested
+- do not palette-snap transformed regions unless explicitly requested
+
+The generalized asset model is:
+- a single-surface asset, or
+- a named surface bundle
+
+This matters because Minecraft textures are not all one PNG:
+- items are often single-surface
+- many blocks use multiple face textures
+- skins and mobs often use atlas-style layouts inside one surface
+
 ## Core Mental Model
 
 There are three important layers:
@@ -47,6 +61,7 @@ It contains:
 Important rule:
 - analysis artifacts are mechanically neutral
 - they do not get to decide that something is a `cover`, `spine`, `blade`, or `pages`
+- analysis commands now default to `generic` if no heuristic hint is provided
 
 Those meanings are added later when authoring a template.
 
@@ -101,6 +116,21 @@ If no edits are applied, a template-backed output should equal the base raster e
 
 This is the important rule.
 
+### 4. Family Template
+This is the bundle layer for assets with more than one surface.
+
+A family template defines:
+- a family id
+- an asset class
+- named surfaces like `front`, `side`, `top`, or `atlas_main`
+- the output bundle shape
+- optional block-model slot mapping
+
+Examples:
+- a book icon can be a one-surface family
+- a crafting-table-style block is a multi-surface family
+- a future player skin can be a single atlas surface with many semantic zones
+
 ## Exact Base Output
 
 Templates are exact-raster-backed by default.
@@ -149,6 +179,25 @@ When a template is present:
 - region-aware and group-aware ops can edit only legal template surfaces
 - zero-op draws are valid and should output the base raster exactly
 
+The default recolor behavior for template-backed reskins should be preserve-value:
+- source dark pixels map to dark target pixels
+- source mid pixels map to mid target pixels
+- source light pixels map to light target pixels
+
+This preserves internal detailing instead of flattening a material to one color.
+
+That baseline is now extended by richer transform policies:
+- `preserve_value`
+- `palette_projection`
+- `hue_bias_remap`
+- `contrast_preserving_recolor`
+- `flat_recolor` as the opt-in fallback
+
+In practical terms:
+- semantic regions stay human-manageable
+- the transform policy decides how internal color/detail relationships are preserved inside that region
+- exact pixel editing still exists, but it is the override path rather than the default reskin path
+
 ## Current Template Workflow
 
 There are two main ways to create a template.
@@ -166,6 +215,8 @@ Flow:
 4. Create a template seed from the image or the analysis artifact.
 5. Author semantic groups, sets, and zones in the template patch.
 6. Generate variants from the authored template.
+
+If the asset has multiple surfaces, repeat this per surface and then assemble them into a family template.
 
 ### B. Generated PNG -> Promoted Template
 Use this when a family does not exist yet and you invent a base asset first.
@@ -202,6 +253,9 @@ This is the workflow for totally new item families.
 ### Generation
 - `repair-generated-png`
 - `paint-item-icon`
+- `paint-surface-bundle`
+- `validate-bundle`
+- `render-delta`
 - `render-group-overlay`
 - `export-group-patch`
 - `apply-group-patch`
@@ -225,6 +279,14 @@ The preferred reusable family reference.
 
 This is the primary family mechanism for new work.
 Semantics belong here, not in the analysis artifact.
+
+### `family_template_id`
+The reusable named surface-bundle reference.
+
+Use this when an asset has more than one emitted surface, such as:
+- front/side/top block textures
+- future complex block families
+- future atlas-oriented workflows
 
 ### `preset_id`
 Legacy compatibility field.
@@ -263,6 +325,16 @@ Templates can also define exact pixel groups, for example:
 - `clasp_pixels`
 - `cover_detail_pixels`
 
+Templates may also define:
+- `group_set_options`
+- `preserve_value`
+- `transform_policy`
+- `preserve_local_contrast`
+- `ramp_roles`
+
+Those control whether recolor should preserve internal tonal relationships, local contrast, and ramp structure instead of flat-filling a whole group.
+They can also opt a transform back into palette snapping with `quantize_to_palette: true`, but that is now optional and off by default.
+
 Examples for sword families:
 - `blade`
 - `guard`
@@ -276,6 +348,9 @@ Each region has a mode:
 - `shade_only`
 
 These modes control what the engines are allowed to do there.
+
+For multi-surface assets, the same logic applies per surface.
+The family template simply bundles the surfaces together and declares their output slots.
 
 ## Region Modes
 
@@ -319,6 +394,29 @@ Canonical template:
 Canonical mask:
 - [vanilla_book_16_mask.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/masks/vanilla_book_16_mask.json)
 
+## Example: Crafting Table Style Block Family
+
+Surface templates:
+- [minecraft_crafting_table_front_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_front_16.json)
+- [minecraft_crafting_table_side_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_side_16.json)
+- [minecraft_crafting_table_top_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_top_16.json)
+
+Family template:
+- [minecraft_crafting_table_family_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/template-families/minecraft_crafting_table_family_16.json)
+
+Canonical bundle request:
+- [example-librarians-desk-bundle.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-librarians-desk-bundle.json)
+
+This is the reference pattern for:
+- multi-face blocks
+- block reskins that preserve wood/stone/metal detailing
+- future block families that cannot be represented by one `cube_all` texture
+
+The intended reskin behavior here is:
+- lock tool/line/paper/detail clusters exactly
+- recolor only authored material regions
+- preserve the original per-pixel structure of those regions
+
 This is the intended base for:
 - Bible
 - Book of Hours
@@ -350,6 +448,24 @@ Current sword proofs:
 
 These prove the family model works beyond books.
 
+## Example: Atlas-Oriented Surface Family
+
+Atlas proof template:
+- [minecraft_vanilla_steve_skin_64.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json)
+
+Atlas family template:
+- [minecraft_vanilla_player_skin_family_64.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/template-families/minecraft_vanilla_player_skin_family_64.json)
+
+Atlas proof request:
+- [example-player-skin-atlas.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-player-skin-atlas.json)
+
+This is not a shipped skin workflow yet.
+It is an architecture proof that one atlas surface can:
+- remain a neutral analysis target
+- be semantically templated into named regions
+- carry transform policy metadata
+- validate as a family/bundle shape for future player, mob, and armor work
+
 ## Typical Workflows
 
 ### Use the Vanilla Book as a Base and Make Variants
@@ -370,8 +486,8 @@ These prove the family model works beyond books.
 
 ### Import a New Existing PNG into a Template
 1. Run `inspect-image`.
-2. Run `analyze-image-regions`.
-3. Run `render-region-overlay`.
+2. Run `analyze-image`.
+3. Run `render-analysis-overlay` or `render-region-overlay`.
 4. Run `create-template-from-image`.
 5. If needed, patch the regions with `refine-template-regions`.
 
@@ -447,6 +563,10 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-
 The core workflow works.
 
 What is still rough:
+- authoring ergonomic improvements for large atlas templates
+- richer compare/contact-sheet outputs for bundle review
+- more example family templates beyond books and crafting-table-derived blocks
+- more MCP/operator shortcuts around transform-policy inspection
 - region refinement is still JSON-heavy
 - overlays are useful but basic
 - heuristic proposals are deterministic but still simple

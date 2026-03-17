@@ -11,6 +11,7 @@ It is intentionally a **tooling** surface, not runtime mod code.
 - keep outputs aligned to Verbum profiles, palettes, masks, and path conventions
 - validate asset bundles before they land in module resource paths
 - preserve provenance for clean-room and production review
+- keep recolor transforms continuous by default instead of snapping edited regions back to a tiny palette unless explicitly requested
 
 ## Core Product Goals
 
@@ -20,7 +21,7 @@ The first major feature is **not** generic image cleanup.
 It is:
 - take a source PNG
 - reduce it to a valid target canvas
-- quantize it to an allowed palette
+- quantize it to an allowed palette when that is the chosen conversion mode
 - remove mixels, partial-alpha fuzz, and pseudo-pixel artifacts
 - produce a result that is actual pixel art, not just a smaller blurry image
 
@@ -62,6 +63,7 @@ Included now:
 - pixel-op schema
 - preset schema
 - template schema
+- family-template schema
 - palette and mask examples
 - template family examples for books and handheld items
 - a Python CLI for:
@@ -75,6 +77,10 @@ Included now:
   - analysis overlay rendering
   - raster-backed template seed creation
   - template patch export/application
+  - named surface bundle painting
+  - surface bundle validation
+  - delta rendering
+  - richer region-scoped recolor transforms
   - preset inspection
   - template inspection
   - rough PNG repair / conversion
@@ -85,7 +91,6 @@ Included now:
 - a thin MCP/agent wrapper script
 
 Deferred:
-- block/model template helpers beyond simple planning
 - richer variant contact sheets
 - Blockbench integration
 - richer MCP surface beyond the thin wrapper
@@ -113,6 +118,12 @@ Deferred:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py repair-generated-png <request.json> --grid`
    - pixel-native:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-item-icon <request.json> --ops <ops.json> --grid`
+   - pixel-native surface bundle:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-surface-bundle tools/asset-foundry/requests/example-librarians-desk-bundle.json --ops tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json --grid`
+   - bundle validation:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-bundle tools/asset-foundry/requests/example-librarians-desk-bundle.json`
+   - delta review:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-delta --base-image <base.png> --generated-image <generated.png> --output <delta.png>`
    - inspect a template:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-template <template_id>`
    - inspect a preset:
@@ -132,6 +143,8 @@ Deferred:
   - silhouette/UV mask metadata
 - `specs/templates/`
   - raster-backed family templates
+- `specs/template-families/`
+  - named surface-bundle family templates
 - `specs/presets/`
   - legacy compatibility family definitions
 - `requests/`
@@ -150,8 +163,18 @@ Deferred:
 - Provenance is mandatory even before real image generation exists.
 - Preview-first output is the default.
 - Analysis artifacts are mechanically neutral and disposable.
+- `--heuristic` is now optional on analysis/template-seed commands and defaults to `generic`.
 - Templates are the authored semantic bridge between analysis and generation.
+- Family templates assemble one or more named surfaces into a reusable asset bundle.
 - Presets are compatibility data; templates are the preferred family abstraction for new work.
+- Rich recolor transforms are the default for template-backed reskins:
+  - `palette_projection`
+  - `contrast_preserving_recolor`
+  - `preserve_value`
+  - `hue_bias_remap`
+  - `flat_recolor` remains the explicit override path
+- Palette quantization after a transform is optional and now off by default for template-backed recolor domains.
+- `quantize_to_palette: true` may be set on a group, group set, or pixel op when strict palette snapping is actually desired.
 - This tool plans and validates outputs; it does not bypass normal module resource ownership.
 
 ## Quality Standard for "Proper Pixel Art"
@@ -169,6 +192,11 @@ If the output still looks like resized digital painting, the tool has failed.
 - The intended architecture is `Analyze -> Label -> Transform`.
 - The analyzer is not allowed to assign semantic names like `cover` or `pages`.
 - Semantic names belong in authored templates and patches.
+- Legacy family hints may still bias coarse region suggestions, but the default path is generic mechanical analysis.
+- Surface templates may now carry relationship-preserving transform policy metadata so recolor can preserve:
+  - value ordering
+  - local hue/saturation drift
+  - local contrast and texture detail
 - Python is used for the first MVP because Verbum already has a Python tooling surface under `tools/scripts/`.
 - The thin wrapper at `asset_foundry_mcp.py` exposes the stable operations without moving logic out of the CLI/core engine.
 - The generated manifest is intended to become the repo memory for how an asset was requested, validated, and reviewed.
@@ -184,6 +212,7 @@ If the output still looks like resized digital painting, the tool has failed.
 - `analyze-image-regions` (compatibility alias)
 - `inspect-topology`
 - `render-region-overlay`
+- `render-analysis-overlay` (compatibility alias)
 - `render-group-overlay`
 - `create-template-from-image`
 - `create-template-seed-from-analysis`
@@ -191,6 +220,9 @@ If the output still looks like resized digital painting, the tool has failed.
 - `repair-generated-png`
 - `validate-texture`
 - `paint-item-icon`
+- `paint-surface-bundle`
+- `validate-bundle`
+- `render-delta`
 - `describe-template`
 - `describe-preset`
 - `export-group-patch`
@@ -208,6 +240,15 @@ If the output still looks like resized digital painting, the tool has failed.
   - [specs/templates/minecraft_vanilla_sword_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_sword_16.json)
   - [specs/templates/minecraft_vanilla_pickaxe_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_pickaxe_16.json)
   - [specs/templates/minecraft_vanilla_bow_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_bow_16.json)
+  - [specs/templates/minecraft_crafting_table_front_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_front_16.json)
+  - [specs/templates/minecraft_crafting_table_side_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_side_16.json)
+  - [specs/templates/minecraft_crafting_table_top_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_crafting_table_top_16.json)
+- family templates:
+  - [specs/template-families/minecraft_crafting_table_family_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/template-families/minecraft_crafting_table_family_16.json)
+  - [specs/template-families/minecraft_vanilla_player_skin_family_64.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/template-families/minecraft_vanilla_player_skin_family_64.json)
+- atlas architecture proof:
+  - [requests/example-player-skin-atlas.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-player-skin-atlas.json)
+  - [specs/templates/minecraft_vanilla_steve_skin_64.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json)
 - preset definitions:
   - [specs/presets/vanilla_book_icon_16.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/presets/vanilla_book_icon_16.json)
   - [specs/presets/manual_book_icon_32.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/specs/presets/manual_book_icon_32.json)
@@ -219,6 +260,9 @@ If the output still looks like resized digital painting, the tool has failed.
   - [examples/pixel-ops/librarians_desk_icon.ops.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/examples/pixel-ops/librarians_desk_icon.ops.json)
 - furniture/block texture conversion:
   - [requests/example-librarians-desk-face.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-librarians-desk-face.json)
+- multi-surface block bundle conversion:
+  - [requests/example-librarians-desk-bundle.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-librarians-desk-bundle.json)
+  - [examples/pixel-ops/librarians_desk_bundle.ops.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json)
 
 ## Local Docs
 - [ROADMAP.md](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/ROADMAP.md)

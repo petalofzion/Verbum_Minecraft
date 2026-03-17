@@ -1,0 +1,24 @@
+{
+  "id": "atlas_surface_64",
+  "canvas": {
+    "width": 64,
+    "height": 64
+  },
+  "kind": "entity_texture",
+  "output_files": [
+    "textures/entity/{asset_id}.png"
+  ],
+  "rules": {
+    "palette_required": "yes",
+    "mask_required": "yes",
+    "allow_partial_alpha": "yes",
+    "transparency_mode": "limited",
+    "mixel_policy": "moderate",
+    "readability_hint": "Atlas textures should preserve UV relationships and avoid muddy recolor drift.",
+    "anti_mixel_passes": 1,
+    "notes": [
+      "Use for player skin, mob atlas, and armor-like texture surfaces.",
+      "Atlas workflows are template-authored; analysis remains neutral."
+    ]
+  }
+}
