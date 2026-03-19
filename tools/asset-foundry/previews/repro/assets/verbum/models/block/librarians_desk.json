@@ -1,0 +1,11 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "north": "verbum:block/librarians_desk_front",
+    "south": "verbum:block/librarians_desk_front",
+    "east": "verbum:block/librarians_desk_side",
+    "west": "verbum:block/librarians_desk_side",
+    "up": "verbum:block/librarians_desk_top",
+    "down": "verbum:block/librarians_desk_side"
+  }
+}

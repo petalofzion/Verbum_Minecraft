@@ -1,0 +1,56 @@
+{
+  "type": "object",
+  "required": ["id", "kind", "request", "ops", "outputs"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["single_surface", "surface_bundle"]
+    },
+    "request": { "type": "string", "minLength": 1 },
+    "ops": { "type": "string", "minLength": 1 },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "image": { "type": "string", "minLength": 1 },
+        "surfaces": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "minLength": 1 }
+        },
+        "model": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "single_surface" }
+        }
+      },
+      "then": {
+        "properties": {
+          "outputs": {
+            "required": ["image"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": { "const": "surface_bundle" }
+        }
+      },
+      "then": {
+        "properties": {
+          "outputs": {
+            "required": ["surfaces"]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

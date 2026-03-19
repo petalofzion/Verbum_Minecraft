@@ -237,6 +237,7 @@ This is the workflow for totally new item families.
 - `emit-manifest`
 - `validate-manifest`
 - `validate-texture`
+- `validate-repro`
 
 ### Template Analysis
 - `inspect-image`
@@ -334,6 +335,7 @@ Templates may also define:
 
 Those control whether recolor should preserve internal tonal relationships, local contrast, and ramp structure instead of flat-filling a whole group.
 They can also opt a transform back into palette snapping with `quantize_to_palette: true`, but that is now optional and off by default.
+Exact regeneration is not implied by any of this. It is only enforced for explicit repro baselines under `tools/asset-foundry/repro-baselines/`.
 
 Examples for sword families:
 - `blade`
@@ -520,7 +522,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyz
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology \
   --minecraft-asset assets/minecraft/textures/item/book.png \
   --minecraft-version 1.21.11 \
-  --heuristic book
+  --heuristic generic
 ```
 
 ### Create a template seed from the vanilla book analysis
@@ -531,7 +533,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create
   --asset-type book_cover_16 \
   --base-mask vanilla_book_16_mask \
   --template-id analyzed_vanilla_book_16 \
-  --heuristic book \
+  --heuristic generic \
   --output tools/asset-foundry/previews/generated/analyzed_vanilla_book_16.json
 ```
 
@@ -569,25 +571,14 @@ What is still rough:
 - more MCP/operator shortcuts around transform-policy inspection
 - region refinement is still JSON-heavy
 - overlays are useful but basic
-- heuristic proposals are deterministic but still simple
-- not every future family has dedicated masks or strong heuristics yet
+- neutral region proposals are deterministic but still simple
+- not every future family has dedicated masks or richer analysis hints yet
 
 In practice, the next improvements should be:
 - easier region patch/refinement workflow
-- stronger family-specific heuristics
+- stronger neutral proposal hints for block faces, single-surface items, and atlas surfaces
 - more template families
 - better MCP exposure for the analysis/refinement path
-
-## Family-Specific Robustness
-
-Some families need their own layout intelligence.
-
-Books are already a good example.
-
-For future families, the same principle applies:
-- swords want `blade`, `guard`, `handle`
-- pickaxes want `head`, `handle`
-- bows want `limbs`, `grip`, `string`
 - humanoid skins would want things like:
   - head front
   - torso front

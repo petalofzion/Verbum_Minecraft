@@ -151,9 +151,7 @@ TOOLS = [
             "properties": {
                 "request": {"type": "string"},
                 "ops": {"type": "string"},
-                "output": {"type": "string"},
                 "manifest_output": {"type": "string"},
-                "preview_output": {"type": "string"},
                 "grid": {"type": "boolean"}
             }
         }
@@ -174,11 +172,12 @@ TOOLS = [
         "description": "Render a visual delta between a base image and a generated image.",
         "inputSchema": {
             "type": "object",
-            "required": ["base_image", "generated_image", "output"],
+            "required": ["base", "generated", "output"],
             "properties": {
-                "base_image": {"type": "string"},
-                "generated_image": {"type": "string"},
-                "output": {"type": "string"}
+                "base": {"type": "string"},
+                "generated": {"type": "string"},
+                "output": {"type": "string"},
+                "summary_output": {"type": "string"}
             }
         }
     },
@@ -357,9 +356,7 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             ns = SimpleNamespace(
                 request=arguments["request"],
                 ops=arguments["ops"],
-                output=arguments.get("output"),
                 manifest_output=arguments.get("manifest_output"),
-                preview_output=arguments.get("preview_output"),
                 grid=arguments.get("grid", False),
             )
             TOOL.cmd_paint_surface_bundle(ns)
@@ -370,9 +367,10 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             return text_result("validate_bundle passed")
         if name == "render_delta":
             ns = SimpleNamespace(
-                base_image=arguments["base_image"],
-                generated_image=arguments["generated_image"],
+                base=arguments["base"],
+                generated=arguments["generated"],
                 output=arguments["output"],
+                summary_output=arguments.get("summary_output"),
             )
             TOOL.cmd_render_delta(ns)
             return text_result("render_delta completed")

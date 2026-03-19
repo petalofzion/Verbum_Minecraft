@@ -1,0 +1,14 @@
+{
+  "id": "librarians_desk_recolor_only",
+  "kind": "surface_bundle",
+  "request": "tools/asset-foundry/requests/example-librarians-desk-bundle.json",
+  "ops": "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json",
+  "outputs": {
+    "surfaces": {
+      "front": "tools/asset-foundry/previews/repro/assets/verbum/textures/block/librarians_desk_front.png",
+      "side": "tools/asset-foundry/previews/repro/assets/verbum/textures/block/librarians_desk_side.png",
+      "top": "tools/asset-foundry/previews/repro/assets/verbum/textures/block/librarians_desk_top.png"
+    },
+    "model": "tools/asset-foundry/previews/repro/assets/verbum/models/block/librarians_desk.json"
+  }
+}

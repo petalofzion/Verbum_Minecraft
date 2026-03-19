@@ -105,10 +105,10 @@ Deferred:
 4. Run one of the production flows:
    - inspect/analyze a source image:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11`
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book --output tools/asset-foundry/previews/generated/book_analysis.json`
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic book`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic generic --output tools/asset-foundry/previews/generated/book_analysis.json`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic generic`
    - create a raster-backed template seed:
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed --heuristic book`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed --heuristic generic`
    - promote neutral analysis into an editable template seed:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-seed-from-analysis --analysis tools/asset-foundry/previews/generated/book_analysis.json --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed`
    - export/apply a semantic patch:
@@ -122,6 +122,8 @@ Deferred:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-surface-bundle tools/asset-foundry/requests/example-librarians-desk-bundle.json --ops tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json --grid`
    - bundle validation:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-bundle tools/asset-foundry/requests/example-librarians-desk-bundle.json`
+   - explicit repro baseline validation:
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-repro tools/asset-foundry/repro-baselines/librarians_desk_recolor_only.json`
    - delta review:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-delta --base-image <base.png> --generated-image <generated.png> --output <delta.png>`
    - inspect a template:
@@ -175,6 +177,7 @@ Deferred:
   - `flat_recolor` remains the explicit override path
 - Palette quantization after a transform is optional and now off by default for template-backed recolor domains.
 - `quantize_to_palette: true` may be set on a group, group set, or pixel op when strict palette snapping is actually desired.
+- Exact regeneration checks are opt-in and only run through explicit repro baselines under `tools/asset-foundry/repro-baselines/`.
 - This tool plans and validates outputs; it does not bypass normal module resource ownership.
 
 ## Quality Standard for "Proper Pixel Art"

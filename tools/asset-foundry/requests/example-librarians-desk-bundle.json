@@ -12,7 +12,7 @@
   ],
   "family_template_id": "minecraft_crafting_table_family_16",
   "output": {
-    "resource_root": "modules/features/library/librarians-desk/src/main/resources/assets/verbum"
+    "resource_root": "tools/asset-foundry/previews/repro/assets/verbum"
   },
   "provenance": {
     "requested_by": "asset_foundry_example",

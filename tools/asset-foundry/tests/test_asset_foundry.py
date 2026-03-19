@@ -237,7 +237,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "asset_type": "book_cover_16",
                 "base_mask": "vanilla_book_16_mask",
                 "template_id": "test_created_book_template",
-                "heuristic": "book",
+                "heuristic": "generic",
                 "output": str(output.relative_to(REPO_ROOT)),
             },
         )()
@@ -255,7 +255,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "version": "1.21.11",
             }
         )
-        analysis = self.tool.analyze_image(image, "book")
+        analysis = self.tool.analyze_image(image, "generic")
         group_ids = {group["id"] for group in analysis["pixel_groups"]}
         self.assertTrue(group_ids)
         self.assertTrue(all(name.startswith(("component_", "tone_ramp_", "tone_group_", "detail_candidate_", "zone_candidate_", "edge_band_")) for name in group_ids))
@@ -264,6 +264,7 @@ class AssetFoundryTests(unittest.TestCase):
         self.assertIn("surface_relationships", analysis)
         self.assertIn("texture_density", analysis["surface_relationships"])
         self.assertIn("relationships", analysis["pixel_groups"][0])
+        self.assertTrue(all(region["name"].startswith(("region_", "edge_band_", "zone_candidate_")) for region in analysis["candidate_regions"]))
 
     def test_create_template_seed_from_analysis_generates_valid_template(self):
         image = self.tool.load_image_from_source(
@@ -273,7 +274,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "version": "1.21.11",
             }
         )
-        analysis = self.tool.analyze_image(image, "book")
+        analysis = self.tool.analyze_image(image, "generic")
         output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_created_template_seed.json"
         ns = type(
             "Args",
@@ -417,6 +418,155 @@ class AssetFoundryTests(unittest.TestCase):
             check=True,
         )
         self.assertIn("color_histogram", result.stdout)
+
+    def test_promote_to_template_accepts_neutral_analysis_shape(self):
+        generated_asset = REPO_ROOT / "tools/asset-foundry/previews/generated/test_promote_source.png"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_promoted_template.json"
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        image.save(generated_asset)
+        ns = type(
+            "Args",
+            (),
+            {
+                "generated_asset": str(generated_asset.relative_to(REPO_ROOT)),
+                "asset_type": "book_cover_16",
+                "base_mask": "vanilla_book_16_mask",
+                "target_template_id": "test_promoted_template",
+                "heuristic": "generic",
+                "region_map": None,
+                "output": str(output.relative_to(REPO_ROOT)),
+            },
+        )()
+        self.tool.cmd_promote_to_template(ns)
+        template = self.tool.load_json(output)
+        self.assertEqual(template["id"], "test_promoted_template")
+        self.assertEqual(template["analysis"]["source_summary"][:22], "Neutral pixel analysis")
+
+    def test_mcp_render_delta_dispatch_uses_cli_contract(self):
+        from PIL import Image
+
+        wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"
+        spec = importlib.util.spec_from_file_location("asset_foundry_mcp", wrapper_path)
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)
+
+        base = REPO_ROOT / "tools/asset-foundry/previews/generated/test_delta_base.png"
+        generated = REPO_ROOT / "tools/asset-foundry/previews/generated/test_delta_generated.png"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_delta_render.png"
+        summary = REPO_ROOT / "tools/asset-foundry/previews/generated/test_delta_render.json"
+        Image.new("RGBA", (16, 16), (0, 0, 0, 0)).save(base)
+        Image.new("RGBA", (16, 16), (255, 0, 0, 255)).save(generated)
+        result = module.dispatch_tool(
+            "render_delta",
+            {
+                "base": str(base.relative_to(REPO_ROOT)),
+                "generated": str(generated.relative_to(REPO_ROOT)),
+                "output": str(output.relative_to(REPO_ROOT)),
+                "summary_output": str(summary.relative_to(REPO_ROOT)),
+            },
+        )
+        self.assertIn("render_delta completed", result["content"][0]["text"])
+        self.assertTrue(output.exists())
+        self.assertTrue(summary.exists())
+
+    def test_non_quantized_editable_pixel_still_has_bounded_validation(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-bundle.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        front = rendered["front"].copy()
+        front.putpixel((1, 1), (1, 255, 1, 255))
+        template = self.tool.load_template("minecraft_crafting_table_front_16")
+        mask = self.tool.load_mask(template["base_mask"])
+        surface_request = dict(request)
+        surface_request["template_id"] = "minecraft_crafting_table_front_16"
+        surface_request["mask_id"] = template["base_mask"]
+        diagnostics = self.tool.texture_diagnostics(front, request=surface_request, asset_type=asset_type, mask=mask)
+        self.assertTrue(any("palette violation" in item for item in diagnostics))
+
+    def test_paint_surface_bundle_mcp_contract_does_not_advertise_dead_paths(self):
+        wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"
+        spec = importlib.util.spec_from_file_location("asset_foundry_mcp", wrapper_path)
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)
+        tool = next(item for item in module.TOOLS if item["name"] == "paint_surface_bundle")
+        props = tool["inputSchema"]["properties"]
+        self.assertNotIn("output", props)
+        self.assertNotIn("preview_output", props)
+
+    def test_validate_repro_single_surface_passes_and_detects_drift(self):
+        baseline_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_bible_repro.json"
+        image_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_bible_repro.png"
+
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-bible-icon.json")
+        mask = self.tool.load_mask(request["mask_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/noop.ops.json")
+        image = self.tool.execute_pixel_ops(request, asset_type, mask, ops)
+        self.tool.write_image(image, image_path)
+        self.tool.save_json(
+            baseline_path,
+            {
+                "id": "test_bible_repro",
+                "kind": "single_surface",
+                "request": "tools/asset-foundry/requests/example-bible-icon.json",
+                "ops": "tools/asset-foundry/examples/pixel-ops/noop.ops.json",
+                "outputs": {
+                    "image": str(image_path.relative_to(REPO_ROOT)),
+                },
+            },
+        )
+        baseline = self.tool.load_repro_baseline(baseline_path)
+        self.assertEqual(self.tool.validate_repro_baseline(baseline), [])
+
+        from PIL import Image
+        drifted = Image.open(image_path).convert("RGBA")
+        drifted.putpixel((5, 5), (255, 0, 255, 255))
+        drifted.save(image_path)
+        errors = self.tool.validate_repro_baseline(baseline)
+        self.assertTrue(any("repro drift detected" in item for item in errors))
+
+    def test_validate_repro_surface_bundle_passes(self):
+        baseline_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_desk_repro.json"
+        front_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_desk_repro_front.png"
+        side_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_desk_repro_side.png"
+        top_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_desk_repro_top.png"
+        model_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_desk_repro.json.model"
+
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-librarians-desk-bundle.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        self.tool.write_image(rendered["front"], front_path)
+        self.tool.write_image(rendered["side"], side_path)
+        self.tool.write_image(rendered["top"], top_path)
+        self.tool.save_json(model_path, self.tool.build_block_model_payload(request, family))
+        self.tool.save_json(
+            baseline_path,
+            {
+                "id": "test_desk_repro",
+                "kind": "surface_bundle",
+                "request": "tools/asset-foundry/requests/example-librarians-desk-bundle.json",
+                "ops": "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json",
+                "outputs": {
+                    "surfaces": {
+                        "front": str(front_path.relative_to(REPO_ROOT)),
+                        "side": str(side_path.relative_to(REPO_ROOT)),
+                        "top": str(top_path.relative_to(REPO_ROOT)),
+                    },
+                    "model": str(model_path.relative_to(REPO_ROOT)),
+                },
+            },
+        )
+        baseline = self.tool.load_repro_baseline(baseline_path)
+        self.assertEqual(self.tool.validate_repro_baseline(baseline), [])
 
 
 if __name__ == "__main__":
