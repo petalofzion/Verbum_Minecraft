@@ -6,7 +6,7 @@
   "base_image": {
     "kind": "minecraft_vanilla_asset",
     "asset_path": "assets/minecraft/textures/block/crafting_table_top.png",
-    "version": "1.21.11"
+    "version": "26.1-pre-3"
   },
   "analysis": {
     "source_summary": "Authored top surface template with locked crafting detail area and preserve-value recolor on the outer wood frame only.",

@@ -74,7 +74,7 @@ final class InteractiveFeatureBlock extends Block {
         grantItems(player, result.grants());
 
         if (result.message() != null) {
-            player.displayClientMessage(Component.literal(result.message()), true);
+            player.sendSystemMessage(Component.literal(result.message()));
         }
     }
 

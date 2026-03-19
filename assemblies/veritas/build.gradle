@@ -1,6 +1,10 @@
 plugins {
     id 'com.verbum_minecraft.java-conventions'
-    id 'fabric-loom'
+    id 'net.fabricmc.fabric-loom'
 }
 
 apply from: rootProject.file('gradle/profile-assembly.gradle')
+
+dependencies {
+    implementation "net.fabricmc.fabric-api:fabric-command-api-v2:3.0.5+e2bdee78c3"
+}

@@ -464,13 +464,16 @@ Atlas family template:
 
 Atlas proof request:
 - [example-player-skin-atlas.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/requests/example-player-skin-atlas.json)
+- [steve_scribe_workflow.patch.json](/Volumes/External%20SSD%20Sandisk%202TB%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/examples/group-patches/steve_scribe_workflow.patch.json)
+- [steve_scribe_atlas.ops.json](/Volumes/External%20SSD%20Sky/Repos/Verbum_Minecraft/tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json)
 
-This is not a shipped skin workflow yet.
-It is an architecture proof that one atlas surface can:
+This is still not a shipped skin workflow.
+It is now a real workflow proof that one Steve-based atlas surface can:
 - remain a neutral analysis target
-- be semantically templated into named regions
-- carry transform policy metadata
-- validate as a family/bundle shape for future player, mob, and armor work
+- expose named front-body zones for review
+- split clothing into semantic recolor groups while keeping exposed skin locked
+- preview patch refinements before applying them
+- generate a tool-owned atlas variant and review it with a compare sheet
 
 ## Typical Workflows
 
@@ -509,14 +512,14 @@ It is an architecture proof that one atlas surface can:
 ```bash
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11
+  --minecraft-version 26.1-pre-3
 ```
 
 ### Analyze the vanilla book into a neutral artifact
 ```bash
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --heuristic generic \
   --output tools/asset-foundry/previews/generated/book_analysis.json
 ```
@@ -533,7 +536,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py descri
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-candidate-overlay \
   --analysis tools/asset-foundry/previews/generated/book_analysis.json \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --kind candidate \
   --output tools/asset-foundry/previews/generated/book_candidates.png
 ```
@@ -542,7 +545,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-region \
   --analysis tools/asset-foundry/previews/generated/book_analysis.json \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --only region_01 \
   --kind region \
   --json
@@ -552,7 +555,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspec
 ```bash
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --heuristic generic
 ```
 
@@ -560,7 +563,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspec
 ```bash
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --asset-type book_cover_16 \
   --base-mask vanilla_book_16_mask \
   --template-id analyzed_vanilla_book_16 \
@@ -573,7 +576,7 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-seed-from-analysis \
   --analysis tools/asset-foundry/previews/generated/book_analysis.json \
   --minecraft-asset assets/minecraft/textures/item/book.png \
-  --minecraft-version 1.21.11 \
+  --minecraft-version 26.1-pre-3 \
   --asset-type book_cover_16 \
   --base-mask vanilla_book_16_mask \
   --template-id analyzed_vanilla_book_16_from_analysis \
@@ -610,6 +613,108 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render
   --ops tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json \
   --output tools/asset-foundry/previews/generated/librarians_desk_compare.png
 ```
+
+### Steve atlas workflow proof
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image \
+  --minecraft-asset assets/minecraft/textures/entity/player/wide/steve.png \
+  --minecraft-version 26.1-pre-3 \
+  --heuristic atlas_surface \
+  --output tools/asset-foundry/previews/generated/steve_atlas.analysis.json
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-analysis \
+  --analysis tools/asset-foundry/previews/generated/steve_atlas.analysis.json \
+  --json
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-candidate-overlay \
+  --analysis tools/asset-foundry/previews/generated/steve_atlas.analysis.json \
+  --minecraft-asset assets/minecraft/textures/entity/player/wide/steve.png \
+  --minecraft-version 26.1-pre-3 \
+  --kind detail \
+  --output tools/asset-foundry/previews/generated/steve_atlas.detail_overlay.png
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-template \
+  minecraft_vanilla_steve_skin_64 \
+  --stats \
+  --json
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py apply-group-patch \
+  --template tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json \
+  --patch tools/asset-foundry/examples/group-patches/steve_scribe_workflow.patch.json \
+  --dry-run
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-group-overlay \
+  --template tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json \
+  --patch tools/asset-foundry/examples/group-patches/steve_scribe_workflow.patch.json \
+  --group-set clothing_all \
+  --output tools/asset-foundry/previews/generated/steve_scribe_groups.png
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py paint-surface-bundle \
+  tools/asset-foundry/requests/example-player-skin-atlas.json \
+  --ops tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-compare-sheet \
+  --request tools/asset-foundry/requests/example-player-skin-atlas.json \
+  --ops tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json \
+  --output tools/asset-foundry/previews/generated/steve_scribe_compare.png
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-bundle \
+  tools/asset-foundry/requests/example-player-skin-atlas.json
+```
+
+### Stage generated previews for the in-game harness
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py stage-preview-asset \
+  --request tools/asset-foundry/requests/example-player-skin-atlas.json \
+  --kind player_skin
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py stage-preview-asset \
+  --request tools/asset-foundry/requests/example-bible-icon.json \
+  --kind item_icon \
+  --source tools/asset-foundry/previews/generated/test_stage_item.png \
+  --asset-id test_stage_item
+```
+
+The staging command copies a generated PNG into:
+- `assemblies/veritas/src/main/resources/assets/verbum_debug/textures/entity/preview/`
+- `assemblies/veritas/src/main/resources/assets/verbum_debug/textures/item/preview/`
+
+This is only a debug bridge for runtime inspection.
+It does not:
+- ship the asset
+- create a repro lock
+- replace live module asset paths
+
+Open the preview screen in a development client with `F8`.
+If the client is already running, reload resources after staging so the new debug texture is visible.
+
+Current preview harness behavior:
+- `PLAYER_SKIN`
+  - renders a staged Steve/wide skin texture on a client-side preview model
+- `ITEM_ICON`
+  - renders either a registered item id with normal GUI item rendering or a staged raw texture for icon inspection
+- `ITEM_HELD`
+  - uses a registered item id
+  - third-person shows a humanoid/player-held preview
+  - first-person currently uses a tight right-hand proxy frame rather than a full first-person animation system
 
 ### Render the base vanilla book from the template exactly
 ```bash

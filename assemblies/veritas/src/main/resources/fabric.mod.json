@@ -11,12 +11,13 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": [ "com.verbum_minecraft.veritas.VerbumVeritas" ]
+    "main": [ "com.verbum_minecraft.veritas.VerbumVeritas" ],
+    "client": [ "com.verbum_minecraft.veritas.client.AssetPreviewClient" ]
   },
   "depends": {
     "fabricloader": ">=0.18.4",
-    "minecraft": "~1.21.11",
-    "java": ">=21",
+    "minecraft": "~26.1-pre.3",
+    "java": ">=25",
     "fabric-api": "*"
   }
 }

@@ -1,7 +1,7 @@
 package com.verbum_minecraft.vorago.client;
 
 import com.verbum_minecraft.vorago.registry.LibrariansDeskWorkstationMenu;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -19,9 +19,7 @@ final class LibrariansDeskWorkstationScreen extends AbstractContainerScreen<Libr
         Inventory playerInventory,
         Component title
     ) {
-        super(menu, playerInventory, title);
-        this.imageWidth = LibrariansDeskWorkstationMenu.GUI_WIDTH;
-        this.imageHeight = LibrariansDeskWorkstationMenu.GUI_HEIGHT;
+        super(menu, playerInventory, title, LibrariansDeskWorkstationMenu.GUI_WIDTH, LibrariansDeskWorkstationMenu.GUI_HEIGHT);
         this.titleLabelX = 8;
         this.titleLabelY = 8;
         this.inventoryLabelX = 8;
@@ -39,14 +37,7 @@ final class LibrariansDeskWorkstationScreen extends AbstractContainerScreen<Libr
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics, mouseX, mouseY, partialTick);
-        super.render(graphics, mouseX, mouseY, partialTick);
-        renderTooltip(graphics, mouseX, mouseY);
-    }
-
-    @Override
-    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         graphics.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, PANEL_OUTER);
         graphics.fill(leftPos + 1, topPos + 1, leftPos + imageWidth - 1, topPos + imageHeight - 1, PANEL_INNER);
         for (Slot slot : menu.slots) {
@@ -58,12 +49,12 @@ final class LibrariansDeskWorkstationScreen extends AbstractContainerScreen<Libr
     }
 
     @Override
-    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        super.renderLabels(graphics, mouseX, mouseY);
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.extractLabels(graphics, mouseX, mouseY);
         int color = 0xFFE6D7C3;
-        graphics.drawString(font, "Input Grid", 24, 34, color, false);
-        graphics.drawString(font, "Actions", 172, 12, color, false);
-        graphics.drawString(font, "Shift-click moves between grid and inventory", 8, 184, color, false);
+        graphics.text(font, "Input Grid", 24, 34, color, false);
+        graphics.text(font, "Actions", 172, 12, color, false);
+        graphics.text(font, "Shift-click moves between grid and inventory", 8, 184, color, false);
     }
 
     private Button actionButton(String label, int x, int y, int actionId) {

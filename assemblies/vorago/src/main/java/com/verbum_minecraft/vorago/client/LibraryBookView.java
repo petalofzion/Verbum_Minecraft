@@ -23,6 +23,7 @@ final class LibraryBookView extends BookViewScreen {
     private int currentPageIndex;
     private int bookmarkPage;
     private final BookBookmarkStore bookmarkStore;
+    private boolean sanitizingPageInput;
 
     LibraryBookView(BookId bookId, BookAccess access) {
         super(access);
@@ -58,7 +59,7 @@ final class LibraryBookView extends BookViewScreen {
 
         pageBox = new EditBox(font, x, y, PAGE_BOX_WIDTH, CONTROL_HEIGHT, Component.literal("Page"));
         pageBox.setMaxLength(6);
-        pageBox.setFilter(value -> value.isEmpty() || value.chars().allMatch(Character::isDigit));
+        pageBox.setResponder(this::sanitizePageInput);
         updatePageHint();
         addRenderableWidget(pageBox);
 
@@ -109,5 +110,21 @@ final class LibraryBookView extends BookViewScreen {
         } else {
             pageBox.setHint(Component.literal("Page"));
         }
+    }
+
+    private void sanitizePageInput(String value) {
+        if (sanitizingPageInput) {
+            return;
+        }
+        String digitsOnly = value.chars()
+            .filter(Character::isDigit)
+            .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+            .toString();
+        if (digitsOnly.equals(value)) {
+            return;
+        }
+        sanitizingPageInput = true;
+        pageBox.setValue(digitsOnly);
+        sanitizingPageInput = false;
     }
 }

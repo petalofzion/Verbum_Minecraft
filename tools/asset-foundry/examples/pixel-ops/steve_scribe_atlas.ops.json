@@ -1,0 +1,37 @@
+{
+  "operations": [
+    {
+      "op": "remap_group_role",
+      "surface": "atlas_main",
+      "group": "torso_clothing",
+      "role": "base_mid"
+    },
+    {
+      "op": "remap_group_role",
+      "surface": "atlas_main",
+      "group": "arm_clothing",
+      "role": "base_light"
+    },
+    {
+      "op": "remap_group_role",
+      "surface": "atlas_main",
+      "group": "leg_clothing",
+      "role": "base_dark"
+    },
+    {
+      "op": "remap_group_role",
+      "surface": "atlas_main",
+      "group": "boots_detail",
+      "role": "shadow"
+    },
+    {
+      "op": "fill_region",
+      "surface": "atlas_main",
+      "x": 23,
+      "y": 24,
+      "width": 2,
+      "height": 4,
+      "role": "highlight"
+    }
+  ]
+}

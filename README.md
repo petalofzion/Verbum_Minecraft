@@ -1,7 +1,7 @@
 # Verbum Minecraft
 [![Build Status](https://github.com/petalofzion/Verbum_Minecraft/actions/workflows/build.yml/badge.svg)](https://github.com/petalofzion/Verbum_Minecraft/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Java](https://img.shields.io/badge/java-21-red)](https://openjdk.java.net/)
+[![Java](https://img.shields.io/badge/java-25-red)](https://openjdk.java.net/)
 [![Loader](https://img.shields.io/badge/loader-Fabric-orange)](https://fabricmc.net/)
 [![Style](https://img.shields.io/badge/style-Checkstyle-428F50)](https://checkstyle.sourceforge.io/)
 
@@ -50,10 +50,10 @@ Verbum carries a quiet devotional thread; beauty, clarity, and continuity. You c
 ### Targets (Pinned)
 | Component | Target |
 |---|---|
-| Minecraft | 1.21.11 |
+| Minecraft | 26.1-pre-3 |
 | Loader | Fabric 0.18.4 |
-| Fabric API | 0.140.2+1.21.11 |
-| Java | 21 |
+| Fabric API | 0.143.14+26.1 |
+| Java | 25 |
 | Client | ✅ |
 | Dedicated Server | ✅ |
 | Rendering | Sodium-compatible, Iris-compatible |
@@ -202,7 +202,7 @@ Verbum is built on cutting-edge technologies to deliver unparalleled performance
 
 *   **Fabric Loader:** For a lightweight, performance-oriented modding API.
 *   **Fabric API:** Essential utilities and hooks for Fabric mods.
-*   **JDK 21:** Leveraging the latest Java features for optimal performance and developer experience.
+*   **JDK 25:** Leveraging the latest Java features for optimal performance and developer experience.
 *   **Sodium-Compatible Rendering:** Designed from the ground up to integrate seamlessly with Sodium and other performance-enhancing rendering mods.
 *   **JMH (Java Microbenchmark Harness):** Used for rigorous performance verification of critical code paths. The benchmark harness lives in `tools/benchmarks` and JMH benchmarks for the simulation kernel are located in `:modules:core:sim-kernel:jmh`.
 *   **Spark:** For in-depth profiling and identifying performance bottlenecks.
@@ -274,7 +274,7 @@ If you are an AI agent contributing code:
 
 ### Prerequisites
 
-*   **Verbum targets Java 21.**
+*   **Verbum targets Java 25.**
 *   **Git**
 
 ### 💻 IDE Setup
@@ -317,7 +317,7 @@ cd Verbum_Minecraft
 
 ## ⚠️ Common Build Issues
 
-*   **Java Version Mismatch:** Ensure JDK 21 is installed and your `JAVA_HOME` environment variable is correctly set.
+*   **Java Version Mismatch:** Ensure JDK 25 is installed and your `JAVA_HOME` environment variable is correctly set.
 *   **Gradle Daemon Memory:** If you encounter `OutOfMemoryError` during compilation, try increasing Gradle daemon's memory in `gradle.properties` (e.g., `org.gradle.jvmargs=-Xmx4G`).
 *   **IDE Sync Problems:** If your IDE doesn't recognize Gradle modules correctly, try "Reload Gradle Project" or "Invalidate Caches / Restart".
 

@@ -84,7 +84,7 @@ Placeable blocks also require:
 - `assets/<namespace>/items/<path>.json`
 - `assets/<namespace>/lang/en_us.json`
 
-**1.21.11 note:** The `items/<path>.json` file is required to map the item to
+**26.1-pre-3 note:** The `items/<path>.json` file is required to map the item to
 its model. Missing it will show the missing-texture cube even if the model and
 texture files exist.
 

@@ -4,12 +4,12 @@
 Accepted
 
 ## Context
-Verbum Minecraft needs a stable target version for its initial development. Minecraft 1.21.11 represents the final stable release of late 2025. Fabric has recommended a move to Mojang mappings for better long-term maintainability.
+Verbum Minecraft needs a current platform baseline that matches the active Vista-aligned toolchain and keeps the repo on Mojang mappings. Migrating to Minecraft 26.1-pre-3 also requires moving the build to Java 25 and updating the Loom/Fabric API stack for the unobfuscated 26.1 snapshot line.
 
 ## Decision
-Target **Minecraft 1.21.11** using official **Mojang mappings**.
+Target **Minecraft 26.1-pre-3** using official **Mojang mappings**.
 
 ## Consequences
 - Better alignment with Mojang's internal structure.
 - Smoother transitions to future Minecraft versions (2026+).
-- Requires Fabric Loom 1.14+ for proper non-obfuscated version support.
+- Requires Java 25 and the 26.1-era Loom/Fabric build configuration.

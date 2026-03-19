@@ -6,16 +6,18 @@
   "base_image": {
     "kind": "minecraft_vanilla_asset",
     "asset_path": "assets/minecraft/textures/entity/player/wide/steve.png",
-    "version": "1.21.11"
+    "version": "26.1-pre-3"
   },
   "analysis": {
-    "source_summary": "Authored atlas template proving that one surface can carry many semantic UV zones and transform policies.",
+    "source_summary": "Authored atlas template refined for real workflow proof on a Steve-based player skin surface.",
     "color_clusters": [],
     "components": [],
     "group_summary": [
-      { "name": "skin_locked", "count": 192, "mode": "locked" },
-      { "name": "clothing_primary", "count": 224, "mode": "recolor_only" },
-      { "name": "boots_detail", "count": 32, "mode": "recolor_only" }
+      { "name": "skin_locked", "count": 134, "mode": "locked" },
+      { "name": "torso_clothing", "count": 90, "mode": "recolor_only" },
+      { "name": "leg_clothing", "count": 80, "mode": "recolor_only" },
+      { "name": "arm_clothing", "count": 32, "mode": "recolor_only" },
+      { "name": "boots_detail", "count": 16, "mode": "recolor_only" }
     ],
     "detail_candidates": [],
     "surface_relationships": {
@@ -43,20 +45,29 @@
         { "x": 8, "y": 12 }, { "x": 9, "y": 12 }, { "x": 10, "y": 12 }, { "x": 11, "y": 12 }, { "x": 12, "y": 12 }, { "x": 13, "y": 12 }, { "x": 14, "y": 12 }, { "x": 15, "y": 12 },
         { "x": 8, "y": 13 }, { "x": 9, "y": 13 }, { "x": 10, "y": 13 }, { "x": 11, "y": 13 }, { "x": 12, "y": 13 }, { "x": 13, "y": 13 }, { "x": 14, "y": 13 }, { "x": 15, "y": 13 },
         { "x": 8, "y": 14 }, { "x": 9, "y": 14 }, { "x": 10, "y": 14 }, { "x": 11, "y": 14 }, { "x": 12, "y": 14 }, { "x": 13, "y": 14 }, { "x": 14, "y": 14 }, { "x": 15, "y": 14 },
-        { "x": 8, "y": 15 }, { "x": 9, "y": 15 }, { "x": 10, "y": 15 }, { "x": 11, "y": 15 }, { "x": 12, "y": 15 }, { "x": 13, "y": 15 }, { "x": 14, "y": 15 }, { "x": 15, "y": 15 }
+        { "x": 8, "y": 15 }, { "x": 9, "y": 15 }, { "x": 10, "y": 15 }, { "x": 11, "y": 15 }, { "x": 12, "y": 15 }, { "x": 13, "y": 15 }, { "x": 14, "y": 15 }, { "x": 15, "y": 15 },
+        { "x": 22, "y": 20 }, { "x": 23, "y": 20 }, { "x": 24, "y": 20 }, { "x": 25, "y": 20 }, { "x": 23, "y": 21 }, { "x": 24, "y": 21 },
+        { "x": 44, "y": 24 }, { "x": 45, "y": 24 }, { "x": 46, "y": 24 }, { "x": 47, "y": 24 }, { "x": 44, "y": 25 }, { "x": 45, "y": 25 }, { "x": 46, "y": 25 }, { "x": 47, "y": 25 },
+        { "x": 44, "y": 26 }, { "x": 45, "y": 26 }, { "x": 46, "y": 26 }, { "x": 47, "y": 26 }, { "x": 44, "y": 27 }, { "x": 45, "y": 27 }, { "x": 46, "y": 27 }, { "x": 47, "y": 27 },
+        { "x": 44, "y": 28 }, { "x": 45, "y": 28 }, { "x": 46, "y": 28 }, { "x": 47, "y": 28 }, { "x": 44, "y": 29 }, { "x": 45, "y": 29 }, { "x": 46, "y": 29 }, { "x": 47, "y": 29 },
+        { "x": 44, "y": 30 }, { "x": 45, "y": 30 }, { "x": 46, "y": 30 }, { "x": 47, "y": 30 }, { "x": 44, "y": 31 }, { "x": 45, "y": 31 }, { "x": 46, "y": 31 }, { "x": 47, "y": 31 },
+        { "x": 36, "y": 56 }, { "x": 37, "y": 56 }, { "x": 38, "y": 56 }, { "x": 39, "y": 56 }, { "x": 36, "y": 57 }, { "x": 37, "y": 57 }, { "x": 38, "y": 57 }, { "x": 39, "y": 57 },
+        { "x": 36, "y": 58 }, { "x": 37, "y": 58 }, { "x": 38, "y": 58 }, { "x": 39, "y": 58 }, { "x": 36, "y": 59 }, { "x": 37, "y": 59 }, { "x": 38, "y": 59 }, { "x": 39, "y": 59 },
+        { "x": 36, "y": 60 }, { "x": 37, "y": 60 }, { "x": 38, "y": 60 }, { "x": 39, "y": 60 }, { "x": 36, "y": 61 }, { "x": 37, "y": 61 }, { "x": 38, "y": 61 }, { "x": 39, "y": 61 },
+        { "x": 36, "y": 62 }, { "x": 37, "y": 62 }, { "x": 38, "y": 62 }, { "x": 39, "y": 62 }, { "x": 36, "y": 63 }, { "x": 37, "y": 63 }, { "x": 38, "y": 63 }, { "x": 39, "y": 63 }
       ],
       "allowed_palette_roles": ["highlight"],
       "default_palette_role": "highlight"
     },
     {
-      "name": "clothing_primary",
+      "name": "torso_clothing",
       "kind": "semantic_group",
       "mode": "recolor_only",
       "transform_policy": "palette_projection",
       "preserve_local_contrast": true,
       "pixels": [
-        { "x": 20, "y": 20 }, { "x": 21, "y": 20 }, { "x": 22, "y": 20 }, { "x": 23, "y": 20 }, { "x": 24, "y": 20 }, { "x": 25, "y": 20 }, { "x": 26, "y": 20 }, { "x": 27, "y": 20 },
-        { "x": 20, "y": 21 }, { "x": 21, "y": 21 }, { "x": 22, "y": 21 }, { "x": 23, "y": 21 }, { "x": 24, "y": 21 }, { "x": 25, "y": 21 }, { "x": 26, "y": 21 }, { "x": 27, "y": 21 },
+        { "x": 20, "y": 20 }, { "x": 21, "y": 20 }, { "x": 26, "y": 20 }, { "x": 27, "y": 20 },
+        { "x": 20, "y": 21 }, { "x": 21, "y": 21 }, { "x": 22, "y": 21 }, { "x": 25, "y": 21 }, { "x": 26, "y": 21 }, { "x": 27, "y": 21 },
         { "x": 20, "y": 22 }, { "x": 21, "y": 22 }, { "x": 22, "y": 22 }, { "x": 23, "y": 22 }, { "x": 24, "y": 22 }, { "x": 25, "y": 22 }, { "x": 26, "y": 22 }, { "x": 27, "y": 22 },
         { "x": 20, "y": 23 }, { "x": 21, "y": 23 }, { "x": 22, "y": 23 }, { "x": 23, "y": 23 }, { "x": 24, "y": 23 }, { "x": 25, "y": 23 }, { "x": 26, "y": 23 }, { "x": 27, "y": 23 },
         { "x": 20, "y": 24 }, { "x": 21, "y": 24 }, { "x": 22, "y": 24 }, { "x": 23, "y": 24 }, { "x": 24, "y": 24 }, { "x": 25, "y": 24 }, { "x": 26, "y": 24 }, { "x": 27, "y": 24 },
@@ -66,15 +77,46 @@
         { "x": 20, "y": 28 }, { "x": 21, "y": 28 }, { "x": 22, "y": 28 }, { "x": 23, "y": 28 }, { "x": 24, "y": 28 }, { "x": 25, "y": 28 }, { "x": 26, "y": 28 }, { "x": 27, "y": 28 },
         { "x": 20, "y": 29 }, { "x": 21, "y": 29 }, { "x": 22, "y": 29 }, { "x": 23, "y": 29 }, { "x": 24, "y": 29 }, { "x": 25, "y": 29 }, { "x": 26, "y": 29 }, { "x": 27, "y": 29 },
         { "x": 20, "y": 30 }, { "x": 21, "y": 30 }, { "x": 22, "y": 30 }, { "x": 23, "y": 30 }, { "x": 24, "y": 30 }, { "x": 25, "y": 30 }, { "x": 26, "y": 30 }, { "x": 27, "y": 30 },
-        { "x": 20, "y": 31 }, { "x": 21, "y": 31 }, { "x": 22, "y": 31 }, { "x": 23, "y": 31 }, { "x": 24, "y": 31 }, { "x": 25, "y": 31 }, { "x": 26, "y": 31 }, { "x": 27, "y": 31 },
+        { "x": 20, "y": 31 }, { "x": 21, "y": 31 }, { "x": 22, "y": 31 }, { "x": 23, "y": 31 }, { "x": 24, "y": 31 }, { "x": 25, "y": 31 }, { "x": 26, "y": 31 }, { "x": 27, "y": 31 }
+      ],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"],
+      "default_palette_role": "base_mid"
+    },
+    {
+      "name": "leg_clothing",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "transform_policy": "contrast_preserving_recolor",
+      "preserve_local_contrast": true,
+      "pixels": [
         { "x": 4, "y": 20 }, { "x": 5, "y": 20 }, { "x": 6, "y": 20 }, { "x": 7, "y": 20 }, { "x": 4, "y": 21 }, { "x": 5, "y": 21 }, { "x": 6, "y": 21 }, { "x": 7, "y": 21 },
         { "x": 4, "y": 22 }, { "x": 5, "y": 22 }, { "x": 6, "y": 22 }, { "x": 7, "y": 22 }, { "x": 4, "y": 23 }, { "x": 5, "y": 23 }, { "x": 6, "y": 23 }, { "x": 7, "y": 23 },
         { "x": 4, "y": 24 }, { "x": 5, "y": 24 }, { "x": 6, "y": 24 }, { "x": 7, "y": 24 }, { "x": 4, "y": 25 }, { "x": 5, "y": 25 }, { "x": 6, "y": 25 }, { "x": 7, "y": 25 },
         { "x": 4, "y": 26 }, { "x": 5, "y": 26 }, { "x": 6, "y": 26 }, { "x": 7, "y": 26 }, { "x": 4, "y": 27 }, { "x": 5, "y": 27 }, { "x": 6, "y": 27 }, { "x": 7, "y": 27 },
-        { "x": 4, "y": 28 }, { "x": 5, "y": 28 }, { "x": 6, "y": 28 }, { "x": 7, "y": 28 }, { "x": 4, "y": 29 }, { "x": 5, "y": 29 }, { "x": 6, "y": 29 }, { "x": 7, "y": 29 }
+        { "x": 4, "y": 28 }, { "x": 5, "y": 28 }, { "x": 6, "y": 28 }, { "x": 7, "y": 28 }, { "x": 4, "y": 29 }, { "x": 5, "y": 29 }, { "x": 6, "y": 29 }, { "x": 7, "y": 29 },
+        { "x": 20, "y": 52 }, { "x": 21, "y": 52 }, { "x": 22, "y": 52 }, { "x": 23, "y": 52 }, { "x": 20, "y": 53 }, { "x": 21, "y": 53 }, { "x": 22, "y": 53 }, { "x": 23, "y": 53 },
+        { "x": 20, "y": 54 }, { "x": 21, "y": 54 }, { "x": 22, "y": 54 }, { "x": 23, "y": 54 }, { "x": 20, "y": 55 }, { "x": 21, "y": 55 }, { "x": 22, "y": 55 }, { "x": 23, "y": 55 },
+        { "x": 20, "y": 56 }, { "x": 21, "y": 56 }, { "x": 22, "y": 56 }, { "x": 23, "y": 56 }, { "x": 20, "y": 57 }, { "x": 21, "y": 57 }, { "x": 22, "y": 57 }, { "x": 23, "y": 57 },
+        { "x": 20, "y": 58 }, { "x": 21, "y": 58 }, { "x": 22, "y": 58 }, { "x": 23, "y": 58 }, { "x": 20, "y": 59 }, { "x": 21, "y": 59 }, { "x": 22, "y": 59 }, { "x": 23, "y": 59 },
+        { "x": 20, "y": 60 }, { "x": 21, "y": 60 }, { "x": 22, "y": 60 }, { "x": 23, "y": 60 }, { "x": 20, "y": 61 }, { "x": 21, "y": 61 }, { "x": 22, "y": 61 }, { "x": 23, "y": 61 }
+      ],
+      "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "shadow"],
+      "default_palette_role": "base_dark"
+    },
+    {
+      "name": "arm_clothing",
+      "kind": "semantic_group",
+      "mode": "recolor_only",
+      "transform_policy": "palette_projection",
+      "preserve_local_contrast": true,
+      "pixels": [
+        { "x": 44, "y": 20 }, { "x": 45, "y": 20 }, { "x": 46, "y": 20 }, { "x": 47, "y": 20 }, { "x": 44, "y": 21 }, { "x": 45, "y": 21 }, { "x": 46, "y": 21 }, { "x": 47, "y": 21 },
+        { "x": 44, "y": 22 }, { "x": 45, "y": 22 }, { "x": 46, "y": 22 }, { "x": 47, "y": 22 }, { "x": 44, "y": 23 }, { "x": 45, "y": 23 }, { "x": 46, "y": 23 }, { "x": 47, "y": 23 },
+        { "x": 36, "y": 52 }, { "x": 37, "y": 52 }, { "x": 38, "y": 52 }, { "x": 39, "y": 52 }, { "x": 36, "y": 53 }, { "x": 37, "y": 53 }, { "x": 38, "y": 53 }, { "x": 39, "y": 53 },
+        { "x": 36, "y": 54 }, { "x": 37, "y": 54 }, { "x": 38, "y": 54 }, { "x": 39, "y": 54 }, { "x": 36, "y": 55 }, { "x": 37, "y": 55 }, { "x": 38, "y": 55 }, { "x": 39, "y": 55 }
       ],
       "allowed_palette_roles": ["base_dark", "base_mid", "base_light", "highlight"],
-      "default_palette_role": "base_mid"
+      "default_palette_role": "base_light"
     },
     {
       "name": "boots_detail",
@@ -83,17 +125,15 @@
       "transform_policy": "contrast_preserving_recolor",
       "preserve_local_contrast": true,
       "pixels": [
-        { "x": 4, "y": 30 }, { "x": 5, "y": 30 }, { "x": 6, "y": 30 }, { "x": 7, "y": 30 },
-        { "x": 4, "y": 31 }, { "x": 5, "y": 31 }, { "x": 6, "y": 31 }, { "x": 7, "y": 31 },
-        { "x": 20, "y": 62 }, { "x": 21, "y": 62 }, { "x": 22, "y": 62 }, { "x": 23, "y": 62 },
-        { "x": 20, "y": 63 }, { "x": 21, "y": 63 }, { "x": 22, "y": 63 }, { "x": 23, "y": 63 }
+        { "x": 4, "y": 30 }, { "x": 5, "y": 30 }, { "x": 6, "y": 30 }, { "x": 7, "y": 30 }, { "x": 4, "y": 31 }, { "x": 5, "y": 31 }, { "x": 6, "y": 31 }, { "x": 7, "y": 31 },
+        { "x": 20, "y": 62 }, { "x": 21, "y": 62 }, { "x": 22, "y": 62 }, { "x": 23, "y": 62 }, { "x": 20, "y": 63 }, { "x": 21, "y": 63 }, { "x": 22, "y": 63 }, { "x": 23, "y": 63 }
       ],
       "allowed_palette_roles": ["base_dark", "base_mid", "shadow"],
       "default_palette_role": "base_dark"
     }
   ],
   "group_sets": {
-    "clothing_all": ["clothing_primary", "boots_detail"]
+    "clothing_all": ["torso_clothing", "leg_clothing", "arm_clothing", "boots_detail"]
   },
   "group_set_options": {
     "clothing_all": {
@@ -124,7 +164,15 @@
   "exact_base_output": true,
   "transparent_outside_mask": true,
   "notes": [
-    "Architecture-proof atlas surface template for player skin style assets.",
-    "Semantics are authored in the template; analysis remains neutral."
-  ]
+    "Steve atlas workflow-proof template with inspectable front-body zones and semantic clothing groups.",
+    "Exposed skin remains locked; clothing recolor is constrained to authored atlas groups."
+  ],
+  "zones": {
+    "head_front": { "rects": [{ "x": 8, "y": 8, "width": 8, "height": 8 }] },
+    "torso_front": { "rects": [{ "x": 20, "y": 20, "width": 8, "height": 12 }] },
+    "left_leg_front": { "rects": [{ "x": 20, "y": 52, "width": 4, "height": 12 }] },
+    "right_leg_front": { "rects": [{ "x": 4, "y": 20, "width": 4, "height": 12 }] },
+    "left_arm_front": { "rects": [{ "x": 36, "y": 52, "width": 4, "height": 12 }] },
+    "right_arm_front": { "rects": [{ "x": 44, "y": 20, "width": 4, "height": 12 }] }
+  }
 }

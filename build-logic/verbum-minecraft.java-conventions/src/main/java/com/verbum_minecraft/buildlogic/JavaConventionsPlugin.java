@@ -11,7 +11,7 @@ public class JavaConventionsPlugin implements Plugin<Project> {
         project.getPlugins().apply("java-library");
         
         JavaPluginExtension java = project.getExtensions().getByType(JavaPluginExtension.class);
-        java.getToolchain().getLanguageVersion().set(JavaLanguageVersion.of(21));
+        java.getToolchain().getLanguageVersion().set(JavaLanguageVersion.of(25));
         
         project.getRepositories().mavenCentral();
         project.getRepositories().maven(repo -> repo.setUrl("https://maven.fabricmc.net/"));

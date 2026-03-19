@@ -45,7 +45,7 @@ You have broader scope and must read broader context.
 - `tools/scripts/runtime_smoke_check.py` provides a standard non-GUI runtime smoke path for verifier tasks.
 
 ## Conventions (must follow)
-- **Java 21** only for code.
+- **Java 25** only for code.
 - **Mojang mappings** only (no Yarn names).
 - Preserve module boundaries in `docs/ARCHITECTURE_MAP.md`.
 - Keep assemblies as the only place for Fabric/Minecraft classes and config/IO.
@@ -72,10 +72,10 @@ You have broader scope and must read broader context.
    - Visions: `./gradlew :assemblies:visions:build`
    - Vorago: `./gradlew :assemblies:vorago:build`
 2. In Prism, create a Fabric instance:
-   - Minecraft: 1.21.11
+   - Minecraft: 26.1-pre-3
    - Fabric Loader: 0.18.4
 3. Add mods:
-   - Fabric API 0.140.2+1.21.11
+   - Fabric API 0.143.14+26.1
    - The built jar from `assemblies/<profile>/build/libs/`
 4. Launch and verify:
    - Only install one profile jar at a time.

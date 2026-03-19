@@ -31,7 +31,7 @@ Stay siloed. Do not touch wiring or cross-module code.
 - Do not search/list outside your capsule for patterns; use the contract docs or log and ask.
 
 ## Conventions (must follow)
-- **Java 21** only for code.
+- **Java 25** only for code.
 - **Mojang mappings**: do not use Yarn class names.
 - Feature code is **pure logic/data** with API/SPI contracts only.
 - Package naming: `com.verbum_minecraft.features.<domain>.<feature>`.

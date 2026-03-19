@@ -121,7 +121,7 @@ public final class LibrariansDeskWorkstationMenu extends AbstractContainerMenu {
 
         applyResult(player, result);
         if (result.message() != null) {
-            player.displayClientMessage(Component.literal(result.message()), true);
+            player.sendSystemMessage(Component.literal(result.message()));
         }
         broadcastChanges();
         return true;

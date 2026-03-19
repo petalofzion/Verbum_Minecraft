@@ -31,5 +31,5 @@ After adding/removing capsule TODO files, run `tools/scripts/update_todo_index.s
 *   ✅ SPI-based feature discovery.
 *   ✅ AI Agent guardrails (AGENTS.md).
 *   ✅ Performance Contract and Runtime Constitution.
-*   ✅ Technical Targets (Minecraft 1.21.11).
+*   ✅ Technical Targets (Minecraft 26.1-pre-3).
 *   ✅ Security and Contribution Policies.

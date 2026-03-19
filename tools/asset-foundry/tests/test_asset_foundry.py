@@ -58,11 +58,73 @@ class AssetFoundryTests(unittest.TestCase):
         self.assertEqual(family["output_bundle"]["kind"], "atlas_bundle")
         self.assertEqual(family["surfaces"][0]["output_path"], "textures/entity/{asset_id}.png")
 
+    def test_steve_atlas_template_has_workflow_groups_and_zones(self):
+        template = self.tool.load_template("minecraft_vanilla_steve_skin_64")
+        self.assertEqual(
+            [group["name"] for group in template["pixel_groups"]],
+            ["skin_locked", "torso_clothing", "leg_clothing", "arm_clothing", "boots_detail"],
+        )
+        self.assertEqual(
+            sorted(template.get("zones", {}).keys()),
+            ["head_front", "left_arm_front", "left_leg_front", "right_arm_front", "right_leg_front", "torso_front"],
+        )
+        self.assertEqual(template["pixel_groups"][0]["mode"], "locked")
+
     def test_template_base_matches_vanilla_book_source(self):
         template = self.tool.load_template("minecraft_vanilla_book_16")
         base = self.tool.template_base_image(template, self.tool.load_palette("veritas_leather"))
         direct = self.tool.load_image_from_source(template["base_image"])
         self.assertEqual(list(base.getdata()), list(direct.getdata()))
+
+    def test_stage_preview_asset_copies_player_skin_png_exactly(self):
+        from PIL import Image
+
+        source = REPO_ROOT / "tools/asset-foundry/previews/generated/test_stage_skin.png"
+        target = REPO_ROOT / "assemblies/veritas/src/main/resources/assets/verbum_debug/textures/entity/preview/test_stage_skin.png"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGBA", (8, 8), (10, 20, 30, 255)).save(source)
+        if target.exists():
+            target.unlink()
+        staged_path, identifier = self.tool.stage_preview_asset(
+            request_path=REPO_ROOT / "tools/asset-foundry/requests/example-player-skin-atlas.json",
+            kind="player_skin",
+            asset_id="test_stage_skin",
+            source_path=source,
+        )
+        self.assertEqual(staged_path, target)
+        self.assertEqual(identifier, "verbum_debug:textures/entity/preview/test_stage_skin.png")
+        self.assertEqual(source.read_bytes(), target.read_bytes())
+        target.unlink(missing_ok=True)
+        source.unlink(missing_ok=True)
+
+    def test_stage_preview_asset_copies_item_png_exactly(self):
+        from PIL import Image
+
+        source = REPO_ROOT / "tools/asset-foundry/previews/generated/test_stage_item.png"
+        target = REPO_ROOT / "assemblies/veritas/src/main/resources/assets/verbum_debug/textures/item/preview/test_stage_item.png"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGBA", (16, 16), (120, 90, 30, 255)).save(source)
+        if target.exists():
+            target.unlink()
+        staged_path, identifier = self.tool.stage_preview_asset(
+            request_path=REPO_ROOT / "tools/asset-foundry/requests/example-bible-icon.json",
+            kind="item_icon",
+            asset_id="test_stage_item",
+            source_path=source,
+        )
+        self.assertEqual(staged_path, target)
+        self.assertEqual(identifier, "verbum_debug:textures/item/preview/test_stage_item.png")
+        self.assertEqual(source.read_bytes(), target.read_bytes())
+        target.unlink(missing_ok=True)
+        source.unlink(missing_ok=True)
+
+    def test_unstage_preview_asset_removes_file(self):
+        target = REPO_ROOT / "assemblies/veritas/src/main/resources/assets/verbum_debug/textures/item/preview/test_unstage_item.png"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(b"png")
+        removed = self.tool.unstage_preview_asset(kind="item_icon", asset_id="test_unstage_item")
+        self.assertEqual(removed, target)
+        self.assertFalse(target.exists())
 
     def test_palette_role_color_resolves(self):
         palette = self.tool.load_palette("veritas_leather")
@@ -235,7 +297,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "image": None,
                 "minecraft_asset": "assets/minecraft/textures/item/book.png",
-                "minecraft_version": "1.21.11",
+                "minecraft_version": "26.1-pre-3",
                 "asset_type": "book_cover_16",
                 "base_mask": "vanilla_book_16_mask",
                 "template_id": "test_created_book_template",
@@ -254,7 +316,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         analysis = self.tool.analyze_image(image, "generic")
@@ -273,7 +335,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         analysis = self.tool.analyze_image(image, "generic")
@@ -285,7 +347,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "analysis": "tools/asset-foundry/previews/generated/vanilla_book.analysis.json",
                 "image": None,
                 "minecraft_asset": "assets/minecraft/textures/item/book.png",
-                "minecraft_version": "1.21.11",
+                "minecraft_version": "26.1-pre-3",
                 "asset_type": "book_cover_16",
                 "base_mask": "vanilla_book_16_mask",
                 "template_id": "test_created_book_seed",
@@ -412,7 +474,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "--minecraft-asset",
                 "assets/minecraft/textures/item/book.png",
                 "--minecraft-version",
-                "1.21.11",
+                "26.1-pre-3",
             ],
             cwd=REPO_ROOT,
             capture_output=True,
@@ -428,7 +490,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         image.save(generated_asset)
@@ -575,7 +637,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         analysis = self.tool.analyze_image(image, "generic")
@@ -593,7 +655,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         analysis = self.tool.analyze_image(image, "generic")
@@ -606,7 +668,7 @@ class AssetFoundryTests(unittest.TestCase):
             {
                 "image": None,
                 "minecraft_asset": "assets/minecraft/textures/item/book.png",
-                "minecraft_version": "1.21.11",
+                "minecraft_version": "26.1-pre-3",
                 "analysis": str(analysis_path.relative_to(REPO_ROOT)),
                 "output": str(output.relative_to(REPO_ROOT)),
                 "grid": False,
@@ -618,12 +680,45 @@ class AssetFoundryTests(unittest.TestCase):
         self.tool.cmd_render_region_overlay(ns)
         self.assertTrue(output.exists())
 
+    def test_inspect_region_supports_saved_analysis_without_image_source(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/entity/player/wide/steve.png",
+                "version": "26.1-pre-3",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "generic")
+        analysis_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_inspect_region_steve_analysis.json"
+        self.tool.save_json(analysis_path, analysis)
+        ns = type(
+            "Args",
+            (),
+            {
+                "analysis": str(analysis_path.relative_to(REPO_ROOT)),
+                "template": None,
+                "image": None,
+                "minecraft_asset": None,
+                "minecraft_version": None,
+                "heuristic": "generic",
+                "only": analysis["candidate_regions"][0]["name"],
+                "group_set": None,
+                "kind": "region",
+                "json": True,
+            },
+        )()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.tool.cmd_inspect_region(ns)
+        payload = self.tool.json.loads(buf.getvalue())
+        self.assertEqual(payload[0]["name"], "region_01")
+
     def test_inspect_region_returns_deterministic_bounds(self):
         image = self.tool.load_image_from_source(
             {
                 "kind": "minecraft_vanilla_asset",
                 "asset_path": "assets/minecraft/textures/item/book.png",
-                "version": "1.21.11",
+                "version": "26.1-pre-3",
             }
         )
         analysis = self.tool.analyze_image(image, "generic")
@@ -638,7 +733,7 @@ class AssetFoundryTests(unittest.TestCase):
                 "template": None,
                 "image": None,
                 "minecraft_asset": "assets/minecraft/textures/item/book.png",
-                "minecraft_version": "1.21.11",
+                "minecraft_version": "26.1-pre-3",
                 "heuristic": "generic",
                 "only": target,
                 "group_set": None,
@@ -667,6 +762,25 @@ class AssetFoundryTests(unittest.TestCase):
     def test_render_compare_sheet_bundle_in_memory(self):
         output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_bundle_compare_sheet.png"
         ns = type("Args", (), {"base": None, "generated": None, "delta": None, "request": "tools/asset-foundry/requests/example-librarians-desk-bundle.json", "ops": "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json", "output": str(output.relative_to(REPO_ROOT)), "grid": False, "no_labels": False})()
+        self.tool.cmd_render_compare_sheet(ns)
+        self.assertTrue(output.exists())
+
+    def test_render_compare_sheet_atlas_request_in_memory(self):
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_atlas_compare_sheet.png"
+        ns = type(
+            "Args",
+            (),
+            {
+                "base": None,
+                "generated": None,
+                "delta": None,
+                "request": "tools/asset-foundry/requests/example-player-skin-atlas.json",
+                "ops": "tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json",
+                "output": str(output.relative_to(REPO_ROOT)),
+                "grid": False,
+                "no_labels": False,
+            },
+        )()
         self.tool.cmd_render_compare_sheet(ns)
         self.assertTrue(output.exists())
 
@@ -725,6 +839,65 @@ class AssetFoundryTests(unittest.TestCase):
         after = self.tool.load_template("minecraft_crafting_table_front_16")
         self.assertTrue(output.exists())
         self.assertEqual(original["pixel_groups"][0]["name"], after["pixel_groups"][0]["name"])
+
+    def test_atlas_patch_preview_and_dry_run_work(self):
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_steve_patch_preview.png"
+        patch_rel = "tools/asset-foundry/examples/group-patches/steve_scribe_workflow.patch.json"
+        dry_run_ns = type(
+            "Args",
+            (),
+            {
+                "template": "tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json",
+                "patch": patch_rel,
+                "output": None,
+                "dry_run": True,
+            },
+        )()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.tool.cmd_apply_group_patch(dry_run_ns)
+        self.assertIn("scribe_panel", buf.getvalue())
+        overlay_ns = type(
+            "Args",
+            (),
+            {
+                "image": None,
+                "minecraft_asset": None,
+                "minecraft_version": None,
+                "analysis": None,
+                "template": "tools/asset-foundry/specs/templates/minecraft_vanilla_steve_skin_64.json",
+                "patch": patch_rel,
+                "output": str(output.relative_to(REPO_ROOT)),
+                "grid": False,
+                "only": None,
+                "group_set": "clothing_all",
+                "json": False,
+            },
+        )()
+        self.tool.cmd_render_group_overlay(overlay_ns)
+        self.assertTrue(output.exists())
+
+    def test_fill_region_accepts_palette_role(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-player-skin-atlas.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        atlas = rendered["atlas_main"]
+        highlight = self.tool.palette_role_color(self.tool.load_palette(request["material_palette"]), "highlight")
+        for x in (23, 24):
+            for y in range(24, 28):
+                self.assertEqual(atlas.getpixel((x, y)), highlight)
+
+    def test_atlas_surface_bundle_diagnostics_pass_for_generated_preview(self):
+        request, asset_type = self.tool.load_request_and_type("tools/asset-foundry/requests/example-player-skin-atlas.json")
+        family = self.tool.load_family_template(request["family_template_id"])
+        ops = self.tool.load_pixel_ops(REPO_ROOT / "tools/asset-foundry/examples/pixel-ops/steve_scribe_atlas.ops.json")
+        rendered = self.tool.execute_surface_bundle_ops(request, asset_type, family, ops)
+        for surface in family["surfaces"]:
+            output_path, _, _, _ = self.tool.family_surface_output_paths(request, family, surface)
+            self.tool.write_image(rendered[surface["name"]], output_path)
+        diagnostics = self.tool.surface_bundle_diagnostics(request, asset_type)
+        self.assertEqual(diagnostics, [])
 
     def test_new_mcp_tools_are_exposed(self):
         wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"

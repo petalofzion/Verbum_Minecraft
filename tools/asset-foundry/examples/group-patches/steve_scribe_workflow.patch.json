@@ -1,0 +1,19 @@
+{
+  "operations": [
+    {
+      "op": "create_group_set",
+      "name": "upper_clothing",
+      "members": ["torso_clothing", "arm_clothing"]
+    },
+    {
+      "op": "create_group_set",
+      "name": "lower_clothing",
+      "members": ["leg_clothing", "boots_detail"]
+    },
+    {
+      "op": "create_zone_from_rect",
+      "name": "scribe_panel",
+      "rect": { "x": 23, "y": 24, "width": 2, "height": 4 }
+    }
+  ]
+}

@@ -5,12 +5,12 @@ Generated from gradle.properties via `./gradlew updateTargetsDoc`.
 
 | Component | Target Version |
 |---|---|
-| Minecraft | 1.21.11 |
+| Minecraft | 26.1-pre-3 |
 | Mappings | Mojang (official) |
 | Loader | Fabric 0.18.4 |
-| Fabric API | 0.140.2+1.21.11 |
-| Java | 21 |
-| Loom | 1.14.7 |
+| Fabric API | 0.143.14+26.1 |
+| Java | 25 |
+| Loom | 1.15.5 |
 
 ## Compatibility Status
 - **Client:** ✅ Supported

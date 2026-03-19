@@ -15,7 +15,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -138,7 +138,7 @@ public class MinecraftContentRegistrar implements ContentSink {
             return;
         }
 
-        ItemGroupEvents.modifyEntriesEvent(tabKey).register(entries -> entries.accept(item));
+        CreativeModeTabEvents.modifyOutputEvent(tabKey).register(entries -> entries.accept(item));
     }
 
     private static Block createBlock(BlockDef def, Identifier id) {

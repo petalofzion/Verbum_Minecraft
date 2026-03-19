@@ -1,42 +1,55 @@
-# Version Gotchas (1.21.11)
+# Version Gotchas (26.1-pre-3)
 
 This file is the shared, version-specific pitfalls list for both capsule and
 repo agents. Update it whenever versions change or new issues are discovered.
 Include a source link for each entry.
 
 ## Current Targets
-- Minecraft: 1.21.11
-- Fabric API: 0.140.2+1.21.11
+- Minecraft: 26.1-pre-3
+- Fabric API: 0.143.14+26.1
+- Java: 25
+- Loom: 1.15.5
 
 ## Gotchas
-- When registering new blocks in 1.21.11, block properties must carry a block registry id before block construction. If a custom block registration path skips `Properties.setId(ResourceKey.create(Registries.BLOCK, id))`, client startup can crash with `NullPointerException: Block id not set`.
-  Source: local Verbum runtime crash and mapped stacktrace during `:assemblies:vocations:runClient` on 2026-03-15.
-- Item model definitions live in `assets/<namespace>/items/<id>.json`, and the
-  `minecraft:item_model` item component points to the resource location for the
-  items model. Missing `items/<id>.json` breaks item rendering even if the model
-  and texture exist.
+- 26.1 snapshots use the unobfuscated game jars. Build script migration is required:
+  use the modern Loom plugin id, remove the old `mappings` dependency line, and
+  replace old `modImplementation` usage with normal dependency configurations
+  where required by the 26.1 snapshot tooling.
+  Source: [Fabric porting guide](https://docs.fabricmc.net/develop/porting/next)
+- The Minecraft dependency coordinate and Fabric Loader's runtime version string
+  are not identical for this snapshot line. Verbum uses `26.1-pre-3` in Gradle
+  coordinates, but `fabric.mod.json` must target the loader-visible form
+  `26.1-pre.3` for dependency resolution to pass.
+  Source: local `:assemblies:veritas:runClient` smoke on 2026-03-19.
+- Java 25 is required for this baseline, including Gradle toolchain resolution
+  and IDE support.
+  Source: [Fabric porting guide](https://docs.fabricmc.net/develop/porting/next)
+- Custom GUI screens are on the new extractor-based rendering pipeline. Old
+  `GuiGraphics`-based overrides no longer compile; custom screens must use
+  `GuiGraphicsExtractor` and extractor methods such as `extractBackground`,
+  `extractLabels`, and `extractRenderState`.
+  Source: local Verbum migration compile against 26.1-pre-3 on 2026-03-19.
+- Custom container screens now need the image dimensions passed through the
+  `AbstractContainerScreen` constructor instead of assigning `imageWidth` and
+  `imageHeight` afterward.
+  Source: local Verbum migration compile against 26.1-pre-3 on 2026-03-19.
+- Some Fabric helper packages moved:
+  - creative tab events are under `net.fabricmc.fabric.api.creativetab.v1`
+  - key mapping helpers are under `net.fabricmc.fabric.api.client.keymapping.v1`
+  Source: local 26.1 dependency inspection and compile migration on 2026-03-19.
+- Player-facing feedback methods changed in the runtime path used by Verbum:
+  `Player.sendSystemMessage(...)` is available where old `displayClientMessage`
+  calls no longer compile.
+  Source: local Verbum migration compile against 26.1-pre-3 on 2026-03-19.
+- `EditBox` input filtering changed. Verbum’s numeric page-jump fields now need
+  responder-based sanitization instead of the removed `setFilter(...)` hook.
+  Source: local Verbum migration compile against 26.1-pre-3 on 2026-03-19.
+- Item model definitions still depend on `assets/<namespace>/items/<id>.json`
+  and the `minecraft:item_model` item component. Keep verifying this path during
+  the 26.1 migration because item rendering will fail even when models/textures
+  exist if the item definition file is missing.
   Source: https://minecraft.wiki/w/Items_model_definition
-- Data components are now the canonical item data mechanism and partially
-  replace NBT for items and block entities. This affects how item data is stored
-  and surfaced.
+- Data components remain the canonical item data mechanism; continue treating
+  them as the main item/block-entity data surface instead of legacy NBT-first
+  assumptions.
   Source: https://minecraft.wiki/w/Data_component_format
-- 1.21.11 Mojang mappings: `BookViewScreen.BookAccess` is a record that takes a
-  `List<Component>` and `BookViewScreen` constructors are public but no longer
-  accept the `(BookAccess, boolean)` signature. Item `use` returns
-  `InteractionResult` and `Level.isClientSide()` is a method, not a field.
-  Source: local 1.21.11 mapped jar inspection (Loom cache).
-- Resource pack format is now 75.0 for 1.21.11.
-  Source: https://minecraft.wiki/w/Java_Edition_1.21.11
-- Data pack format is now 94.1 for 1.21.11.
-  Source: https://minecraft.wiki/w/Java_Edition_1.21.11
-- Block model and block state formats were expanded to allow more rotations.
-  Source: https://minecraft.wiki/w/Java_Edition_1.21.11
-- New GPU sprite animation shaders and uniform changes were introduced. This
-  only matters if custom shaders are shipped or relied upon.
-  Source: https://minecraft.wiki/w/Java_Edition_1.21.11
-- 1.21.11 has an unobfuscated build (`1.21.11_unobfuscated`) in preparation for
-  removing obfuscation from Java Edition. This may affect tooling workflows.
-  Source: https://minecraft.wiki/w/Java_Edition_1.21.11
-- Fabric API 0.140.2+1.21.11: language provider subclasses can change output
-  paths (datagen), and there are small helper API additions and fixes.
-  Source: https://github.com/FabricMC/fabric-api/releases/tag/0.140.2%2B1.21.11

@@ -4,6 +4,7 @@ import colorsys
 import copy
 import json
 import re
+import shutil
 import zipfile
 from collections import Counter, defaultdict, deque
 from datetime import UTC, datetime
@@ -30,6 +31,10 @@ def repo_root() -> Path:
 
 def foundry_root() -> Path:
     return Path(__file__).resolve().parent
+
+
+def veritas_preview_resource_root() -> Path:
+    return repo_root() / "assemblies" / "veritas" / "src" / "main" / "resources" / "assets" / "verbum_debug"
 
 
 def resolve_repo_path(path: Path) -> Path:
@@ -380,6 +385,75 @@ def preview_root() -> Path:
     return foundry_root() / "previews" / "generated"
 
 
+def staged_preview_texture_rel(kind: str, asset_id: str) -> str:
+    if not ASSET_ID_PATTERN.fullmatch(asset_id):
+        raise SystemExit(f"Invalid preview asset id: {asset_id}")
+    if kind == "player_skin":
+        return f"textures/entity/preview/{asset_id}.png"
+    if kind == "item_icon":
+        return f"textures/item/preview/{asset_id}.png"
+    raise SystemExit(f"Unsupported preview kind: {kind}")
+
+
+def staged_preview_texture_path(kind: str, asset_id: str) -> Path:
+    return veritas_preview_resource_root() / staged_preview_texture_rel(kind, asset_id)
+
+
+def staged_preview_identifier(kind: str, asset_id: str) -> str:
+    rel = staged_preview_texture_rel(kind, asset_id)
+    return f"verbum_debug:{rel}"
+
+
+def ensure_png_path(path: Path, *, label: str) -> None:
+    if path.suffix.lower() != ".png":
+        raise SystemExit(f"{label}: expected a PNG path, got {path}")
+
+
+def derive_stage_source(request: dict[str, Any], asset_type: dict[str, Any], kind: str) -> Path:
+    outputs = [resolve_repo_path(Path(output)) for output in planned_outputs(request, asset_type)]
+    png_outputs = [path for path in outputs if path.suffix.lower() == ".png"]
+    if kind == "player_skin":
+        if len(png_outputs) != 1:
+            raise SystemExit(
+                f"Could not derive a unique atlas PNG from request; expected 1 PNG output, found {len(png_outputs)}"
+            )
+        return png_outputs[0]
+    if kind == "item_icon":
+        matches = [path for path in png_outputs if "/textures/item/" in path.as_posix()]
+        if len(matches) != 1:
+            raise SystemExit(
+                f"Could not derive a unique item texture PNG from request; expected 1 matching output, found {len(matches)}"
+            )
+        return matches[0]
+    raise SystemExit(f"Unsupported preview kind: {kind}")
+
+
+def stage_preview_asset(
+    *,
+    request_path: Path,
+    kind: str,
+    asset_id: str | None = None,
+    source_path: Path | None = None,
+) -> tuple[Path, str]:
+    request, asset_type = load_request_and_type(str(request_path))
+    source = resolve_repo_path(source_path) if source_path is not None else derive_stage_source(request, asset_type, kind)
+    if not source.exists():
+        raise SystemExit(f"Preview source does not exist: {source}")
+    ensure_png_path(source, label="preview source")
+    staged_asset_id = asset_id or request["asset_id"]
+    target = staged_preview_texture_path(kind, staged_asset_id)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, target)
+    return target, staged_preview_identifier(kind, staged_asset_id)
+
+
+def unstage_preview_asset(*, kind: str, asset_id: str) -> Path:
+    target = staged_preview_texture_path(kind, asset_id)
+    if target.exists():
+        target.unlink()
+    return target
+
+
 def preview_output_base(asset_id: str) -> Path:
     return preview_root() / asset_id
 
@@ -691,7 +765,15 @@ def printable_json(payload: Any) -> None:
     print(json.dumps(payload, indent=2))
 
 
-def describe_entries(image: Image.Image, entries: list[dict[str, Any]], *, json_mode: bool) -> None:
+def blank_canvas_from_analysis(analysis: dict[str, Any]) -> Image.Image:
+    require_pillow()
+    canvas = analysis.get("canvas", {})
+    width = int(canvas.get("width", 1))
+    height = int(canvas.get("height", 1))
+    return Image.new("RGBA", (width, height), (0, 0, 0, 0))
+
+
+def describe_entries(image: Image.Image | None, entries: list[dict[str, Any]], *, json_mode: bool) -> None:
     payload = []
     for entry in entries:
         pixels = {
@@ -708,7 +790,14 @@ def describe_entries(image: Image.Image, entries: list[dict[str, Any]], *, json_
             "bounds": bounds_from_pixels(pixels),
             "pixel_count": len(pixels),
         }
-        summary.update(region_stats(image, pixels))
+        if image is not None:
+            summary.update(region_stats(image, pixels))
+        elif entry.get("relationships"):
+            relationships = entry["relationships"]
+            summary["hue_mean"] = relationships.get("hue", {}).get("mean", 0.0)
+            summary["value_range"] = relationships.get("value", {"min": 0.0, "max": 0.0, "mean": 0.0})
+            summary["texture_density"] = relationships.get("texture_density", 0.0)
+            summary["adjacency"] = relationships.get("local_contrast", {"mean_abs_neighbor_delta": 0.0})
         if entry.get("mode"):
             summary["mode"] = entry["mode"]
         if entry.get("members"):
@@ -721,9 +810,12 @@ def describe_entries(image: Image.Image, entries: list[dict[str, Any]], *, json_
         print(f"{item['name']} [{item.get('kind','entry')}]")
         print(f"  bounds: {item['bounds']}")
         print(f"  pixels: {item['pixel_count']}")
-        print(f"  hue_mean: {item['hue_mean']}")
-        print(f"  value_range: {item['value_range']}")
-        print(f"  texture_density: {item['texture_density']}")
+        if "hue_mean" in item:
+            print(f"  hue_mean: {item['hue_mean']}")
+        if "value_range" in item:
+            print(f"  value_range: {item['value_range']}")
+        if "texture_density" in item:
+            print(f"  texture_density: {item['texture_density']}")
         if item.get("mode"):
             print(f"  mode: {item['mode']}")
 
@@ -1736,7 +1828,7 @@ def transformed_color_allowlist(
                 allowlist[(x, y)].add(transformed)
 
     for group in template.get("pixel_groups", []):
-        if group["name"] in grouped or group["mode"] == "locked":
+        if group["mode"] == "locked":
             continue
         if quantize_to_palette_for_scope(group=group):
             continue
@@ -1921,7 +2013,7 @@ def texture_diagnostics(image: Image.Image, *, request: dict[str, Any], asset_ty
                 bad_alpha += 1
             opaque_pixel = (pixel[0], pixel[1], pixel[2], 255)
             if (x, y) in non_quantized_pixels:
-                if opaque_pixel not in transformed_allowlist.get((x, y), set()):
+                if opaque_pixel not in transformed_allowlist.get((x, y), set()) and opaque_pixel not in palette:
                     off_palette += 1
             elif opaque_pixel not in palette:
                 off_palette += 1
@@ -2437,8 +2529,11 @@ def cmd_inspect_topology(args: argparse.Namespace) -> None:
 
 
 def cmd_render_region_overlay(args: argparse.Namespace) -> None:
-    image = load_image_from_source(image_source_from_args(args))
     analysis = analysis_from_args_or_file(args)
+    if getattr(args, "image", None) or getattr(args, "minecraft_asset", None):
+        image = load_image_from_source(image_source_from_args(args))
+    else:
+        image = blank_canvas_from_analysis(analysis)
     entries = analysis_entries(analysis, kind=getattr(args, "kind", "region"))
     entries = filter_named_entries(entries, only=getattr(args, "only", None))
     overlay = render_labeled_overlay(image, entries, grid=args.grid)
@@ -2757,7 +2852,10 @@ def cmd_describe_analysis(args: argparse.Namespace) -> None:
 def cmd_inspect_region(args: argparse.Namespace) -> None:
     if getattr(args, "analysis", None):
         analysis = load_json(resolve_repo_path(Path(args.analysis)))
-        image = load_image_from_source(image_source_from_args(args))
+        if getattr(args, "image", None) or getattr(args, "minecraft_asset", None):
+            image = load_image_from_source(image_source_from_args(args))
+        else:
+            image = blank_canvas_from_analysis(analysis)
         entries = analysis_entries(analysis, kind=getattr(args, "kind", "candidate"))
         entries = filter_named_entries(entries, only=getattr(args, "only", None))
         describe_entries(image, entries, json_mode=getattr(args, "json", False))
@@ -2970,11 +3068,10 @@ def resolve_preset_color(
     if role_name:
         if template is None:
             raise SystemExit("Palette roles require a template-backed request")
+        return palette_role_color(load_palette(request["material_palette"]), role_name)
     color_value = op.get("color")
     if color_value is None:
         raise SystemExit("Pixel op requires either role or color")
-    if role_name:
-        return palette_role_color(load_palette(request["material_palette"]), role_name)
     return color_from_ops(color_value, flat_palette)
 
 
@@ -3689,6 +3786,24 @@ def cmd_export_preset_seed(args: argparse.Namespace) -> None:
     print(f"Wrote preset seed: {output}")
 
 
+def cmd_stage_preview_asset(args: argparse.Namespace) -> None:
+    request_path = resolve_repo_path(Path(args.request))
+    source = resolve_repo_path(Path(args.source)) if args.source else None
+    staged_path, identifier = stage_preview_asset(
+        request_path=request_path,
+        kind=args.kind,
+        asset_id=args.asset_id,
+        source_path=source,
+    )
+    print(f"Staged preview asset: {staged_path}")
+    print(f"Preview resource: {identifier}")
+
+
+def cmd_unstage_preview_asset(args: argparse.Namespace) -> None:
+    target = unstage_preview_asset(kind=args.kind, asset_id=args.asset_id)
+    print(f"Removed staged preview asset: {target}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Verbum asset foundry")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3874,6 +3989,18 @@ def main() -> None:
     compare_sheet_parser.add_argument("--grid", action="store_true")
     compare_sheet_parser.add_argument("--no-labels", action="store_true")
     compare_sheet_parser.set_defaults(func=cmd_render_compare_sheet)
+
+    stage_preview_parser = subparsers.add_parser("stage-preview-asset", help="Copy a generated PNG into the veritas debug preview asset namespace")
+    stage_preview_parser.add_argument("--request", required=True)
+    stage_preview_parser.add_argument("--kind", required=True, choices=["item_icon", "player_skin"])
+    stage_preview_parser.add_argument("--source")
+    stage_preview_parser.add_argument("--asset-id")
+    stage_preview_parser.set_defaults(func=cmd_stage_preview_asset)
+
+    unstage_preview_parser = subparsers.add_parser("unstage-preview-asset", help="Remove a staged veritas debug preview PNG")
+    unstage_preview_parser.add_argument("--kind", required=True, choices=["item_icon", "player_skin"])
+    unstage_preview_parser.add_argument("--asset-id", required=True)
+    unstage_preview_parser.set_defaults(func=cmd_unstage_preview_asset)
 
     render_delta_parser = subparsers.add_parser("render-delta", help="Render a visual delta between a base image and generated image")
     render_delta_parser.add_argument("--base", dest="base")

@@ -6,7 +6,7 @@
   "base_image": {
     "kind": "minecraft_vanilla_asset",
     "asset_path": "assets/minecraft/textures/block/crafting_table_side.png",
-    "version": "1.21.11"
+    "version": "26.1-pre-3"
   },
   "analysis": {
     "source_summary": "Authored side surface template with locked frame/tool details and one preserve-value wood recolor domain.",

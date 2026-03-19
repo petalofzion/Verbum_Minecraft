@@ -5,7 +5,7 @@
   "base_reference": {
     "kind": "minecraft_vanilla_asset",
     "asset_path": "assets/minecraft/textures/item/book.png",
-    "version": "1.21.11",
+    "version": "26.1-pre-3",
     "notes": [
       "Structural template derived from the vanilla Minecraft book item.",
       "Use this preset as the family base when you want manual or scripture items to feel intentionally vanilla-adjacent."

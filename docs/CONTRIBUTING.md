@@ -5,7 +5,7 @@ This guide outlines the process for contributing to the Verbum Minecraft project
 ## Getting Started
 
 ### Setup Development Environment
-1.  **Java 21:** Ensure you have JDK 21 installed.
+1.  **Java 25:** Ensure you have JDK 25 installed.
 2.  **Git:** Clone the repository.
 3.  **IDE:** We recommend IntelliJ IDEA. Open the project as a Gradle project.
 4.  **Mappings:** This project uses official Mojang mappings.

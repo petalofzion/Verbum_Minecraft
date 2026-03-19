@@ -289,7 +289,7 @@ Item registration requires assets in the capsule resources:
 
 **Lang entry:** `item.<namespace>.<path>` → display name
 
-**1.21.11 note:** The `items/<path>.json` file is required in 1.21.11 to map
+**26.1-pre-3 note:** The `items/<path>.json` file is required in 26.1-pre-3 to map
 the item to its model. In older versions the `models/item/<path>.json` alone
 was sufficient. Missing the `items/<path>.json` file produces missing-texture
 items even when the model and PNG exist.

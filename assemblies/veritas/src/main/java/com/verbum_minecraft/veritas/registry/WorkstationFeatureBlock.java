@@ -74,7 +74,7 @@ final class WorkstationFeatureBlock extends Block {
 
         applyResult(player, inputs, result);
         if (result.message() != null) {
-            player.displayClientMessage(Component.literal(result.message()), true);
+            player.sendSystemMessage(Component.literal(result.message()));
         }
         return InteractionResult.SUCCESS;
     }
