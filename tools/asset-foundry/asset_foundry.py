@@ -156,6 +156,10 @@ def repro_baseline_schema_path() -> Path:
     return foundry_root() / "specs" / "repro-baseline.schema.json"
 
 
+def group_patch_schema_path() -> Path:
+    return foundry_root() / "specs" / "group-patch.schema.json"
+
+
 def load_request(path: Path) -> dict[str, Any]:
     request = load_json(path)
     schema = load_json(request_schema_path())
@@ -194,6 +198,18 @@ def load_template(template_id: str) -> dict[str, Any]:
             raise SystemExit("\n".join(errors))
         return template
     return load_preset(template_id)
+
+
+def load_template_ref(template_ref: str) -> dict[str, Any]:
+    path = resolve_repo_path(Path(template_ref))
+    if path.exists():
+        template = load_json(path)
+        schema = load_json(template_schema_path())
+        errors = validate_instance(template, schema)
+        if errors:
+            raise SystemExit("\n".join(errors))
+        return template
+    return load_template(template_ref)
 
 
 def load_preset(preset_id: str) -> dict[str, Any]:
@@ -247,6 +263,16 @@ def load_pixel_ops(path: Path) -> dict[str, Any]:
     errors = validate_instance(payload, schema)
     if errors:
         raise SystemExit("\n".join(errors))
+    return payload
+
+
+def load_group_patch(path: Path) -> dict[str, Any]:
+    payload = load_json(path)
+    if "operations" in payload:
+        schema = load_json(group_patch_schema_path())
+        errors = validate_instance(payload, schema)
+        if errors:
+            raise SystemExit("\n".join(errors))
     return payload
 
 
@@ -605,6 +631,10 @@ def validate_template_against_asset_type(template: dict[str, Any], asset_type: d
     for entry in template.get("free_paint_regions", []):
         if entry not in region_names:
             errors.append(f"free_paint_regions references unknown region '{entry}'")
+    for zone_name, zone in template.get("zones", {}).items():
+        zone_points = region_pixels(zone)
+        if allowed and not zone_points.issubset(allowed):
+            errors.append(f"template zone '{zone_name}' extends outside the base mask")
 
     group_names: set[str] = set()
     group_pixels_seen: dict[tuple[int, int], str] = {}
@@ -642,6 +672,120 @@ def validate_template_against_asset_type(template: dict[str, Any], asset_type: d
         except SystemExit as exc:
             errors.append(str(exc))
     return errors
+
+
+def region_stats(image: Image.Image, pixels: set[tuple[int, int]]) -> dict[str, Any]:
+    stats = region_relationship_stats(image, pixels)
+    bounds = bounds_from_pixels(pixels)
+    return {
+        "bounds": bounds,
+        "pixel_count": len(pixels),
+        "hue_mean": stats["hue"]["mean"],
+        "value_range": stats["value"],
+        "texture_density": stats["texture_density"],
+        "adjacency": stats["local_contrast"],
+    }
+
+
+def printable_json(payload: Any) -> None:
+    print(json.dumps(payload, indent=2))
+
+
+def describe_entries(image: Image.Image, entries: list[dict[str, Any]], *, json_mode: bool) -> None:
+    payload = []
+    for entry in entries:
+        pixels = {
+            (p["x"], p["y"]) if isinstance(p, dict) else (p[0], p[1])
+            for p in entry.get("pixels", [])
+        }
+        if not pixels:
+            for rect in entry.get("rects", []):
+                pixels.update(expand_rect(rect))
+        summary = {
+            "id": entry.get("id", entry.get("name")),
+            "name": entry.get("name", entry.get("id")),
+            "kind": entry.get("kind"),
+            "bounds": bounds_from_pixels(pixels),
+            "pixel_count": len(pixels),
+        }
+        summary.update(region_stats(image, pixels))
+        if entry.get("mode"):
+            summary["mode"] = entry["mode"]
+        if entry.get("members"):
+            summary["members"] = entry["members"]
+        payload.append(summary)
+    if json_mode:
+        printable_json(payload)
+        return
+    for item in payload:
+        print(f"{item['name']} [{item.get('kind','entry')}]")
+        print(f"  bounds: {item['bounds']}")
+        print(f"  pixels: {item['pixel_count']}")
+        print(f"  hue_mean: {item['hue_mean']}")
+        print(f"  value_range: {item['value_range']}")
+        print(f"  texture_density: {item['texture_density']}")
+        if item.get("mode"):
+            print(f"  mode: {item['mode']}")
+
+
+def analysis_from_args_or_file(args: argparse.Namespace) -> dict[str, Any]:
+    if getattr(args, "analysis", None):
+        return load_json(resolve_repo_path(Path(args.analysis)))
+    image = load_image_from_source(image_source_from_args(args))
+    return analyze_image(image, getattr(args, "heuristic", "generic"))
+
+
+def image_from_args_or_template_base(args: argparse.Namespace, template: dict[str, Any] | None = None) -> Image.Image:
+    try:
+        return load_image_from_source(image_source_from_args(args))
+    except SystemExit:
+        if template is None:
+            raise
+        palette = None
+        try:
+            palette = load_palette("veritas_leather")
+        except SystemExit:
+            palette = None
+        return template_base_image(template, palette)
+
+
+def describe_template_payload(template: dict[str, Any], *, only: str | None = None, stats: bool = False) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "id": template["id"],
+        "asset_type": template["asset_type"],
+        "group_sets": template.get("group_sets", {}),
+        "group_set_options": template.get("group_set_options", {}),
+        "zones": template.get("zones", {}),
+        "regions": template.get("regions", []),
+    }
+    groups = template.get("pixel_groups", [])
+    if only:
+        if only in template.get("group_sets", {}):
+            groups = template_group_set(template, only)
+            payload["scope"] = {"kind": "group_set", "name": only, "members": [group["name"] for group in groups]}
+        else:
+            groups = [pixel_group_by_name(template, only)]
+            payload["scope"] = {"kind": "pixel_group", "name": only}
+    payload["pixel_groups"] = [
+        {
+            "name": group["name"],
+            "mode": group["mode"],
+            "transform_policy": transform_policy_for_scope(group=group),
+            "preserve_value": bool(group.get("preserve_value")),
+            "preserve_local_contrast": bool(group.get("preserve_local_contrast")),
+            "quantize_to_palette": quantize_to_palette_for_scope(group=group),
+        }
+        for group in groups
+    ]
+    payload["locked_group_count"] = sum(1 for group in template.get("pixel_groups", []) if group["mode"] == "locked")
+    payload["editable_group_count"] = sum(1 for group in template.get("pixel_groups", []) if group["mode"] != "locked")
+    if stats:
+        image = template_base_image(template)
+        payload["group_stats"] = {
+            group["name"]: region_stats(image, pixel_group_pixels(group))
+            for group in groups
+        }
+    return payload
 
 
 def validate_family_template(family: dict[str, Any]) -> list[str]:
@@ -1956,11 +2100,41 @@ def family_surface_output_paths(request: dict[str, Any], family: dict[str, Any],
     return generated, preview, delta, delta_json
 
 
+def compare_sheet_output(asset_id: str) -> Path:
+    return preview_root() / f"{asset_id}_compare.png"
+
+
 def template_output_path(template_id: str, output: str | None) -> Path:
     return resolve_repo_path(Path(output)) if output else preview_root() / "templates" / f"{template_id}.json"
 
 
 def render_region_overlay(image: Image.Image, regions: list[dict[str, Any]], *, grid: bool) -> Image.Image:
+    entries = [
+        {
+            "name": region["name"],
+            "rects": region.get("rects", []),
+            "pixels": sorted(region_pixels(region)),
+        }
+        for region in regions
+    ]
+    return render_labeled_overlay(image, entries, grid=grid)
+
+
+def render_group_overlay(image: Image.Image, groups: list[dict[str, Any]], *, grid: bool) -> Image.Image:
+    entries = []
+    for group in groups:
+        pixels = pixel_group_pixels(group)
+        entries.append(
+            {
+                "name": group.get("name") or group.get("id", "group"),
+                "pixels": sorted(pixels),
+                "rects": [bounds_from_pixels(pixels)],
+            }
+        )
+    return render_labeled_overlay(image, entries, grid=grid)
+
+
+def render_labeled_overlay(image: Image.Image, entries: list[dict[str, Any]], *, grid: bool) -> Image.Image:
     preview = magnify_image(image, scale=16, grid=grid)
     draw = ImageDraw.Draw(preview)
     palette = [
@@ -1971,42 +2145,139 @@ def render_region_overlay(image: Image.Image, regions: list[dict[str, Any]], *, 
         (184, 84, 220, 255),
         (84, 220, 198, 255),
     ]
-    for index, region in enumerate(regions):
+    for index, group in enumerate(entries):
         color = palette[index % len(palette)]
-        for rect in region["rects"]:
+        pixels = {
+            (p["x"], p["y"]) if isinstance(p, dict) else (p[0], p[1])
+            for p in group.get("pixels", [])
+        }
+        for rect in group.get("rects", []):
             x0 = rect["x"] * 16
             y0 = rect["y"] * 16
             x1 = (rect["x"] + rect["width"]) * 16 - 1
             y1 = (rect["y"] + rect["height"]) * 16 - 1
             draw.rectangle([(x0, y0), (x1, y1)], outline=color, width=2)
-            draw.text((x0 + 2, y0 + 2), region["name"], fill=color)
-    return preview
-
-
-def render_group_overlay(image: Image.Image, groups: list[dict[str, Any]], *, grid: bool) -> Image.Image:
-    preview = magnify_image(image, scale=16, grid=grid)
-    draw = ImageDraw.Draw(preview)
-    palette = [
-        (220, 84, 84, 255),
-        (84, 156, 220, 255),
-        (112, 190, 84, 255),
-        (220, 183, 84, 255),
-        (184, 84, 220, 255),
-        (84, 220, 198, 255),
-    ]
-    for index, group in enumerate(groups):
-        color = palette[index % len(palette)]
-        if "pixels" in group and group["pixels"] and isinstance(group["pixels"][0], dict):
-            pixels = {(p["x"], p["y"]) for p in group["pixels"]}
-        else:
-            pixels = pixel_group_pixels(group)
         for x, y in pixels:
             x0 = x * 16
             y0 = y * 16
             draw.rectangle([(x0, y0), (x0 + 15, y0 + 15)], outline=color, width=1)
-        bounds = bounds_from_pixels(pixels)
+        bounds = bounds_from_pixels(pixels) if pixels else bounds_from_pixels({
+            (rect["x"], rect["y"]) for rect in group.get("rects", [])
+        })
         draw.text((bounds["x"] * 16 + 2, bounds["y"] * 16 + 2), group.get("name") or group.get("id", "group"), fill=color)
     return preview
+
+
+def labeled_entry_from_bounds(name: str, bounds: dict[str, int], *, kind: str, count: int | None = None, pixels: list[dict[str, int]] | None = None, extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    entry = {
+        "id": name,
+        "name": name,
+        "kind": kind,
+        "bounds": bounds,
+        "rects": [bounds],
+        "count": count or 0,
+    }
+    if pixels is not None:
+        entry["pixels"] = pixels
+    if extra:
+        entry.update(extra)
+    return entry
+
+
+def analysis_entries(analysis: dict[str, Any], kind: str = "candidate") -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    if kind in {"candidate", "component"}:
+        for index, component in enumerate(analysis.get("components", []), start=1):
+            component_name = component.get("id") or component.get("name") or component_id(index)
+            entries.append(
+                labeled_entry_from_bounds(
+                    component_name,
+                    component["bounds"],
+                    kind="component",
+                    count=component.get("count", 0),
+                    pixels=component.get("pixels"),
+                )
+            )
+    if kind in {"candidate", "region"}:
+        for region in analysis.get("candidate_regions", []):
+            entries.append(
+                {
+                    "id": region["name"],
+                    "name": region["name"],
+                    "kind": "region",
+                    "rects": region.get("rects", []),
+                    "bounds": bounds_from_pixels(region_pixels(region)),
+                    "count": len(region_pixels(region)),
+                    "mode": region.get("mode"),
+                }
+            )
+    if kind in {"candidate", "detail"}:
+        for index, detail in enumerate(analysis.get("detail_candidates", []), start=1):
+            detail_name = detail.get("id") or detail.get("name") or detail_candidate_id(index)
+            entries.append(
+                labeled_entry_from_bounds(
+                    detail_name,
+                    detail["bounds"],
+                    kind="detail",
+                    count=detail.get("count", 0),
+                    pixels=detail.get("pixels"),
+                )
+            )
+    if kind in {"candidate", "zone"}:
+        for index, zone in enumerate(analysis.get("zone_candidates", []), start=1):
+            zone_name = zone.get("id") or zone.get("name") or zone_candidate_id(index)
+            entries.append(
+                labeled_entry_from_bounds(
+                    zone_name,
+                    zone["bounds"],
+                    kind="zone",
+                    count=zone.get("count", 0),
+                    pixels=zone.get("pixels"),
+                )
+            )
+    return entries
+
+
+def filter_named_entries(entries: list[dict[str, Any]], *, only: str | None = None) -> list[dict[str, Any]]:
+    if not only:
+        return entries
+    filtered = [entry for entry in entries if entry.get("id") == only or entry.get("name") == only]
+    if not filtered:
+        raise SystemExit(f"Unknown inspection target: {only}")
+    return filtered
+
+
+def template_entries(template: dict[str, Any], *, only: str | None = None, group_set_name: str | None = None) -> list[dict[str, Any]]:
+    if group_set_name:
+        groups = template_group_set(template, group_set_name)
+        entries = []
+        for group in groups:
+            pixels = pixel_group_pixels(group)
+            entries.append(
+                {
+                    "id": group["name"],
+                    "name": group["name"],
+                    "kind": "pixel_group",
+                    "pixels": [{"x": x, "y": y} for x, y in sorted(pixels, key=lambda item: (item[1], item[0]))],
+                    "rects": [bounds_from_pixels(pixels)],
+                    "mode": group["mode"],
+                }
+            )
+        return entries
+    groups = template.get("pixel_groups", [])
+    if only:
+        groups = [pixel_group_by_name(template, only)]
+    return [
+        {
+            "id": group["name"],
+            "name": group["name"],
+            "kind": "pixel_group",
+            "pixels": group["pixels"],
+            "rects": [bounds_from_pixels(pixel_group_pixels(group))],
+            "mode": group["mode"],
+        }
+        for group in groups
+    ]
 
 
 def default_palette_roles_for_asset_type(asset_type_id: str) -> list[str]:
@@ -2167,23 +2438,47 @@ def cmd_inspect_topology(args: argparse.Namespace) -> None:
 
 def cmd_render_region_overlay(args: argparse.Namespace) -> None:
     image = load_image_from_source(image_source_from_args(args))
-    if getattr(args, "analysis", None):
-        analysis = load_json(resolve_repo_path(Path(args.analysis)))
-    else:
-        analysis = analyze_image(image, getattr(args, "heuristic", "generic"))
-    overlay = render_region_overlay(image, analysis["candidate_regions"], grid=args.grid)
+    analysis = analysis_from_args_or_file(args)
+    entries = analysis_entries(analysis, kind=getattr(args, "kind", "region"))
+    entries = filter_named_entries(entries, only=getattr(args, "only", None))
+    overlay = render_labeled_overlay(image, entries, grid=args.grid)
     output = resolve_repo_path(Path(args.output))
     write_image(overlay, output)
+    if getattr(args, "json", False):
+        printable_json(entries)
     print(f"Wrote region overlay: {output}")
 
 
 def cmd_render_group_overlay(args: argparse.Namespace) -> None:
-    image = load_image_from_source(image_source_from_args(args))
-    analysis = load_json(resolve_repo_path(Path(args.analysis)))
-    groups = analysis.get("pixel_groups", [])
-    overlay = render_group_overlay(image, groups, grid=args.grid)
+    if getattr(args, "template", None):
+        template = load_template_ref(args.template)
+        image = image_from_args_or_template_base(args, template)
+        if getattr(args, "patch", None):
+            patch = load_group_patch(resolve_repo_path(Path(args.patch)))
+            template, _ = apply_intent_patch(template, patch)
+        entries = template_entries(template, only=getattr(args, "only", None), group_set_name=getattr(args, "group_set", None))
+    else:
+        image = load_image_from_source(image_source_from_args(args))
+        analysis = load_json(resolve_repo_path(Path(args.analysis)))
+        groups = analysis.get("pixel_groups", [])
+        if getattr(args, "only", None):
+            groups = [group for group in groups if group["id"] == args.only or group.get("name") == args.only]
+            if not groups:
+                raise SystemExit(f"Unknown analysis group: {args.only}")
+        entries = [
+            {
+                "name": group.get("name", group["id"]),
+                "id": group.get("name", group["id"]),
+                "pixels": group["pixels"],
+                "rects": [bounds_from_pixels({(p['x'], p['y']) for p in group["pixels"]})],
+            }
+            for group in groups
+        ]
+    overlay = render_labeled_overlay(image, entries, grid=args.grid)
     output = resolve_repo_path(Path(args.output))
     write_image(overlay, output)
+    if getattr(args, "json", False):
+        printable_json(entries)
     print(f"Wrote group overlay: {output}")
 
 
@@ -2282,22 +2577,278 @@ def cmd_export_group_patch(args: argparse.Namespace) -> None:
     print(f"Wrote group patch: {output}")
 
 
+def region_by_name(template: dict[str, Any], name: str) -> dict[str, Any]:
+    for region in template.get("regions", []):
+        if region["name"] == name:
+            return region
+    raise SystemExit(f"Unknown template region: {name}")
+
+
+def zone_by_name(template: dict[str, Any], name: str) -> dict[str, Any]:
+    zone = template.get("zones", {}).get(name)
+    if zone is None:
+        raise SystemExit(f"Unknown template zone: {name}")
+    return zone
+
+
+def zone_payload_from_pixels(pixels: set[tuple[int, int]]) -> dict[str, Any]:
+    bounds = bounds_from_pixels(pixels)
+    return {"rects": [bounds]}
+
+
+def rename_group_references(template: dict[str, Any], old: str, new: str) -> None:
+    for set_name, members in template.get("group_sets", {}).items():
+        template["group_sets"][set_name] = [new if entry == old else entry for entry in members]
+    detail_replacements = template.get("detail_replacements", {})
+    for replacement in detail_replacements.values():
+        if replacement.get("clear_to_group") == old:
+            replacement["clear_to_group"] = new
+
+
+def apply_intent_patch(template: dict[str, Any], patch: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    updated = copy.deepcopy(template)
+    summary: dict[str, Any] = {"operations": [], "modified_groups": [], "modified_sets": [], "modified_zones": []}
+    if "operations" not in patch:
+        for field in ("regions", "pixel_groups", "group_sets", "group_set_options", "detail_replacements", "locked_regions", "free_paint_regions", "symmetry", "palette_roles", "zones"):
+            if field in patch:
+                updated[field] = copy.deepcopy(patch[field])
+                summary["operations"].append({"op": "replace_field", "field": field})
+        return updated, summary
+
+    updated.setdefault("group_set_options", {})
+    updated.setdefault("zones", {})
+    for op in patch["operations"]:
+        kind = op["op"]
+        if kind == "rename_group":
+            group = pixel_group_by_name(updated, op["from"])
+            if any(entry["name"] == op["to"] for entry in updated.get("pixel_groups", []) if entry is not group):
+                raise SystemExit(f"rename_group target already exists: {op['to']}")
+            rename_group_references(updated, op["from"], op["to"])
+            group["name"] = op["to"]
+            summary["modified_groups"].append(op["to"])
+        elif kind == "rename_region":
+            region = region_by_name(updated, op["from"])
+            if any(entry["name"] == op["to"] for entry in updated.get("regions", []) if entry is not region):
+                raise SystemExit(f"rename_region target already exists: {op['to']}")
+            updated["locked_regions"] = [op["to"] if entry == op["from"] else entry for entry in updated.get("locked_regions", [])]
+            updated["free_paint_regions"] = [op["to"] if entry == op["from"] else entry for entry in updated.get("free_paint_regions", [])]
+            region["name"] = op["to"]
+        elif kind == "set_group_mode":
+            pixel_group_by_name(updated, op["group"])["mode"] = op["mode"]
+            summary["modified_groups"].append(op["group"])
+        elif kind == "set_group_transform_policy":
+            pixel_group_by_name(updated, op["group"])["transform_policy"] = op["transform_policy"]
+            summary["modified_groups"].append(op["group"])
+        elif kind == "set_group_flags":
+            group = pixel_group_by_name(updated, op["group"])
+            for field in ("preserve_value", "preserve_local_contrast", "quantize_to_palette"):
+                if field in op:
+                    group[field] = op[field]
+            summary["modified_groups"].append(op["group"])
+        elif kind == "create_group_set":
+            if op["name"] in updated.get("group_sets", {}):
+                raise SystemExit(f"group set already exists: {op['name']}")
+            for group_name in op["members"]:
+                pixel_group_by_name(updated, group_name)
+            updated["group_sets"][op["name"]] = list(op["members"])
+            summary["modified_sets"].append(op["name"])
+        elif kind == "add_group_to_set":
+            pixel_group_by_name(updated, op["group"])
+            members = updated.get("group_sets", {}).get(op["set"])
+            if members is None:
+                raise SystemExit(f"Unknown group set: {op['set']}")
+            if op["group"] not in members:
+                members.append(op["group"])
+            summary["modified_sets"].append(op["set"])
+        elif kind == "remove_group_from_set":
+            members = updated.get("group_sets", {}).get(op["set"])
+            if members is None:
+                raise SystemExit(f"Unknown group set: {op['set']}")
+            if op["group"] not in members:
+                raise SystemExit(f"group '{op['group']}' is not in group set '{op['set']}'")
+            members.remove(op["group"])
+            if not members:
+                raise SystemExit(f"group set '{op['set']}' cannot be empty")
+            summary["modified_sets"].append(op["set"])
+        elif kind == "merge_groups":
+            sources = [pixel_group_by_name(updated, name) for name in op["sources"]]
+            target_name = op["target"]
+            target_group = None
+            if target_name in [group["name"] for group in updated.get("pixel_groups", [])]:
+                target_group = pixel_group_by_name(updated, target_name)
+                if target_group["name"] not in op["sources"]:
+                    raise SystemExit(f"merge target '{target_name}' already exists outside source set")
+            if target_group is None:
+                target_group = copy.deepcopy(sources[0])
+                target_group["name"] = target_name
+                updated["pixel_groups"].append(target_group)
+            merged_pixels = set()
+            for source in sources:
+                merged_pixels.update(pixel_group_pixels(source))
+            target_group["pixels"] = pixel_points_payload(merged_pixels)
+            for source_name in op["sources"]:
+                if source_name == target_name:
+                    continue
+                updated["pixel_groups"] = [group for group in updated["pixel_groups"] if group["name"] != source_name]
+                rename_group_references(updated, source_name, target_name)
+            summary["modified_groups"].append(target_name)
+        elif kind == "create_zone_from_rect":
+            if op["name"] in updated.get("zones", {}):
+                raise SystemExit(f"zone already exists: {op['name']}")
+            updated["zones"][op["name"]] = {"rects": [op["rect"]]}
+            summary["modified_zones"].append(op["name"])
+        elif kind == "create_zone_from_group":
+            if op["name"] in updated.get("zones", {}):
+                raise SystemExit(f"zone already exists: {op['name']}")
+            group = pixel_group_by_name(updated, op["group"])
+            updated["zones"][op["name"]] = zone_payload_from_pixels(pixel_group_pixels(group))
+            summary["modified_zones"].append(op["name"])
+        elif kind == "delete_zone":
+            zone_by_name(updated, op["name"])
+            del updated["zones"][op["name"]]
+            summary["modified_zones"].append(op["name"])
+        else:
+            raise SystemExit(f"Unsupported patch operation: {kind}")
+        summary["operations"].append(op)
+    return updated, summary
+
+
 def cmd_apply_group_patch(args: argparse.Namespace) -> None:
     template_path = resolve_repo_path(Path(args.template))
     template = load_json(template_path)
-    patch = load_json(resolve_repo_path(Path(args.patch)))
-    for field in ("regions", "pixel_groups", "group_sets", "detail_replacements", "locked_regions", "free_paint_regions", "symmetry", "palette_roles"):
-        if field in patch:
-            template[field] = patch[field]
-    output = resolve_repo_path(Path(args.output)) if args.output else template_path
-    mask = load_mask(template["base_mask"])
-    asset_type = load_asset_type(template["asset_type"])
-    errors = validate_instance(template, load_json(template_schema_path()))
-    errors.extend(validate_template_against_asset_type(template, asset_type, mask))
+    patch = load_group_patch(resolve_repo_path(Path(args.patch)))
+    updated, summary = apply_intent_patch(template, patch)
+    mask = load_mask(updated["base_mask"])
+    asset_type = load_asset_type(updated["asset_type"])
+    errors = validate_instance(updated, load_json(template_schema_path()))
+    errors.extend(validate_template_against_asset_type(updated, asset_type, mask))
     if errors:
         raise SystemExit("\n".join(errors))
-    save_json(output, template)
+    if getattr(args, "dry_run", False):
+        printable_json(summary)
+        return
+    output = resolve_repo_path(Path(args.output)) if args.output else template_path
+    save_json(output, updated)
     print(f"Wrote patched template: {output}")
+
+
+def cmd_describe_analysis(args: argparse.Namespace) -> None:
+    analysis = analysis_from_args_or_file(args)
+    payload = {
+        "source_summary": analysis["source_summary"],
+        "opaque_bounds": analysis.get("opaque_bounds"),
+        "candidate_regions": [entry["name"] for entry in analysis.get("candidate_regions", [])],
+        "detail_candidates": [entry["id"] for entry in analysis.get("detail_candidates", [])],
+        "zone_candidates": [entry["id"] for entry in analysis.get("zone_candidates", [])],
+        "components": [entry["id"] for entry in analysis.get("components", [])],
+        "surface_relationships": analysis.get("surface_relationships", {}),
+    }
+    if getattr(args, "json", False):
+        printable_json(payload)
+        return
+    print(payload["source_summary"])
+    print(f"opaque_bounds: {payload['opaque_bounds']}")
+    print(f"candidate_regions: {', '.join(payload['candidate_regions'])}")
+    print(f"detail_candidates: {', '.join(payload['detail_candidates'])}")
+    print(f"zone_candidates: {', '.join(payload['zone_candidates'])}")
+    print(f"components: {', '.join(payload['components'])}")
+
+
+def cmd_inspect_region(args: argparse.Namespace) -> None:
+    if getattr(args, "analysis", None):
+        analysis = load_json(resolve_repo_path(Path(args.analysis)))
+        image = load_image_from_source(image_source_from_args(args))
+        entries = analysis_entries(analysis, kind=getattr(args, "kind", "candidate"))
+        entries = filter_named_entries(entries, only=getattr(args, "only", None))
+        describe_entries(image, entries, json_mode=getattr(args, "json", False))
+        return
+    template = load_template_ref(args.template)
+    image = template_base_image(template)
+    if getattr(args, "group_set", None):
+        entries = template_entries(template, group_set_name=args.group_set)
+    elif getattr(args, "only", None):
+        if args.only in template.get("zones", {}):
+            zone = zone_by_name(template, args.only)
+            entries = [{"id": args.only, "name": args.only, "kind": "zone", "rects": zone["rects"], "pixels": []}]
+        else:
+            entries = template_entries(template, only=args.only)
+    else:
+        raise SystemExit("inspect-region requires --only or --group-set")
+    describe_entries(image, entries, json_mode=getattr(args, "json", False))
+
+
+def compare_strip(base: Image.Image, generated: Image.Image, *, grid: bool, labels: bool, delta: Image.Image | None = None) -> Image.Image:
+    delta_image = delta if delta is not None else render_delta_image(base, generated)
+    tiles = [magnify_image(base, scale=16, grid=grid), magnify_image(generated, scale=16, grid=grid), magnify_image(delta_image, scale=16, grid=grid)]
+    titles = ["base", "generated", "delta"]
+    label_height = 20 if labels else 0
+    gutter = 16
+    width = sum(tile.width for tile in tiles) + gutter * (len(tiles) - 1)
+    height = max(tile.height for tile in tiles) + label_height
+    sheet = Image.new("RGBA", (width, height), (24, 24, 24, 255))
+    draw = ImageDraw.Draw(sheet)
+    x = 0
+    for title, tile in zip(titles, tiles, strict=False):
+        if labels:
+            draw.text((x + 2, 2), title, fill=(220, 220, 220, 255))
+        sheet.paste(tile, (x, label_height))
+        x += tile.width + gutter
+    return sheet
+
+
+def stack_compare_sheets(strips: list[tuple[str, Image.Image]]) -> Image.Image:
+    width = max(strip.width for _, strip in strips)
+    label_height = 18
+    height = sum(strip.height + label_height for _, strip in strips) + max(0, (len(strips) - 1) * 8)
+    sheet = Image.new("RGBA", (width, height), (18, 18, 18, 255))
+    draw = ImageDraw.Draw(sheet)
+    y = 0
+    for name, strip in strips:
+        draw.text((2, y), name, fill=(235, 235, 235, 255))
+        sheet.paste(strip, (0, y + label_height))
+        y += strip.height + label_height + 8
+    return sheet
+
+
+def cmd_render_compare_sheet(args: argparse.Namespace) -> None:
+    require_pillow()
+    labels = not getattr(args, "no_labels", False)
+    output = resolve_repo_path(Path(args.output))
+    if getattr(args, "request", None):
+        request, asset_type = load_request_and_type(args.request)
+        family_template_id = request_family_template_id(request)
+        if not family_template_id:
+            raise SystemExit("render-compare-sheet bundle mode requires a request with family_template_id")
+        family = load_family_template(family_template_id)
+        generated_surfaces: dict[str, Image.Image] = {}
+        if getattr(args, "ops", None):
+            ops = load_pixel_ops(resolve_repo_path(Path(args.ops)))
+            generated_surfaces = execute_surface_bundle_ops(request, asset_type, family, ops)
+        strips = []
+        palette = load_palette(request["material_palette"])
+        for surface in family["surfaces"]:
+            template = load_template(surface["template_id"])
+            base = template_base_image(template, palette)
+            if generated_surfaces:
+                generated = generated_surfaces[surface["name"]]
+            else:
+                generated_path, _, _, _ = family_surface_output_paths(request, family, surface)
+                if not generated_path.exists():
+                    raise SystemExit(f"Missing generated surface output: {surface['name']}")
+                generated = Image.open(generated_path).convert("RGBA")
+            strips.append((surface["name"], compare_strip(base, generated, grid=args.grid, labels=labels)))
+        write_image(stack_compare_sheets(strips), output)
+        print(f"Wrote compare sheet: {output}")
+        return
+    if not getattr(args, "base", None) or not getattr(args, "generated", None):
+        raise SystemExit("render-compare-sheet requires either --request or both --base and --generated")
+    base = Image.open(resolve_repo_path(Path(args.base))).convert("RGBA")
+    generated = Image.open(resolve_repo_path(Path(args.generated))).convert("RGBA")
+    delta = None
+    if getattr(args, "delta", None):
+        delta = Image.open(resolve_repo_path(Path(args.delta))).convert("RGBA")
+    write_image(compare_strip(base, generated, grid=args.grid, labels=labels, delta=delta), output)
+    print(f"Wrote compare sheet: {output}")
 
 
 def cmd_repair_generated_png(args: argparse.Namespace) -> None:
@@ -3004,8 +3555,31 @@ def cmd_paint_surface_bundle(args: argparse.Namespace) -> None:
 
 
 def cmd_describe_template(args: argparse.Namespace) -> None:
-    template = load_template(args.template_id)
-    print(json.dumps(template, indent=2))
+    template = load_template_ref(args.template_id)
+    payload = describe_template_payload(template, only=getattr(args, "only", None), stats=getattr(args, "stats", False))
+    if getattr(args, "json", False):
+        printable_json(payload)
+        return
+    print(f"template: {payload['id']} ({payload['asset_type']})")
+    print(f"locked_groups: {payload['locked_group_count']}")
+    print(f"editable_groups: {payload['editable_group_count']}")
+    if payload.get("scope"):
+        print(f"scope: {payload['scope']}")
+    print("pixel_groups:")
+    for group in payload["pixel_groups"]:
+        print(
+            f"  - {group['name']} mode={group['mode']} policy={group['transform_policy']} "
+            f"preserve_value={group['preserve_value']} preserve_local_contrast={group['preserve_local_contrast']} "
+            f"quantize_to_palette={group['quantize_to_palette']}"
+        )
+    if payload.get("regions"):
+        print("regions:")
+        for region in payload["regions"]:
+            print(f"  - {region['name']} mode={region['mode']}")
+    if getattr(args, "stats", False):
+        print("group_stats:")
+        for name, stats in payload.get("group_stats", {}).items():
+            print(f"  - {name}: {stats}")
 
 
 def cmd_render_delta(args: argparse.Namespace) -> None:
@@ -3172,6 +3746,9 @@ def main() -> None:
     overlay_parser.add_argument("--analysis", required=True)
     overlay_parser.add_argument("--output", required=True)
     overlay_parser.add_argument("--grid", action="store_true")
+    overlay_parser.add_argument("--only")
+    overlay_parser.add_argument("--kind", default="region", choices=["candidate", "component", "region", "detail", "zone"])
+    overlay_parser.add_argument("--json", action="store_true")
     overlay_parser.set_defaults(func=cmd_render_region_overlay)
     analysis_overlay_parser = subparsers.add_parser("render-analysis-overlay", help="Compatibility alias for render-region-overlay")
     analysis_overlay_parser.add_argument("--image")
@@ -3180,16 +3757,58 @@ def main() -> None:
     analysis_overlay_parser.add_argument("--heuristic", default="generic")
     analysis_overlay_parser.add_argument("--output", required=True)
     analysis_overlay_parser.add_argument("--grid", action="store_true")
+    analysis_overlay_parser.add_argument("--only")
+    analysis_overlay_parser.add_argument("--kind", default="region", choices=["candidate", "component", "region", "detail", "zone"])
+    analysis_overlay_parser.add_argument("--json", action="store_true")
     analysis_overlay_parser.set_defaults(func=cmd_render_region_overlay)
+
+    candidate_overlay_parser = subparsers.add_parser("render-candidate-overlay", help="Render a labeled overlay for analysis candidates/components/detail/zone proposals")
+    candidate_overlay_parser.add_argument("--image")
+    candidate_overlay_parser.add_argument("--minecraft-asset")
+    candidate_overlay_parser.add_argument("--minecraft-version")
+    candidate_overlay_parser.add_argument("--analysis", required=True)
+    candidate_overlay_parser.add_argument("--output", required=True)
+    candidate_overlay_parser.add_argument("--grid", action="store_true")
+    candidate_overlay_parser.add_argument("--only")
+    candidate_overlay_parser.add_argument("--kind", default="candidate", choices=["candidate", "component", "region", "detail", "zone"])
+    candidate_overlay_parser.add_argument("--json", action="store_true")
+    candidate_overlay_parser.set_defaults(func=cmd_render_region_overlay)
 
     group_overlay_parser = subparsers.add_parser("render-group-overlay", help="Render a labeled overlay from template pixel-group analysis")
     group_overlay_parser.add_argument("--image")
     group_overlay_parser.add_argument("--minecraft-asset")
     group_overlay_parser.add_argument("--minecraft-version")
-    group_overlay_parser.add_argument("--analysis", required=True)
+    group_overlay_parser.add_argument("--analysis")
+    group_overlay_parser.add_argument("--template")
+    group_overlay_parser.add_argument("--patch")
     group_overlay_parser.add_argument("--output", required=True)
     group_overlay_parser.add_argument("--grid", action="store_true")
+    group_overlay_parser.add_argument("--only")
+    group_overlay_parser.add_argument("--group-set")
+    group_overlay_parser.add_argument("--json", action="store_true")
     group_overlay_parser.set_defaults(func=cmd_render_group_overlay)
+
+    describe_analysis_parser = subparsers.add_parser("describe-analysis", help="Print a compact analysis summary")
+    describe_analysis_parser.add_argument("--image")
+    describe_analysis_parser.add_argument("--minecraft-asset")
+    describe_analysis_parser.add_argument("--minecraft-version")
+    describe_analysis_parser.add_argument("--analysis")
+    describe_analysis_parser.add_argument("--heuristic", default="generic")
+    describe_analysis_parser.add_argument("--json", action="store_true")
+    describe_analysis_parser.set_defaults(func=cmd_describe_analysis)
+
+    inspect_region_parser = subparsers.add_parser("inspect-region", help="Inspect one candidate, pixel group, group set, or zone")
+    inspect_region_parser.add_argument("--image")
+    inspect_region_parser.add_argument("--minecraft-asset")
+    inspect_region_parser.add_argument("--minecraft-version")
+    inspect_region_parser.add_argument("--analysis")
+    inspect_region_parser.add_argument("--template")
+    inspect_region_parser.add_argument("--heuristic", default="generic")
+    inspect_region_parser.add_argument("--only")
+    inspect_region_parser.add_argument("--group-set")
+    inspect_region_parser.add_argument("--kind", default="candidate", choices=["candidate", "component", "region", "detail", "zone"])
+    inspect_region_parser.add_argument("--json", action="store_true")
+    inspect_region_parser.set_defaults(func=cmd_inspect_region)
 
     create_template_parser = subparsers.add_parser("create-template-from-image", help="Create a raster-backed template from an image source")
     create_template_parser.add_argument("--image")
@@ -3228,15 +3847,33 @@ def main() -> None:
     apply_group_patch_parser.add_argument("--template", required=True)
     apply_group_patch_parser.add_argument("--patch", required=True)
     apply_group_patch_parser.add_argument("--output")
+    apply_group_patch_parser.add_argument("--dry-run", action="store_true")
     apply_group_patch_parser.set_defaults(func=cmd_apply_group_patch)
 
     describe_template_parser = subparsers.add_parser("describe-template", help="Print a template definition by id")
     describe_template_parser.add_argument("template_id")
+    describe_template_parser.add_argument("--only")
+    describe_template_parser.add_argument("--stats", action="store_true")
+    describe_template_parser.add_argument("--json", action="store_true")
     describe_template_parser.set_defaults(func=cmd_describe_template)
 
     describe_preset_parser = subparsers.add_parser("describe-preset", help="Compatibility alias for describe-template")
     describe_preset_parser.add_argument("template_id")
+    describe_preset_parser.add_argument("--only")
+    describe_preset_parser.add_argument("--stats", action="store_true")
+    describe_preset_parser.add_argument("--json", action="store_true")
     describe_preset_parser.set_defaults(func=cmd_describe_template)
+
+    compare_sheet_parser = subparsers.add_parser("render-compare-sheet", help="Render a compare sheet for a single surface or named surface bundle")
+    compare_sheet_parser.add_argument("--base")
+    compare_sheet_parser.add_argument("--generated")
+    compare_sheet_parser.add_argument("--delta")
+    compare_sheet_parser.add_argument("--request")
+    compare_sheet_parser.add_argument("--ops")
+    compare_sheet_parser.add_argument("--output", required=True)
+    compare_sheet_parser.add_argument("--grid", action="store_true")
+    compare_sheet_parser.add_argument("--no-labels", action="store_true")
+    compare_sheet_parser.set_defaults(func=cmd_render_compare_sheet)
 
     render_delta_parser = subparsers.add_parser("render-delta", help="Render a visual delta between a base image and generated image")
     render_delta_parser.add_argument("--base", dest="base")

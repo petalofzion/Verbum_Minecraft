@@ -106,13 +106,18 @@ Deferred:
    - inspect/analyze a source image:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11`
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic generic --output tools/asset-foundry/previews/generated/book_analysis.json`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-analysis --analysis tools/asset-foundry/previews/generated/book_analysis.json --json`
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-topology --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --heuristic generic`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-candidate-overlay --analysis tools/asset-foundry/previews/generated/book_analysis.json --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --kind candidate --output tools/asset-foundry/previews/generated/book_candidates.png`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-region --analysis tools/asset-foundry/previews/generated/book_analysis.json --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --only region_01 --kind region --json`
    - create a raster-backed template seed:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-from-image --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed --heuristic generic`
    - promote neutral analysis into an editable template seed:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create-template-seed-from-analysis --analysis tools/asset-foundry/previews/generated/book_analysis.json --minecraft-asset assets/minecraft/textures/item/book.png --minecraft-version 1.21.11 --asset-type book_cover_16 --base-mask vanilla_book_16_mask --template-id my_book_family_seed`
    - export/apply a semantic patch:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py export-group-patch --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --output tools/asset-foundry/previews/generated/book_patch.json`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py apply-group-patch --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --patch tools/asset-foundry/previews/generated/book_patch.json --dry-run`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-group-overlay --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --patch tools/asset-foundry/previews/generated/book_patch.json --output tools/asset-foundry/previews/generated/book_patch_preview.png --grid`
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py apply-group-patch --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json --patch tools/asset-foundry/previews/generated/book_patch.json --output tools/asset-foundry/previews/generated/book_template_patched.json`
    - conversion:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py repair-generated-png <request.json> --grid`
@@ -126,8 +131,10 @@ Deferred:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py validate-repro tools/asset-foundry/repro-baselines/librarians_desk_recolor_only.json`
    - delta review:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-delta --base-image <base.png> --generated-image <generated.png> --output <delta.png>`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-compare-sheet --base <base.png> --generated <generated.png> --output <compare.png>`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-compare-sheet --request tools/asset-foundry/requests/example-librarians-desk-bundle.json --ops tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json --output tools/asset-foundry/previews/generated/librarians_desk_compare.png`
    - inspect a template:
-     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-template <template_id>`
+     - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-template <template_id> --stats`
    - inspect a preset:
      - `tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-preset <preset_id>`
    - export a reusable preset scaffold:
@@ -226,6 +233,10 @@ If the output still looks like resized digital painting, the tool has failed.
 - `paint-surface-bundle`
 - `validate-bundle`
 - `render-delta`
+- `render-candidate-overlay`
+- `describe-analysis`
+- `inspect-region`
+- `render-compare-sheet`
 - `describe-template`
 - `describe-preset`
 - `export-group-patch`

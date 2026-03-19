@@ -205,6 +205,31 @@
         "additionalProperties": false
       }
     },
+    "zones": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["rects"],
+        "properties": {
+          "rects": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["x", "y", "width", "height"],
+              "properties": {
+                "x": { "type": "integer", "minimum": 0 },
+                "y": { "type": "integer", "minimum": 0 },
+                "width": { "type": "integer", "minimum": 1 },
+                "height": { "type": "integer", "minimum": 1 }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "detail_replacements": {
       "type": "object",
       "additionalProperties": {

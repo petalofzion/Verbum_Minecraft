@@ -243,9 +243,12 @@ This is the workflow for totally new item families.
 - `inspect-image`
 - `analyze-image`
 - `analyze-image-regions` (compatibility alias)
+- `describe-analysis`
 - `inspect-topology`
 - `render-region-overlay`
+- `render-candidate-overlay`
 - `render-group-overlay`
+- `inspect-region`
 - `create-template-from-image`
 - `create-template-seed-from-analysis`
 - `refine-template-regions`
@@ -257,6 +260,7 @@ This is the workflow for totally new item families.
 - `paint-surface-bundle`
 - `validate-bundle`
 - `render-delta`
+- `render-compare-sheet`
 - `render-group-overlay`
 - `export-group-patch`
 - `apply-group-patch`
@@ -513,8 +517,35 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspec
 tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py analyze-image \
   --minecraft-asset assets/minecraft/textures/item/book.png \
   --minecraft-version 1.21.11 \
-  --heuristic book \
+  --heuristic generic \
   --output tools/asset-foundry/previews/generated/book_analysis.json
+```
+
+### Summarize the saved analysis artifact
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py describe-analysis \
+  --analysis tools/asset-foundry/previews/generated/book_analysis.json \
+  --json
+```
+
+### Render and inspect candidate regions
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-candidate-overlay \
+  --analysis tools/asset-foundry/previews/generated/book_analysis.json \
+  --minecraft-asset assets/minecraft/textures/item/book.png \
+  --minecraft-version 1.21.11 \
+  --kind candidate \
+  --output tools/asset-foundry/previews/generated/book_candidates.png
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py inspect-region \
+  --analysis tools/asset-foundry/previews/generated/book_analysis.json \
+  --minecraft-asset assets/minecraft/textures/item/book.png \
+  --minecraft-version 1.21.11 \
+  --only region_01 \
+  --kind region \
+  --json
 ```
 
 ### Inspect the topology text map
@@ -547,6 +578,37 @@ tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py create
   --base-mask vanilla_book_16_mask \
   --template-id analyzed_vanilla_book_16_from_analysis \
   --output tools/asset-foundry/previews/generated/analyzed_vanilla_book_16_from_analysis.json
+```
+
+### Preview a group patch before applying it
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py apply-group-patch \
+  --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json \
+  --patch tools/asset-foundry/previews/generated/book_patch.json \
+  --dry-run
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-group-overlay \
+  --template tools/asset-foundry/specs/templates/minecraft_vanilla_book_16.json \
+  --patch tools/asset-foundry/previews/generated/book_patch.json \
+  --output tools/asset-foundry/previews/generated/book_patch_preview.png \
+  --grid
+```
+
+### Render compare sheets for review
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-compare-sheet \
+  --base tools/asset-foundry/previews/generated/vanilla_book_base.png \
+  --generated tools/asset-foundry/previews/generated/librarians_desk_icon.png \
+  --output tools/asset-foundry/previews/generated/example_compare.png
+```
+
+```bash
+tools/asset-foundry/.venv/bin/python tools/asset-foundry/asset_foundry.py render-compare-sheet \
+  --request tools/asset-foundry/requests/example-librarians-desk-bundle.json \
+  --ops tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json \
+  --output tools/asset-foundry/previews/generated/librarians_desk_compare.png
 ```
 
 ### Render the base vanilla book from the template exactly

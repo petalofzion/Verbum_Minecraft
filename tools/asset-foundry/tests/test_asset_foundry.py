@@ -1,7 +1,9 @@
 import importlib.util
+import io
 import subprocess
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -567,6 +569,171 @@ class AssetFoundryTests(unittest.TestCase):
         )
         baseline = self.tool.load_repro_baseline(baseline_path)
         self.assertEqual(self.tool.validate_repro_baseline(baseline), [])
+
+    def test_describe_analysis_returns_neutral_candidate_names(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "generic")
+        analysis_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_describe_analysis.json"
+        self.tool.save_json(analysis_path, analysis)
+        ns = type("Args", (), {"analysis": str(analysis_path.relative_to(REPO_ROOT)), "image": None, "minecraft_asset": None, "minecraft_version": None, "heuristic": "generic", "json": True})()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.tool.cmd_describe_analysis(ns)
+        payload = self.tool.json.loads(buf.getvalue())
+        self.assertTrue(all(name.startswith("region_") for name in payload["candidate_regions"]))
+
+    def test_render_candidate_overlay_supports_only_filter(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "generic")
+        analysis_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_candidate_overlay_analysis.json"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_candidate_overlay.png"
+        self.tool.save_json(analysis_path, analysis)
+        ns = type(
+            "Args",
+            (),
+            {
+                "image": None,
+                "minecraft_asset": "assets/minecraft/textures/item/book.png",
+                "minecraft_version": "1.21.11",
+                "analysis": str(analysis_path.relative_to(REPO_ROOT)),
+                "output": str(output.relative_to(REPO_ROOT)),
+                "grid": False,
+                "only": analysis["candidate_regions"][0]["name"],
+                "kind": "region",
+                "json": False,
+            },
+        )()
+        self.tool.cmd_render_region_overlay(ns)
+        self.assertTrue(output.exists())
+
+    def test_inspect_region_returns_deterministic_bounds(self):
+        image = self.tool.load_image_from_source(
+            {
+                "kind": "minecraft_vanilla_asset",
+                "asset_path": "assets/minecraft/textures/item/book.png",
+                "version": "1.21.11",
+            }
+        )
+        analysis = self.tool.analyze_image(image, "generic")
+        analysis_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_inspect_region_analysis.json"
+        self.tool.save_json(analysis_path, analysis)
+        target = analysis["candidate_regions"][0]["name"]
+        ns = type(
+            "Args",
+            (),
+            {
+                "analysis": str(analysis_path.relative_to(REPO_ROOT)),
+                "template": None,
+                "image": None,
+                "minecraft_asset": "assets/minecraft/textures/item/book.png",
+                "minecraft_version": "1.21.11",
+                "heuristic": "generic",
+                "only": target,
+                "group_set": None,
+                "kind": "region",
+                "json": True,
+            },
+        )()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.tool.cmd_inspect_region(ns)
+        payload = self.tool.json.loads(buf.getvalue())
+        self.assertEqual(payload[0]["name"], target)
+        self.assertGreaterEqual(payload[0]["bounds"]["width"], 1)
+
+    def test_render_compare_sheet_single_surface(self):
+        from PIL import Image
+        base = REPO_ROOT / "tools/asset-foundry/previews/generated/test_compare_base.png"
+        generated = REPO_ROOT / "tools/asset-foundry/previews/generated/test_compare_generated.png"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_compare_sheet.png"
+        Image.new("RGBA", (16, 16), (0, 0, 0, 0)).save(base)
+        Image.new("RGBA", (16, 16), (255, 0, 0, 255)).save(generated)
+        ns = type("Args", (), {"base": str(base.relative_to(REPO_ROOT)), "generated": str(generated.relative_to(REPO_ROOT)), "delta": None, "request": None, "ops": None, "output": str(output.relative_to(REPO_ROOT)), "grid": False, "no_labels": False})()
+        self.tool.cmd_render_compare_sheet(ns)
+        self.assertTrue(output.exists())
+
+    def test_render_compare_sheet_bundle_in_memory(self):
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_bundle_compare_sheet.png"
+        ns = type("Args", (), {"base": None, "generated": None, "delta": None, "request": "tools/asset-foundry/requests/example-librarians-desk-bundle.json", "ops": "tools/asset-foundry/examples/pixel-ops/librarians_desk_bundle.ops.json", "output": str(output.relative_to(REPO_ROOT)), "grid": False, "no_labels": False})()
+        self.tool.cmd_render_compare_sheet(ns)
+        self.assertTrue(output.exists())
+
+    def test_apply_group_patch_dry_run_does_not_write(self):
+        patch_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_group_patch_ops.json"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_group_patch_out.json"
+        self.tool.save_json(
+            patch_path,
+            {"operations": [{"op": "rename_group", "from": "tool_detail", "to": "tool_detail_renamed"}]},
+        )
+        if output.exists():
+            output.unlink()
+        ns = type("Args", (), {"template": "tools/asset-foundry/specs/templates/minecraft_crafting_table_front_16.json", "patch": str(patch_path.relative_to(REPO_ROOT)), "output": str(output.relative_to(REPO_ROOT)), "dry_run": True})()
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            self.tool.cmd_apply_group_patch(ns)
+        self.assertFalse(output.exists())
+        self.assertIn("rename_group", buf.getvalue())
+
+    def test_apply_group_patch_invalid_reference_fails(self):
+        patch_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_group_patch_invalid.json"
+        self.tool.save_json(
+            patch_path,
+            {"operations": [{"op": "set_group_mode", "group": "missing_group", "mode": "detail"}]},
+        )
+        ns = type("Args", (), {"template": "tools/asset-foundry/specs/templates/minecraft_crafting_table_front_16.json", "patch": str(patch_path.relative_to(REPO_ROOT)), "output": None, "dry_run": True})()
+        with self.assertRaises(SystemExit):
+            self.tool.cmd_apply_group_patch(ns)
+
+    def test_render_group_overlay_patch_preview_does_not_mutate_template(self):
+        patch_path = REPO_ROOT / "tools/asset-foundry/previews/generated/test_group_patch_preview.json"
+        output = REPO_ROOT / "tools/asset-foundry/previews/generated/test_group_patch_preview.png"
+        self.tool.save_json(
+            patch_path,
+            {"operations": [{"op": "rename_group", "from": "tool_detail", "to": "tool_detail_preview"}]},
+        )
+        original = self.tool.load_template("minecraft_crafting_table_front_16")
+        ns = type(
+            "Args",
+            (),
+            {
+                "image": None,
+                "minecraft_asset": None,
+                "minecraft_version": None,
+                "analysis": None,
+                "template": "tools/asset-foundry/specs/templates/minecraft_crafting_table_front_16.json",
+                "patch": str(patch_path.relative_to(REPO_ROOT)),
+                "output": str(output.relative_to(REPO_ROOT)),
+                "grid": False,
+                "only": "tool_detail_preview",
+                "group_set": None,
+                "json": False,
+            },
+        )()
+        self.tool.cmd_render_group_overlay(ns)
+        after = self.tool.load_template("minecraft_crafting_table_front_16")
+        self.assertTrue(output.exists())
+        self.assertEqual(original["pixel_groups"][0]["name"], after["pixel_groups"][0]["name"])
+
+    def test_new_mcp_tools_are_exposed(self):
+        wrapper_path = REPO_ROOT / "tools" / "asset-foundry" / "asset_foundry_mcp.py"
+        spec = importlib.util.spec_from_file_location("asset_foundry_mcp", wrapper_path)
+        module = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(module)
+        names = {item["name"] for item in module.TOOLS}
+        self.assertTrue({"describe_analysis", "inspect_region", "render_candidate_overlay", "render_compare_sheet", "apply_group_patch"}.issubset(names))
 
 
 if __name__ == "__main__":

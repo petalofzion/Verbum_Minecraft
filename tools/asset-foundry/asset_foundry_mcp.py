@@ -74,6 +74,59 @@ TOOLS = [
         }
     },
     {
+        "name": "describe_analysis",
+        "description": "Print a compact neutral analysis summary.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "analysis": {"type": "string"},
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "json": {"type": "boolean"}
+            }
+        }
+    },
+    {
+        "name": "inspect_region",
+        "description": "Inspect one candidate, group, group set, or zone.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "analysis": {"type": "string"},
+                "template": {"type": "string"},
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "heuristic": {"type": "string"},
+                "only": {"type": "string"},
+                "group_set": {"type": "string"},
+                "kind": {"type": "string"},
+                "json": {"type": "boolean"}
+            }
+        }
+    },
+    {
+        "name": "render_candidate_overlay",
+        "description": "Render a labeled overlay for analysis candidates and proposal regions.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["analysis", "output"],
+            "properties": {
+                "analysis": {"type": "string"},
+                "image": {"type": "string"},
+                "minecraft_asset": {"type": "string"},
+                "minecraft_version": {"type": "string"},
+                "output": {"type": "string"},
+                "grid": {"type": "boolean"},
+                "only": {"type": "string"},
+                "kind": {"type": "string"},
+                "json": {"type": "boolean"}
+            }
+        }
+    },
+    {
         "name": "create_template_from_image",
         "description": "Create a neutral raster-backed template seed from a source image.",
         "inputSchema": {
@@ -217,6 +270,38 @@ TOOLS = [
         }
     },
     {
+        "name": "render_compare_sheet",
+        "description": "Render a compare sheet for base/generated/delta or a named surface bundle.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["output"],
+            "properties": {
+                "base": {"type": "string"},
+                "generated": {"type": "string"},
+                "delta": {"type": "string"},
+                "request": {"type": "string"},
+                "ops": {"type": "string"},
+                "output": {"type": "string"},
+                "grid": {"type": "boolean"},
+                "no_labels": {"type": "boolean"}
+            }
+        }
+    },
+    {
+        "name": "apply_group_patch",
+        "description": "Apply or dry-run an intent-focused template patch.",
+        "inputSchema": {
+            "type": "object",
+            "required": ["template", "patch"],
+            "properties": {
+                "template": {"type": "string"},
+                "patch": {"type": "string"},
+                "output": {"type": "string"},
+                "dry_run": {"type": "boolean"}
+            }
+        }
+    },
+    {
         "name": "promote_to_template",
         "description": "Turn a generated PNG into a reusable raster-backed template.",
         "inputSchema": {
@@ -303,6 +388,46 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             )
             TOOL.cmd_inspect_topology(ns)
             return text_result("inspect_topology completed")
+        if name == "describe_analysis":
+            ns = SimpleNamespace(
+                analysis=arguments.get("analysis"),
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                heuristic=arguments.get("heuristic", "generic"),
+                json=arguments.get("json", False),
+            )
+            TOOL.cmd_describe_analysis(ns)
+            return text_result("describe_analysis completed")
+        if name == "inspect_region":
+            ns = SimpleNamespace(
+                analysis=arguments.get("analysis"),
+                template=arguments.get("template"),
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                heuristic=arguments.get("heuristic", "generic"),
+                only=arguments.get("only"),
+                group_set=arguments.get("group_set"),
+                kind=arguments.get("kind", "candidate"),
+                json=arguments.get("json", False),
+            )
+            TOOL.cmd_inspect_region(ns)
+            return text_result("inspect_region completed")
+        if name == "render_candidate_overlay":
+            ns = SimpleNamespace(
+                analysis=arguments["analysis"],
+                image=arguments.get("image"),
+                minecraft_asset=arguments.get("minecraft_asset"),
+                minecraft_version=arguments.get("minecraft_version"),
+                output=arguments["output"],
+                grid=arguments.get("grid", False),
+                only=arguments.get("only"),
+                kind=arguments.get("kind", "candidate"),
+                json=arguments.get("json", False),
+            )
+            TOOL.cmd_render_region_overlay(ns)
+            return text_result("render_candidate_overlay completed")
         if name == "create_template_from_image":
             ns = SimpleNamespace(
                 image=arguments.get("image"),
@@ -383,9 +508,36 @@ def dispatch_tool(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             TOOL.cmd_emit_manifest(ns)
             return text_result("emit_manifest completed")
         if name == "describe_template":
-            ns = SimpleNamespace(template_id=arguments["template_id"])
+            ns = SimpleNamespace(
+                template_id=arguments["template_id"],
+                only=arguments.get("only"),
+                stats=arguments.get("stats", False),
+                json=arguments.get("json", False),
+            )
             TOOL.cmd_describe_template(ns)
             return text_result("describe_template completed")
+        if name == "render_compare_sheet":
+            ns = SimpleNamespace(
+                base=arguments.get("base"),
+                generated=arguments.get("generated"),
+                delta=arguments.get("delta"),
+                request=arguments.get("request"),
+                ops=arguments.get("ops"),
+                output=arguments["output"],
+                grid=arguments.get("grid", False),
+                no_labels=arguments.get("no_labels", False),
+            )
+            TOOL.cmd_render_compare_sheet(ns)
+            return text_result("render_compare_sheet completed")
+        if name == "apply_group_patch":
+            ns = SimpleNamespace(
+                template=arguments["template"],
+                patch=arguments["patch"],
+                output=arguments.get("output"),
+                dry_run=arguments.get("dry_run", False),
+            )
+            TOOL.cmd_apply_group_patch(ns)
+            return text_result("apply_group_patch completed")
         if name == "promote_to_template":
             ns = SimpleNamespace(
                 generated_asset=arguments["generated_asset"],
